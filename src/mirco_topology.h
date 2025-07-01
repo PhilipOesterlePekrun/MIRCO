@@ -21,7 +21,8 @@ namespace MIRCO
      * @param zmax Maximum height of the topology
      */
     virtual void GetSurface(Teuchos::SerialDenseMatrix<int, double> &z) = 0;
-    TopologyGeneration(int nn) { resolution = nn; }
+    TopologyGeneration() {}
+    TopologyGeneration(int nn) : resolution(nn) {}
   };
 
   class ReadFile : public TopologyGeneration
@@ -34,14 +35,10 @@ namespace MIRCO
     /**
      * @brief Construct a Surface object by reading topology from an input file.
      *
-     * @param nn Resolution parameter
      * @param ffilepath Path of the input file containing the topology relative to the build
      * directory.
      */
-    ReadFile(int nn, std::string ffilepath) : TopologyGeneration(nn)
-    {
-      TopologyFilePath = ffilepath;
-    }
+    ReadFile(const std::string &ffilepath) : TopologyFilePath(ffilepath) {}
   };
 
   class Rmg : public TopologyGeneration
@@ -64,12 +61,13 @@ namespace MIRCO
      * @param rsf Random Seed Flag
      * @param rmgs eed for the random mid-point generator
      */
-    Rmg(int nn, double InStdDev, double HH, bool rsf, int rmgs) : TopologyGeneration(nn)
+    Rmg(int nn, double InStdDev, double HH, bool rsf, int rmgs)
+        : TopologyGeneration(nn),
+          InitialTopologyStdDeviation(InStdDev),
+          Hurst(HH),
+          RandomSeedFlag(rsf),
+          RandomGeneratorSeed(rmgs)
     {
-      InitialTopologyStdDeviation = InStdDev;
-      Hurst = HH;
-      RandomSeedFlag = rsf;
-      RandomGeneratorSeed = rmgs;
     }
   };
 }  // namespace MIRCO

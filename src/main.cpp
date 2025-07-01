@@ -1,3 +1,5 @@
+#include <omp.h>  //#
+
 #include <Teuchos_TestForException.hpp>
 #include <chrono>
 #include <iostream>
@@ -11,6 +13,16 @@
 
 int main(int argc, char* argv[])
 {
+  std::cout << "start\n";
+#pragma omp parallel
+  {
+#pragma omp single
+    {
+      std::cout << "Number of OpenMP threads: " << omp_get_num_threads() << std::endl;
+    }
+  }
+
+
   TEUCHOS_TEST_FOR_EXCEPTION(
       argc != 2, std::invalid_argument, "The code expects (only) an input file as argument");
   // reading the input file name from the command line
@@ -31,7 +43,7 @@ int main(int argc, char* argv[])
   int RandomGeneratorSeed = 0;
   int MaxIteration = 0;
   bool PressureGreenFunFlag = false;
-
+  std::cout << "line35\n";
   MIRCO::SetParameters(E1, E2, LateralLength, nu1, nu2, CompositeYoungs, ShapeFactor,
       ElasticComplianceCorrection, GridSize, Tolerance, Delta, TopologyFilePath, Resolution,
       InitialTopologyStdDeviation, inputFileName, RandomTopologyFlag, Hurst, RandomSeedFlag,
@@ -39,13 +51,20 @@ int main(int argc, char* argv[])
 
   // Identical Vectors/Matricies, therefore only created one here.
   int ngrid = int(ceil((LateralLength - (GridSize / 2)) / GridSize));
+  std::cout << "line43\n";
   std::vector<double> meshgrid(ngrid);
+  std::cout << "line44\n";
   MIRCO::CreateMeshgrid(meshgrid, ngrid, GridSize);
+
+  std::cout << "ngrid=" << ngrid << "\n";  //=2^n+1, where n=Resolution
+
 
   // Setup Topology
   Teuchos::SerialDenseMatrix<int, double> topology;
   int N = pow(2, Resolution);
   topology.shape(N + 1, N + 1);
+
+  std::cout << "Resolution=" << Resolution << "\n";
 
   Teuchos::RCP<MIRCO::TopologyGeneration> surfacegenerator;
   // creating the correct surface object
@@ -66,7 +85,6 @@ int main(int argc, char* argv[])
   std::cout << "Mean pressure is: " << std::to_string(pressure) << std::endl;
 
   const auto finish = std::chrono::high_resolution_clock::now();
-  const double elapsedTime =
-      std::chrono::duration_cast<std::chrono::seconds>(finish - start).count();
+  const double elapsedTime = std::chrono::duration<double>(finish - start).count();
   std::cout << "Elapsed time is: " + std::to_string(elapsedTime) + "s." << std::endl;
 }

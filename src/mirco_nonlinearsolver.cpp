@@ -142,7 +142,7 @@ Teuchos::SerialDenseVector<int, double> MIRCO::NonLinearSolver::Solve(
       {
         vector_b(x) = b0[P[x]];
 
-        for (int z = 0; z < counter; z++)
+        for (int z = 0; z < counter; z++)  // #
         {
           if (x >= z)
             solverMatrix(x, z) = matrix(P[x], P[z]);

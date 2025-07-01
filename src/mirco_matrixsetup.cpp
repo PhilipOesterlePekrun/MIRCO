@@ -19,6 +19,7 @@ void MIRCO::MatrixGeneration::SetUpMatrix(Teuchos::SerialDenseMatrix<int, double
     // ((1-nu)/2*pi*G) from the equation is replaced with (1/pi*CompositeYoungs) here.
     // The paper uses a decoupled shear modulus and Poisson's ratio. We use a composite Young's
     // modulus here, instead.
+    std::cout << "systemsize=" << systemsize << "\n";
     for (int i = 0; i < systemsize; i++)
     {
       for (int j = 0; j < systemsize; j++)

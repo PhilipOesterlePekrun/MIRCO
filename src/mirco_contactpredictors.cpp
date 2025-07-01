@@ -27,6 +27,9 @@ void MIRCO::ContactSetPredictor(int &n0, std::vector<double> &xv0, std::vector<d
     }
   }
 
+  std::cout << "row.size()=" << row.size() << "\n";
+  std::cout << "col.size()=" << col.size() << "\n";
+
   n0 = col.size();
 
   // @{

@@ -20,7 +20,7 @@ void MIRCO::CreateMeshgrid(std::vector<double>& meshgrid, const int ngrid, const
 void MIRCO::CreateSurfaceObject(const int Resolution, const double InitialTopologyStdDeviation,
     const double Hurst, const bool RandomSeedFlag, const std::string TopologyFilePath,
     const bool RandomTopologyFlag, const int RandomGeneratorSeed,
-    Teuchos::RCP<MIRCO::TopologyGeneration>& surfacegenerator)
+    Teuchos::RCP<MIRCO::TopologyGeneration>& surfacegenerator)  // # dont need this maybe
 {
   if (RandomTopologyFlag)
   {

@@ -86,4 +86,7 @@ void MIRCO::SetParameters(double& E1, double& E2, double& LateralLength, double&
 
   ElasticComplianceCorrection = LateralLength * CompositeYoungs / ShapeFactor;
   GridSize = LateralLength / (pow(2, Resolution) + 1);
+  std::cout << "LateralLength=" << LateralLength << "\n";
+  std::cout << "Resolution=" << Resolution << "\n";
+  std::cout << "GridSize=" << GridSize << "\n";
 }
