@@ -5,10 +5,13 @@
 #include <Teuchos_SerialDenseMatrix.hpp>
 #include <vector>
 
+#include "Timer.hpp"
+
 void MIRCO::MatrixGeneration::SetUpMatrix(Teuchos::SerialDenseMatrix<int, double>& A,
     const std::vector<double>& xv0, const std::vector<double>& yv0, const double GridSize,
     const double CompositeYoungs, const int systemsize, const bool PressureGreenFunFlag)
 {
+  ScopedTimer timer("SetUpMatrix()");
   double pi = M_PI;
   A.shape(xv0.size(), xv0.size());
   if (PressureGreenFunFlag)

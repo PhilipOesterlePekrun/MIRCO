@@ -3,12 +3,14 @@
 #include <Teuchos_SerialDenseMatrix.hpp>
 #include <vector>
 
+#include "Timer.hpp"
 #include "mirco_warmstart.h"
 
 void MIRCO::ContactSetPredictor(int &n0, std::vector<double> &xv0, std::vector<double> &yv0,
     std::vector<double> &b0, double zmax, double Delta, double w_el,
     const std::vector<double> &meshgrid, const Teuchos::SerialDenseMatrix<int, double> &topology)
 {
+  ScopedTimer timer("ContactSetPredictor()");
   std::vector<int> col, row;
   double value = zmax - Delta - w_el;
   row.clear();
@@ -80,6 +82,7 @@ void MIRCO::InitialGuessPredictor(bool WarmStartingFlag, int k, int n0,
     Teuchos::SerialDenseMatrix<int, double> &x0, const std::vector<double> &b0,
     const std::vector<double> &xvf, const std::vector<double> &yvf)
 {
+  ScopedTimer timer("InitialGuessPredictor()");
   if (WarmStartingFlag == 1 && k > 0)
   {
     MIRCO::Warmstart(x0, xv0, yv0, xvf, yvf, pf);

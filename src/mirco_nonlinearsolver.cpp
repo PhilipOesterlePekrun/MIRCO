@@ -5,12 +5,14 @@
 #include <Teuchos_SerialSymDenseMatrix.hpp>
 #include <vector>
 
+#include "Timer.hpp"
 #include "mirco_linearsolver.h"
 
 Teuchos::SerialDenseVector<int, double> MIRCO::NonLinearSolver::Solve(
     const Teuchos::SerialDenseMatrix<int, double>& matrix, const std::vector<double>& b0,
     const Teuchos::SerialDenseMatrix<int, double>& y0, Teuchos::SerialDenseMatrix<int, double>& w)
 {
+  ScopedTimer timer2("NonLinearSolver::Solve()");
   double nnlstol = 1.0000e-08;
   double maxiter = 10000;
   double eps = 2.2204e-16;
@@ -131,9 +133,11 @@ Teuchos::SerialDenseVector<int, double> MIRCO::NonLinearSolver::Solve(
 
     int j = 0;
     aux2 = true;
+
     while (aux2 == true)
     {
       iter++;
+      numNonlinearIters = iter;
       vector_b.size(counter);
       solverMatrix.shape(counter);
 

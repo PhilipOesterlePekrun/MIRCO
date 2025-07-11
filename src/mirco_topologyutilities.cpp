@@ -4,8 +4,11 @@
 #include <cmath>
 #include <vector>
 
+#include "Timer.hpp"
+
 std::vector<double> MIRCO::CreateMeshgrid(const int ngrid, const double GridSize)
 {
+  ScopedTimer timer("CreateMeshgrid()");
   std::vector<double> meshgrid(ngrid);
 #pragma omp parallel for schedule(static, 16)  // Same amount of work -> static
   for (int i = 0; i < ngrid; i++)
@@ -18,6 +21,7 @@ std::vector<double> MIRCO::CreateMeshgrid(const int ngrid, const double GridSize
 MIRCO::TopologyMaxAndMean MIRCO::ComputeMaxAndMean(
     const Teuchos::SerialDenseMatrix<int, double>& topology)
 {
+  ScopedTimer timer("ComputeMaxAndMean()");
   double zmax = -1.0;
   double zmean = 0.0;
 #pragma omp parallel for schedule(guided, 16) reduction(+ : zmean) reduction(max : zmax)

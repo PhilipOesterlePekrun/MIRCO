@@ -5,6 +5,7 @@
 #include <map>
 #include <string>
 
+#include "Timer.hpp"
 #include "mirco_filesystem_utils.h"
 #include "mirco_topology.h"
 
@@ -39,6 +40,7 @@ double InterpolatedShapeFactor(const std::map<int, double>& shapeFactors, int N)
 
 MIRCO::InputParameters::InputParameters(const std::string& inputFileName)
 {
+  ScopedTimer timer("InputParameters(const std::string& inputFileName)");
   Teuchos::ParameterList parameter_list;
   Teuchos::updateParametersFromXmlFile(inputFileName, Teuchos::ptrFromRef(parameter_list));
 

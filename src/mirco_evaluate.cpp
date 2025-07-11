@@ -11,6 +11,7 @@
 #include <ctime>
 #include <vector>
 
+#include "Timer.hpp"
 #include "mirco_contactpredictors.h"
 #include "mirco_contactstatus.h"
 #include "mirco_matrixsetup.h"
@@ -24,6 +25,7 @@ void MIRCO::Evaluate(double& pressure, const double Delta, const double LateralL
     const Teuchos::SerialDenseMatrix<int, double>& topology, const double zmax,
     const std::vector<double>& meshgrid, const bool PressureGreenFunFlag)
 {
+  ScopedTimer timer("Evaluate()");
   // Initialise the area vector and force vector. Each element containing the
   // area and force calculated at every iteration.
   std::vector<double> area0;
@@ -58,8 +60,11 @@ void MIRCO::Evaluate(double& pressure, const double Delta, const double LateralL
 
   // Initialise the error in force
   double ErrorForce = std::numeric_limits<double>::max();
+
   while (ErrorForce > Tolerance && k < MaxIteration)
   {
+    evaluateIterations++;
+    ScopedTimer timer2("Evaluate()__while loop");
     // First predictor for contact set
     MIRCO::ContactSetPredictor(n0, xv0, yv0, b0, zmax, Delta, w_el, meshgrid, topology);
 
