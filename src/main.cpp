@@ -7,9 +7,16 @@
 #include "mirco_inputparameters.h"
 #include "mirco_topologyutilities.h"
 
+// tmp
+#include "tmpHelpers/Timer.hpp"
+#include "tmpHelpers/kokkosIntegration.hpp"
 
 int main(int argc, char* argv[])
 {
+#if (kokkosElseOpenMP)
+  Kokkos::initialize(argc, argv);
+#endif
+
   TEUCHOS_TEST_FOR_EXCEPTION(
       argc != 2, std::invalid_argument, "The code expects (only) an input file as argument");
   // reading the input file name from the command line
@@ -35,4 +42,8 @@ int main(int argc, char* argv[])
   const double elapsedTime =
       std::chrono::duration_cast<std::chrono::seconds>(finish - start).count();
   std::cout << "Elapsed time is: " + std::to_string(elapsedTime) + "s." << std::endl;
+
+#if (kokkosElseOpenMP)
+  Kokkos::finalize();
+#endif
 }
