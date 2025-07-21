@@ -3,7 +3,7 @@
 #include <iostream>
 #include <string>
 
-#include "mirco_evaluate.h"
+// #include "mirco_evaluate.h"
 #include "mirco_evaluate_kokkos.h"
 #include "mirco_inputparameters.h"
 #include "mirco_topologyutilities.h"
@@ -55,7 +55,7 @@ int main(int argc, char* argv[])
 
   const auto finish = std::chrono::high_resolution_clock::now();
   const double elapsedTime =
-      std::chrono::duration_cast<std::chrono::seconds>(finish - start).count();
+      std::chrono::duration_cast<std::chrono::duration<double>>(finish - start).count();
   std::cout << "Elapsed time is: " + std::to_string(elapsedTime) + "s." << std::endl;
 
   std::cout << TimerRegistry::globalInstance().timingReportStr(true);
