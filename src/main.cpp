@@ -23,8 +23,7 @@ void someFct(int n, const FunctorType& f)
 
 int main(int argc, char* argv[])
 {
-  someFct(
-      5, LAM(int i) { i = 2 + 4; });
+  someFct(5, LAM(int i) { i = 2 + 4; });
 
 
   ////////
