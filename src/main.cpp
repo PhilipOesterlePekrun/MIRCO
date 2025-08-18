@@ -9,9 +9,24 @@
 #include "mirco_inputparameters.h"
 #include "mirco_topologyutilities.h"
 
+template <typename FunctorType>
+void someFct(int n, const FunctorType& f)
+{
+  for (int i = 0; i < n; ++i)
+  {
+    f(i);
+  }
+}
+
+#define LAM [=]
+
 
 int main(int argc, char* argv[])
 {
+  someFct(5, LAM(int i) { i = 2 + 4; });
+
+
+
   TEUCHOS_TEST_FOR_EXCEPTION(
       argc != 2, std::invalid_argument, "The code expects (only) an input file as argument");
   // reading the input file name from the command line
