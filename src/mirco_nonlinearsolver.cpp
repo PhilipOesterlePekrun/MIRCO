@@ -124,11 +124,15 @@ namespace MIRCO
         ++iter;
 
         // Compact versions of H and b0, i.e. H_I and \overbar{u}_I in line 6 of Algorithm 3,
-        // (Bemporad & Paggi, 2015)
-        ViewVector_d b0s_compact(kokkosLabelPrefix + "b0_compact", activeSetSize);
+        // (Bemporad & Paggi, 2015); we explicitly specify LayoutLeft, as this is necessary for
+        // KokkosLapack::gesv()
+        Kokkos::View<double*, Kokkos::LayoutLeft, Device_Default_t> b0s_compact(
+            kokkosLabelPrefix + "b0s_compact", activeSetSize);
         if (activeSetSize > 1)
         {
-          ViewMatrix_d H_compact(kokkosLabelPrefix + "H_compact", activeSetSize, activeSetSize);
+          // (LayoutLeft is column major for rank-2 View)
+          Kokkos::View<double**, Kokkos::LayoutLeft, Device_Default_t> H_compact(
+              kokkosLabelPrefix + "H_compact", activeSetSize, activeSetSize);
 
           Kokkos::parallel_for(
               activeSetSize, KOKKOS_LAMBDA(const int i) {
@@ -141,7 +145,8 @@ namespace MIRCO
                 }
               });
 
-          ViewVectorInt_d ipiv(kokkosLabelPrefix + "ipiv", activeSetSize);
+          Kokkos::View<int*, Kokkos::LayoutLeft, Device_Default_t> ipiv(
+              kokkosLabelPrefix + "ipiv", activeSetSize);
 
           // Solve H_I s_I = b0_I; b0s_compact_d becomes s_I
           KokkosLapack::gesv(H_compact, b0s_compact, ipiv);
