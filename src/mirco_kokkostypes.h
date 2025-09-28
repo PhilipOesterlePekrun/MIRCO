@@ -2,6 +2,8 @@
 #define SRC_KOKKOSTYPES_H_
 
 #include <Kokkos_Core.hpp>
+#include <type_traits>
+#include <utility>  //#
 
 // This file defines some commonly used Kokkos type aliases. More aliases, as well as Kokkos-related
 // macros, utilities, etc., can be added as needed
@@ -26,14 +28,17 @@ namespace MIRCO
   using ViewVectorInt_d = Kokkos::View<int*, Device_Default_t>;
 
 
-  template <class ViewDst, class ViewSrc, std::size_t... I>
+  /*template <class ViewDst, class ViewSrc, std::size_t... I>
   inline ViewDst allocate_like_impl(
       std::string const& label, ViewSrc const& vSrc, std::index_sequence<I...>)
   {
     return ViewDst{Kokkos::view_alloc(label, Kokkos::WithoutInitializing{}), vSrc.extent(I)...};
   }
 
-  template <class ExecDst, class ViewSrc, class ViewDst>
+  /**
+   * @brief Helper to create a mirror view and copy across spaces, even if Layout differs
+   */
+  /*template <class ExecDst, class ViewSrc, class ViewDst>
   ViewDst Kokkos_CreateMirrorViewAndDeepCopyAnyLayout(const ViewSrc vSrc, const std::string& label)
   {
     using SrcLayout = typename ViewSrc::array_layout;
@@ -54,7 +59,7 @@ namespace MIRCO
       Kokkos::deep_copy(ExecDst{}, vDst, vInter);
       return vDst;
     }
-  }
+  }*/
 
 }  // namespace MIRCO
 

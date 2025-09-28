@@ -9,7 +9,7 @@
 #include "mirco_inputparameters.h"
 #include "mirco_kokkostypes.h"
 #include "mirco_topologyutilities.h"
-#include "mirco_utils.h"
+#include "mirco_utilsIO.h"
 
 using namespace MIRCO;
 
@@ -64,13 +64,13 @@ int main(int argc, char* argv[])
       if (!resultDescription.invalid())
       {
         bool passedResultChecks = true;
-        const double ExpectedPressure = Utils::get_double(resultDescription, "ExpectedPressure");
+        const double ExpectedPressure = UtilsIO::get_double(resultDescription, "ExpectedPressure");
         const double ExpectedPressureTolerance =
-            Utils::get_double(resultDescription, "ExpectedPressureTolerance");
+            UtilsIO::get_double(resultDescription, "ExpectedPressureTolerance");
         const double ExpectedEffectiveContactAreaFraction =
-            Utils::get_double(resultDescription, "ExpectedEffectiveContactAreaFraction");
+            UtilsIO::get_double(resultDescription, "ExpectedEffectiveContactAreaFraction");
         const double ExpectedEffectiveContactAreaFractionTolerance =
-            Utils::get_double(resultDescription, "ExpectedEffectiveContactAreaFractionTolerance");
+            UtilsIO::get_double(resultDescription, "ExpectedEffectiveContactAreaFractionTolerance");
 
         if (std::abs(meanPressure - ExpectedPressure) > ExpectedPressureTolerance)
         {

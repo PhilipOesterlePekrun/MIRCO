@@ -1,8 +1,8 @@
-#include "mirco_utils.h"
+#include "mirco_utilsIO.h"
 
 #include <filesystem>
 
-void MIRCO::Utils::changeRelativePath(
+void MIRCO::UtilsIO::changeRelativePath(
     std::string& targetfilename, const std::string& sourcefilename)
 {
   std::filesystem::path targetfilepath = targetfilename;
@@ -17,14 +17,14 @@ void MIRCO::Utils::changeRelativePath(
   }
 }
 
-std::string MIRCO::Utils::get_string(ryml::ConstNodeRef node, const std::string& key)
+std::string MIRCO::UtilsIO::get_string(ryml::ConstNodeRef node, const std::string& key)
 {
   auto child = node[c4::to_csubstr(key)];
   if (child.invalid()) throw std::runtime_error("Parameter \"" + key + "\" not found");
   c4::csubstr v = child.val();
   return std::string(v.str, v.len);
 }
-bool MIRCO::Utils::get_bool(ryml::ConstNodeRef node, const std::string& key)
+bool MIRCO::UtilsIO::get_bool(ryml::ConstNodeRef node, const std::string& key)
 {
   std::string s = get_string(node, key);
   if (s == "true" || s == "True" || s == "1") return true;
@@ -32,12 +32,12 @@ bool MIRCO::Utils::get_bool(ryml::ConstNodeRef node, const std::string& key)
 
   throw std::runtime_error("Parameter \"" + key + "\" has invalid bool value");
 }
-double MIRCO::Utils::get_double(ryml::ConstNodeRef node, const std::string& key)
+double MIRCO::UtilsIO::get_double(ryml::ConstNodeRef node, const std::string& key)
 {
   std::string s = get_string(node, key);
   return std::stod(s);
 }
-int MIRCO::Utils::get_int(ryml::ConstNodeRef node, const std::string& key)
+int MIRCO::UtilsIO::get_int(ryml::ConstNodeRef node, const std::string& key)
 {
   std::string s = get_string(node, key);
   return std::stoi(s);

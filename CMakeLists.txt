@@ -181,16 +181,16 @@ else()
   FetchContent_MakeAvailable(rapidyaml)
 endif()
 
-add_library(mirco_utils
-  src/mirco_utils.cpp
+add_library(mirco_utilsIO
+  src/mirco_utilsIO.cpp
   )
 
-target_link_libraries(mirco_utils PUBLIC ryml)
+target_link_libraries(mirco_utilsIO PUBLIC ryml)
 
 add_library(mirco_inputparameters_yaml
   src/mirco_inputparameters_yaml.cpp
   )
-target_link_libraries(mirco_inputparameters_yaml PRIVATE mirco_utils Kokkos::kokkos)
+target_link_libraries(mirco_inputparameters_yaml PRIVATE mirco_utilsIO Kokkos::kokkos)
 
 add_library(mirco_lib INTERFACE)
 target_link_libraries(mirco_lib INTERFACE mirco_needKK mirco_core mirco_topology mirco_inputparameters)
@@ -205,7 +205,7 @@ target_include_directories(mirco_lib INTERFACE
 
 add_library(mirco::mirco_lib ALIAS mirco_lib)
 
-target_link_libraries(mirco PUBLIC mirco::mirco_lib mirco_inputparameters_yaml mirco_utils Kokkos::kokkos)
+target_link_libraries(mirco PUBLIC mirco::mirco_lib mirco_inputparameters_yaml mirco_utilsIO Kokkos::kokkos)
 
 # Install mirco (to be used as a library by other codes)
 install(TARGETS mirco_lib mirco_needKK mirco_core mirco_topology mirco_inputparameters
@@ -240,7 +240,7 @@ if(GTEST_IN_MIRCO)
   add_executable(tests
     tests/unittests/test.cpp
     )
-  target_link_libraries(tests PUBLIC mirco::mirco_lib mirco_inputparameters_yaml mirco_utils gtest Kokkos::kokkos)
+  target_link_libraries(tests PUBLIC mirco::mirco_lib mirco_inputparameters_yaml mirco_utilsIO gtest Kokkos::kokkos)
 
   # Copy tests/unittests/data folder to the build dir
   add_custom_command(

@@ -5,7 +5,7 @@
 #include "../../src/mirco_kokkostypes.h"
 #include "../../src/mirco_nonlinearsolver.h"
 #include "../../src/mirco_topology.h"
-#include "../../src/mirco_utils.h"
+#include "../../src/mirco_utilsIO.h"
 #include "../../src/mirco_warmstart.h"
 
 // Functors are sometimes necessary for device-side/offloaded compilation
@@ -163,7 +163,7 @@ TEST(FilesystemUtils, createrelativepath)
 {
   std::string targetfilename = "input.dat";
   std::string sourcefilename = "../inputfiles/sourceinput.json";
-  MIRCO::Utils::changeRelativePath(targetfilename, sourcefilename);
+  MIRCO::UtilsIO::changeRelativePath(targetfilename, sourcefilename);
   EXPECT_EQ(targetfilename, "../inputfiles/input.dat");
 }
 
@@ -171,7 +171,7 @@ TEST(FilesystemUtils, keepabsolutepath)
 {
   std::string targetfilename = "/root_dir/home/user/Input/input.dat";
   std::string sourcefilename = "../inputfiles/sourceinput.json";
-  MIRCO::Utils::changeRelativePath(targetfilename, sourcefilename);
+  MIRCO::UtilsIO::changeRelativePath(targetfilename, sourcefilename);
   EXPECT_EQ(targetfilename, "/root_dir/home/user/Input/input.dat");
 }
 

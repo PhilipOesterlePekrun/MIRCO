@@ -7,7 +7,7 @@
 
 namespace MIRCO
 {
-  namespace Utils
+  namespace UtilsIO
   {
     /*
      * \brief Create a file path relative to the current directory by concatenating
@@ -28,7 +28,7 @@ namespace MIRCO
     bool get_bool(ryml::ConstNodeRef node, const std::string& key);
     double get_double(ryml::ConstNodeRef node, const std::string& key);
     int get_int(ryml::ConstNodeRef node, const std::string& key);
-  }  // namespace Utils
+  }  // namespace UtilsIO
 }  // namespace MIRCO
 
 #endif  // SRC_UTILS_H_

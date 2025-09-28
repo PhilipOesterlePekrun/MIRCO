@@ -2,7 +2,7 @@
 #include <sstream>
 
 #include "mirco_inputparameters.h"
-#include "mirco_utils.h"
+#include "mirco_utilsIO.h"
 
 MIRCO::InputParameters::InputParameters(const std::string& inputFileName)
 {
@@ -28,28 +28,31 @@ MIRCO::InputParameters::InputParameters(const std::string& inputFileName)
     throw std::runtime_error("Input incomplete: missing section `material_parameters`");
 
   // Set the surface generator based on RandomTopologyFlag
-  if (Utils::get_bool(root, "RandomTopologyFlag"))
+  if (UtilsIO::get_bool(root, "RandomTopologyFlag"))
   {
-    *this = InputParameters(Utils::get_double(matParams, "E1"), Utils::get_double(matParams, "E2"),
-        Utils::get_double(matParams, "nu1"), Utils::get_double(matParams, "nu2"),
-        Utils::get_double(geoParams, "Tolerance"), Utils::get_double(geoParams, "Delta"),
-        Utils::get_double(geoParams, "LateralLength"), Utils::get_int(geoParams, "Resolution"),
-        Utils::get_double(geoParams, "InitialTopologyStdDeviation"),
-        Utils::get_double(geoParams, "HurstExponent"), Utils::get_bool(root, "RandomSeedFlag"),
-        Utils::get_int(root, "RandomGeneratorSeed"), Utils::get_int(root, "MaxIteration"),
-        Utils::get_bool(root, "WarmStartingFlag"), Utils::get_bool(root, "PressureGreenFunFlag"));
+    *this = InputParameters(UtilsIO::get_double(matParams, "E1"),
+        UtilsIO::get_double(matParams, "E2"), UtilsIO::get_double(matParams, "nu1"),
+        UtilsIO::get_double(matParams, "nu2"), UtilsIO::get_double(geoParams, "Tolerance"),
+        UtilsIO::get_double(geoParams, "Delta"), UtilsIO::get_double(geoParams, "LateralLength"),
+        UtilsIO::get_int(geoParams, "Resolution"),
+        UtilsIO::get_double(geoParams, "InitialTopologyStdDeviation"),
+        UtilsIO::get_double(geoParams, "HurstExponent"), UtilsIO::get_bool(root, "RandomSeedFlag"),
+        UtilsIO::get_int(root, "RandomGeneratorSeed"), UtilsIO::get_int(root, "MaxIteration"),
+        UtilsIO::get_bool(root, "WarmStartingFlag"),
+        UtilsIO::get_bool(root, "PressureGreenFunFlag"));
   }
   else
   {
-    std::string topology_file_path = Utils::get_string(root, "TopologyFilePath");
+    std::string topology_file_path = UtilsIO::get_string(root, "TopologyFilePath");
     // The following function generates the actual path of the topology file
-    MIRCO::Utils::changeRelativePath(topology_file_path, inputFileName);
+    MIRCO::UtilsIO::changeRelativePath(topology_file_path, inputFileName);
 
-    *this = InputParameters(Utils::get_double(matParams, "E1"), Utils::get_double(matParams, "E2"),
-        Utils::get_double(matParams, "nu1"), Utils::get_double(matParams, "nu2"),
-        Utils::get_double(geoParams, "Tolerance"), Utils::get_double(geoParams, "Delta"),
-        Utils::get_double(geoParams, "LateralLength"), topology_file_path,
-        Utils::get_int(root, "MaxIteration"), Utils::get_bool(root, "WarmStartingFlag"),
-        Utils::get_bool(root, "PressureGreenFunFlag"));
+    *this =
+        InputParameters(UtilsIO::get_double(matParams, "E1"), UtilsIO::get_double(matParams, "E2"),
+            UtilsIO::get_double(matParams, "nu1"), UtilsIO::get_double(matParams, "nu2"),
+            UtilsIO::get_double(geoParams, "Tolerance"), UtilsIO::get_double(geoParams, "Delta"),
+            UtilsIO::get_double(geoParams, "LateralLength"), topology_file_path,
+            UtilsIO::get_int(root, "MaxIteration"), UtilsIO::get_bool(root, "WarmStartingFlag"),
+            UtilsIO::get_bool(root, "PressureGreenFunFlag"));
   }
 }
