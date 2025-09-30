@@ -1,5 +1,5 @@
-#ifndef SRC_UTILS_H_
-#define SRC_UTILS_H_
+#ifndef SRC_UTILSIO_H_
+#define SRC_UTILSIO_H_
 
 #include <ryml.hpp>
 #include <ryml_std.hpp>
@@ -9,8 +9,8 @@ namespace MIRCO
 {
   namespace UtilsIO
   {
-    /*
-     * \brief Create a file path relative to the current directory by concatenating
+    /**
+     * @brief Create a file path relative to the current directory by concatenating
      * two relative paths
      *
      * This function takes a sourcefilename to a file relative to the current
@@ -20,8 +20,8 @@ namespace MIRCO
      */
     void changeRelativePath(std::string& targetfilename, const std::string& sourcefilename);
 
-    /*
-     * \brief The following 4 functions are used to get the value of a parameter in a list (node) in
+    /**
+     * @brief The following 4 functions are used to get the value of a parameter in a list (node) in
      * a yaml tree
      */
     std::string get_string(ryml::ConstNodeRef node, const std::string& key);
@@ -31,4 +31,4 @@ namespace MIRCO
   }  // namespace UtilsIO
 }  // namespace MIRCO
 
-#endif  // SRC_UTILS_H_
+#endif  // SRC_UTILSIO_H_

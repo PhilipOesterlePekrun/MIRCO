@@ -3,6 +3,7 @@
 #include <map>
 
 #include "mirco_topology.h"
+#include "mirco_utils.h"
 
 namespace
 {
@@ -50,12 +51,8 @@ namespace MIRCO
   {
     auto topology_h = CreateRmgSurface(
         Resolution, InitialTopologyStdDeviation, Hurst, RandomSeedFlag, RandomGeneratorSeed);
-
-    auto topology_inter = Kokkos::create_mirror_view_and_copy(ExecSpace_Default_t(), topology_h);
-
-    topology = ViewMatrix_d("topology", topology_h.extent(0), topology_h.extent(0));
-    Kokkos::deep_copy(ExecSpace_Default_t{}, topology, topology_inter);
-    // topology = Kokkos::create_mirror_view_and_copy(ExecSpace_Default_t(), topology_h);
+    topology = Utils::kokkos_createMirrorViewAndDeepCopyAnyLayout<ExecSpace_Default_t, ViewMatrix_h,
+        ViewMatrix_d>(topology_h, "topology");
 
     // resolution is available; no interpolation needed
     if (PressureGreenFunFlag)
@@ -84,18 +81,8 @@ namespace MIRCO
         pressure_green_funct_flag(PressureGreenFunFlag)
   {
     auto topology_h = CreateSurfaceFromFile(TopologyFilePath, N);
-
-    auto topology_inter = Kokkos::create_mirror_view_and_copy(ExecSpace_Default_t(), topology_h);
-
-    if constexpr (std::is_same_v<ViewMatrix_h::array_layout, ViewMatrix_d::array_layout>)
-    {
-      topology = topology_inter;
-    }
-    else
-    {
-      topology = ViewMatrix_d("topology", topology_h.extent(0), topology_h.extent(1));
-      Kokkos::deep_copy(ExecSpace_Default_t{}, topology, topology_inter);
-    }
+    topology = Utils::kokkos_createMirrorViewAndDeepCopyAnyLayout<ExecSpace_Default_t, ViewMatrix_h,
+        ViewMatrix_d>(topology_h, "topology");
 
     // interpolation needed
     if (PressureGreenFunFlag)

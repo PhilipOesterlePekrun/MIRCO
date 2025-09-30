@@ -5,20 +5,23 @@
 #include "../../src/mirco_kokkostypes.h"
 #include "../../src/mirco_nonlinearsolver.h"
 #include "../../src/mirco_topology.h"
+#include "../../src/mirco_utils.h"
 #include "../../src/mirco_utilsIO.h"
 #include "../../src/mirco_warmstart.h"
+
+using namespace MIRCO;
 
 // Functors are sometimes necessary for device-side/offloaded compilation
 struct NonlinearSolverTest_primalvariable_1
 {
-  MIRCO::ViewVectorInt_d v_;
-  explicit NonlinearSolverTest_primalvariable_1(MIRCO::ViewVectorInt_d v) : v_(v) {}
+  ViewVectorInt_d v_;
+  explicit NonlinearSolverTest_primalvariable_1(ViewVectorInt_d v) : v_(v) {}
   KOKKOS_INLINE_FUNCTION
   void operator()(const int i) const { v_(i) = i; }
 };
 TEST(NonlinearSolverTest, primalvariable)
 {
-  MIRCO::ViewMatrix_h matrix_h("matrix_h", 9, 9);
+  ViewMatrix_h matrix_h("matrix_h", 9, 9);
   matrix_h(0, 0) = 0.00381971863420549;
   matrix_h(1, 0) = 0.0020;
   matrix_h(2, 0) = 0.000965167479061995;
@@ -109,7 +112,7 @@ TEST(NonlinearSolverTest, primalvariable)
   matrix_h(7, 8) = 0.00200000000000000;
   matrix_h(8, 8) = 0.00381971863420549;
 
-  MIRCO::ViewVector_h b0_h("b0_h", 9);
+  ViewVector_h b0_h("b0_h", 9);
   b0_h(0) = 1357.42803841637;
   b0_h(1) = 1330.45347724905;
   b0_h(2) = 1357.42803841637;
@@ -120,7 +123,7 @@ TEST(NonlinearSolverTest, primalvariable)
   b0_h(7) = 1411.27792115093;
   b0_h(8) = 1357.42803841637;
 
-  MIRCO::ViewVector_h p0_h("p0_h", 9);
+  ViewVector_h p0_h("p0_h", 9);
   p0_h(0) = 161643.031767534;
   p0_h(1) = 43277.7916790043;
   p0_h(2) = 162132.580424512;
@@ -131,20 +134,20 @@ TEST(NonlinearSolverTest, primalvariable)
   p0_h(7) = 83111.4417592719;
   p0_h(8) = 147692.617653634;
 
-  MIRCO::ViewMatrix_d matrix_d =
-      Kokkos::create_mirror_view_and_copy(MIRCO::ExecSpace_Default_t(), matrix_h);
-  MIRCO::ViewVector_d p0_d =
-      Kokkos::create_mirror_view_and_copy(MIRCO::ExecSpace_Default_t(), p0_h);
-  MIRCO::ViewVector_d b0_d =
-      Kokkos::create_mirror_view_and_copy(MIRCO::ExecSpace_Default_t(), b0_h);
+  ViewMatrix_d matrix_d = Utils::kokkos_createMirrorViewAndDeepCopyAnyLayout<ExecSpace_Default_t,
+      ViewMatrix_h, ViewMatrix_d>(matrix_h, "matrix_d");
+  ViewVector_d p0_d = Utils::kokkos_createMirrorViewAndDeepCopyAnyLayout<ExecSpace_Default_t,
+      ViewVector_h, ViewVector_d>(p0_h, "p0_d");
+  ViewVector_d b0_d = Utils::kokkos_createMirrorViewAndDeepCopyAnyLayout<ExecSpace_Default_t,
+      ViewVector_h, ViewVector_d>(b0_h, "b0_d");
 
-  MIRCO::ViewVectorInt_d activeSet0_d("activeSet0_d", 9);
+  ViewVectorInt_d activeSet0_d("activeSet0_d", 9);
   Kokkos::parallel_for(9, NonlinearSolverTest_primalvariable_1(activeSet0_d));
 
-  MIRCO::ViewVector_d pf_d;
-  MIRCO::ViewVectorInt_d activeSetf_d;
+  ViewVector_d pf_d;
+  ViewVectorInt_d activeSetf_d;
 
-  MIRCO::nonlinearSolve(pf_d, activeSetf_d, p0_d, activeSet0_d, matrix_d, b0_d);
+  nonlinearSolve(pf_d, activeSetf_d, p0_d, activeSet0_d, matrix_d, b0_d);
 
   Kokkos::deep_copy(p0_h, p0_d);
 
@@ -163,7 +166,7 @@ TEST(FilesystemUtils, createrelativepath)
 {
   std::string targetfilename = "input.dat";
   std::string sourcefilename = "../inputfiles/sourceinput.json";
-  MIRCO::UtilsIO::changeRelativePath(targetfilename, sourcefilename);
+  UtilsIO::changeRelativePath(targetfilename, sourcefilename);
   EXPECT_EQ(targetfilename, "../inputfiles/input.dat");
 }
 
@@ -171,7 +174,7 @@ TEST(FilesystemUtils, keepabsolutepath)
 {
   std::string targetfilename = "/root_dir/home/user/Input/input.dat";
   std::string sourcefilename = "../inputfiles/sourceinput.json";
-  MIRCO::UtilsIO::changeRelativePath(targetfilename, sourcefilename);
+  UtilsIO::changeRelativePath(targetfilename, sourcefilename);
   EXPECT_EQ(targetfilename, "/root_dir/home/user/Input/input.dat");
 }
 
@@ -183,7 +186,7 @@ TEST(topology, RMG)
   int RandomGeneratorSeed = 95;
   double InitialTopologyStdDeviation = 20.0;
 
-  MIRCO::ViewMatrix_h outsurf_h = MIRCO::CreateRmgSurface(
+  ViewMatrix_h outsurf_h = CreateRmgSurface(
       Resolution, InitialTopologyStdDeviation, HurstExponent, RandomSeedFlag, RandomGeneratorSeed);
 
   EXPECT_NEAR(outsurf_h(0, 0), 23.5435469989256, 1e-06);
@@ -216,7 +219,7 @@ TEST(topology, readFromFile)
 {
   int N;
   std::string topologyFilePath = "test/data/topologyN5.dat";
-  MIRCO::ViewMatrix_h outsurf_h = MIRCO::CreateSurfaceFromFile(topologyFilePath, N);
+  ViewMatrix_h outsurf_h = CreateSurfaceFromFile(topologyFilePath, N);
 
   EXPECT_EQ(outsurf_h.extent(0), 5);
   EXPECT_EQ(outsurf_h.extent(1), 5);
@@ -227,9 +230,9 @@ TEST(topology, readFromFile)
 TEST(inputParameters, yaml_rmg)
 {
   std::string inputFilePath = "test/data/input_res2_rmg.yaml";
-  MIRCO::InputParameters inputParams(inputFilePath);
+  InputParameters inputParams(inputFilePath);
 
-  MIRCO::ViewMatrix_d topology_d = inputParams.topology;
+  ViewMatrix_d topology_d = inputParams.topology;
 
   EXPECT_EQ(topology_d.extent(0), 5);
   EXPECT_EQ(topology_d.extent(1), 5);
@@ -243,15 +246,16 @@ TEST(inputParameters, yaml_rmg)
 TEST(inputParameters, yaml_dat)
 {
   std::string inputFilePath = "test/data/input_withDat.yaml";
-  MIRCO::InputParameters inputParams(inputFilePath);
+  InputParameters inputParams(inputFilePath);
 
-  MIRCO::ViewMatrix_d topology_d = inputParams.topology;
+  ViewMatrix_d topology_d = inputParams.topology;
 
   EXPECT_EQ(topology_d.extent(0), 5);
   EXPECT_EQ(topology_d.extent(1), 5);
 
-  MIRCO::ViewMatrix_h topology_h =
-      Kokkos::create_mirror_view_and_copy(MIRCO::ExecSpace_DefaultHost_t(), topology_d);
+  ViewMatrix_h topology_h =
+      Utils::kokkos_createMirrorViewAndDeepCopyAnyLayout<ExecSpace_DefaultHost_t, ViewMatrix_d,
+          ViewMatrix_h>(topology_d, "topology_h");
   EXPECT_NEAR(topology_h(0, 0), 5.7299175e+01, 1e-06);
   EXPECT_NEAR(topology_h(4, 3), 9.8243100e+01, 1e-06);
 
@@ -263,10 +267,10 @@ TEST(inputParameters, yaml_dat)
 }
 TEST(inputParameters, directInput_rmg)
 {
-  MIRCO::InputParameters inputParams(
+  InputParameters inputParams(
       1.0, 1.0, 0.2, 0.2, 0.005, 10.0, 1000, 2, 15.0, 0.15, false, 46, 100, false, true);
 
-  MIRCO::ViewMatrix_d topology_d = inputParams.topology;
+  ViewMatrix_d topology_d = inputParams.topology;
 
   EXPECT_EQ(topology_d.extent(0), 5);
   EXPECT_EQ(topology_d.extent(1), 5);
@@ -280,16 +284,17 @@ TEST(inputParameters, directInput_rmg)
 TEST(inputParameters, directInput_dat)
 {
   std::string topologyFilePath = "test/data/topologyN5.dat";
-  MIRCO::InputParameters inputParams(
+  InputParameters inputParams(
       1.0, 1.0, 0.2, 0.2, 0.005, 10.0, 1000, topologyFilePath, 100, false, false);
 
-  MIRCO::ViewMatrix_d topology_d = inputParams.topology;
+  ViewMatrix_d topology_d = inputParams.topology;
 
   EXPECT_EQ(topology_d.extent(0), 5);
   EXPECT_EQ(topology_d.extent(1), 5);
 
-  MIRCO::ViewMatrix_h topology_h =
-      Kokkos::create_mirror_view_and_copy(MIRCO::ExecSpace_DefaultHost_t(), topology_d);
+  ViewMatrix_h topology_h =
+      Utils::kokkos_createMirrorViewAndDeepCopyAnyLayout<ExecSpace_DefaultHost_t, ViewMatrix_d,
+          ViewMatrix_h>(topology_d, "topology_h");
   EXPECT_NEAR(topology_h(0, 0), 5.7299175e+01, 1e-06);
   EXPECT_NEAR(topology_h(4, 3), 9.8243100e+01, 1e-06);
 
@@ -302,10 +307,10 @@ TEST(inputParameters, directInput_dat)
 
 TEST(warmstarting, warmstart)
 {
-  using ViewVectorInt_h = Kokkos::View<int*, Kokkos::LayoutLeft, MIRCO::ExecSpace_DefaultHost_t>;
+  using ViewVectorInt_h = Kokkos::View<int*, Kokkos::LayoutLeft, ExecSpace_DefaultHost_t>;
   ViewVectorInt_h activeSet0_h("activeSet0_h", 3);
   ViewVectorInt_h activeSetf_h("activeSetf_h", 2);
-  MIRCO::ViewVector_h pf_h("", 2);
+  ViewVector_h pf_h("", 2);
 
   activeSet0_h(0) = 12;
   activeSet0_h(1) = 34;
@@ -317,15 +322,18 @@ TEST(warmstarting, warmstart)
   pf_h(0) = 10;
   pf_h(1) = 30;
 
-  MIRCO::ViewVectorInt_d activeSet0_d =
-      Kokkos::create_mirror_view_and_copy(MIRCO::MemorySpace_ofDefaultExec_t(), activeSet0_h);
-  MIRCO::ViewVectorInt_d activeSetf_d =
-      Kokkos::create_mirror_view_and_copy(MIRCO::MemorySpace_ofDefaultExec_t(), activeSetf_h);
-  MIRCO::ViewVector_d pf_d =
-      Kokkos::create_mirror_view_and_copy(MIRCO::MemorySpace_ofDefaultExec_t(), pf_h);
+  ViewVectorInt_d activeSet0_d =
+      Utils::kokkos_createMirrorViewAndDeepCopyAnyLayout<ExecSpace_Default_t, ViewVectorInt_h,
+          ViewVectorInt_d>(activeSet0_h, "activeSet0_d");
+  ViewVectorInt_d activeSetf_d =
+      Utils::kokkos_createMirrorViewAndDeepCopyAnyLayout<ExecSpace_Default_t, ViewVectorInt_h,
+          ViewVectorInt_d>(activeSetf_h, "activeSetf_d");
+  ViewVector_d pf_d = Utils::kokkos_createMirrorViewAndDeepCopyAnyLayout<ExecSpace_Default_t,
+      ViewVector_h, ViewVector_d>(pf_h, "pf_d");
 
-  MIRCO::ViewVector_d p0_d = MIRCO::Warmstart(activeSet0_d, activeSetf_d, pf_d);
-  MIRCO::ViewVector_h p0_h = Kokkos::create_mirror_view_and_copy(MIRCO::MemorySpace_Host_t(), p0_d);
+  ViewVector_d p0_d = Warmstart(activeSet0_d, activeSetf_d, pf_d);
+  ViewVector_h p0_h = Utils::kokkos_createMirrorViewAndDeepCopyAnyLayout<ExecSpace_DefaultHost_t,
+      ViewVector_d, ViewVector_h>(p0_d, "p0_h");
 
   EXPECT_EQ(p0_h(0), 10);
   EXPECT_EQ(p0_h(1), 0);
@@ -334,10 +342,10 @@ TEST(warmstarting, warmstart)
 
 TEST(warmstarting, warmstart2)
 {
-  using ViewVectorInt_h = Kokkos::View<int*, Kokkos::LayoutLeft, MIRCO::ExecSpace_DefaultHost_t>;
+  using ViewVectorInt_h = Kokkos::View<int*, Kokkos::LayoutLeft, ExecSpace_DefaultHost_t>;
   ViewVectorInt_h activeSet0_h("activeSet0_h", 3);
   ViewVectorInt_h activeSetf_h("activeSetf_h", 4);
-  MIRCO::ViewVector_h pf_h("", 4);
+  ViewVector_h pf_h("", 4);
 
   activeSet0_h(0) = 12;
   activeSet0_h(1) = 34;
@@ -353,15 +361,18 @@ TEST(warmstarting, warmstart2)
   pf_h(2) = 70;
   pf_h(3) = 30;
 
-  MIRCO::ViewVectorInt_d activeSet0_d =
-      Kokkos::create_mirror_view_and_copy(MIRCO::MemorySpace_ofDefaultExec_t(), activeSet0_h);
-  MIRCO::ViewVectorInt_d activeSetf_d =
-      Kokkos::create_mirror_view_and_copy(MIRCO::MemorySpace_ofDefaultExec_t(), activeSetf_h);
-  MIRCO::ViewVector_d pf_d =
-      Kokkos::create_mirror_view_and_copy(MIRCO::MemorySpace_ofDefaultExec_t(), pf_h);
+  ViewVectorInt_d activeSet0_d =
+      Utils::kokkos_createMirrorViewAndDeepCopyAnyLayout<ExecSpace_Default_t, ViewVectorInt_h,
+          ViewVectorInt_d>(activeSet0_h, "activeSet0_d");
+  ViewVectorInt_d activeSetf_d =
+      Utils::kokkos_createMirrorViewAndDeepCopyAnyLayout<ExecSpace_Default_t, ViewVectorInt_h,
+          ViewVectorInt_d>(activeSetf_h, "activeSetf_d");
+  ViewVector_d pf_d = Utils::kokkos_createMirrorViewAndDeepCopyAnyLayout<ExecSpace_Default_t,
+      ViewVector_h, ViewVector_d>(pf_h, "pf_d");
 
-  MIRCO::ViewVector_d p0_d = MIRCO::Warmstart(activeSet0_d, activeSetf_d, pf_d);
-  MIRCO::ViewVector_h p0_h = Kokkos::create_mirror_view_and_copy(MIRCO::MemorySpace_Host_t(), p0_d);
+  ViewVector_d p0_d = Warmstart(activeSet0_d, activeSetf_d, pf_d);
+  ViewVector_h p0_h = Utils::kokkos_createMirrorViewAndDeepCopyAnyLayout<ExecSpace_DefaultHost_t,
+      ViewVector_d, ViewVector_h>(p0_d, "p0_h");
 
   EXPECT_EQ(p0_h(0), 10);
   EXPECT_EQ(p0_h(1), 0);
