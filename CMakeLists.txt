@@ -43,6 +43,8 @@ endif()
 option(KOKKOS_IN_MIRCO "Find Kokkos in the MIRCO project. If set to OFF, use the Kokkos installation from an upstream project" ON)
 if(KOKKOS_IN_MIRCO)
   set(CMAKE_PREFIX_PATH ${KOKKOS_PATH} ${CMAKE_PREFIX_PATH})
+  list(APPEND CMAKE_BUILD_RPATH "${KOKKOS_PATH}/lib")
+  list(APPEND CMAKE_INSTALL_RPATH "${KOKKOS_PATH}/lib")
   find_package(Kokkos REQUIRED)
 else()
   # Use a Kokkos from an upstream project
@@ -73,6 +75,8 @@ endif()
 option(KOKKOS_KERNELS_IN_MIRCO "Find Kokkos-Kernels in the MIRCO project. If set to OFF, use the Kokkos-Kernels installation from an upstream project" ON)
 if(KOKKOS_KERNELS_IN_MIRCO)
   set(CMAKE_PREFIX_PATH ${KOKKOS_KERNELS_PATH} ${CMAKE_PREFIX_PATH})
+  list(APPEND CMAKE_BUILD_RPATH "${KOKKOS_KERNELS_PATH}/lib")
+  list(APPEND CMAKE_INSTALL_RPATH "${KOKKOS_KERNELS_PATH}/lib")
   find_package(KokkosKernels REQUIRED)
 else()
   # Use a KokkosKernels from an upstream project
@@ -240,7 +244,7 @@ if(GTEST_IN_MIRCO)
   add_executable(tests
     tests/unittests/test.cpp
     )
-  target_link_libraries(tests PUBLIC mirco::mirco_lib mirco_inputparameters_yaml mirco_utils gtest Kokkos::kokkos)
+  target_link_libraries(tests PUBLIC mirco::mirco_lib mirco_inputparameters_yaml mirco_utils Kokkos::kokkos gtest)
 
   # Copy tests/unittests/data folder to the build dir
   add_custom_command(
