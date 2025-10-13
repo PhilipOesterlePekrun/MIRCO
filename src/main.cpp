@@ -18,7 +18,7 @@ int main(int argc, char* argv[])
   Kokkos::initialize(argc, argv);
   {
     std::cout << "-- Kokkos information --\n";
-    std::cout << "Threads in use: " << ExecSpace_Default_t::concurrency() << "\n";
+    std::cout << "Threads in use: " << ExecSpace_Default_t().concurrency() << "\n";
     std::cout << "Default execution space: " << typeid(ExecSpace_Default_t).name() << "\n";
     std::cout << "Default host execution space: " << typeid(ExecSpace_DefaultHost_t).name() << "\n";
     std::cout << "Default memory space: " << typeid(MemorySpace_ofDefaultExec_t).name() << "\n";
