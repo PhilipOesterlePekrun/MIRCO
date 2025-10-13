@@ -65,7 +65,7 @@ namespace MIRCO
       }
       else
       {
-        p0 = ViewVector_d("p0_d", n0);
+        p0 = ViewVector_d("p0", n0);
         Kokkos::deep_copy(p0, 0.0);
       }
 

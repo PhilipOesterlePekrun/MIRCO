@@ -11,7 +11,7 @@ namespace MIRCO
     constexpr double pi = M_PI;
     const double frac_GridSize_2 = GridSize / 2;
 
-    ViewMatrix_d H("MatrixGeneration::SetupMatrix(); H_d", systemsize, systemsize);
+    ViewMatrix_d H("MatrixGeneration::SetupMatrix(); H", systemsize, systemsize);
     if (PressureGreenFunFlag)
     {
       // The pressure-based Green's function is based on the work of Pohrt and Li (2014)
