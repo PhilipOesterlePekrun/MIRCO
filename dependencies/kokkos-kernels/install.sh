@@ -11,7 +11,7 @@ DEPS_ROOT="$1"
 # Number of procs for building (default 4)
 NPROCS=${NPROCS:=4}
 # git sha from Kokkos-Kernels repository:
-VERSION="3254a1c1ccda11673fad64651dd8ab957bf49e7d"
+VERSION="a4cadc8c3113cfc81238181caa28f4ab5f962229"
 
 CMAKE_COMMAND=cmake
 
