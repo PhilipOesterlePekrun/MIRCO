@@ -78,8 +78,8 @@ namespace MIRCO
     int max_iteration = 0;
     bool warm_starting_flag = false;
     bool pressure_green_funct_flag = false;
-    // Note: topology_d is a lightweight handle, similar to std::shared_ptr. This struct does not
-    // own topology_d.
+    // Note: topology is a lightweight handle, similar to std::shared_ptr. This struct does not
+    // own topology.
     ViewMatrix_d topology;
   };
 }  // namespace MIRCO

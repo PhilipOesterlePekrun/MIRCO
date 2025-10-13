@@ -143,7 +143,7 @@ namespace MIRCO
 
           ViewVectorInt_d ipiv(kokkosLabelPrefix + "ipiv", activeSetSize);
 
-          // Solve H_I s_I = b0_I; b0s_compact_d becomes s_I
+          // Solve H_I s_I = b0_I; b0s_compact becomes s_I
           KokkosLapack::gesv(H_compact, b0s_compact, ipiv);
         }
         else if (activeSetSize == 1)

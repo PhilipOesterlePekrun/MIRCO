@@ -17,9 +17,9 @@ namespace MIRCO
         },
         n0);
 
-    activeSet0 = ViewVectorInt_d("activeSet0_d", n0);
-    xv0 = ViewVector_d("xv0_d", n0);
-    yv0 = ViewVector_d("yv0_d", n0);
+    activeSet0 = ViewVectorInt_d("activeSet0", n0);
+    xv0 = ViewVector_d("xv0", n0);
+    yv0 = ViewVector_d("yv0", n0);
     b0 = ViewVector_d("b0", n0);
 
     ViewScalarInt_d counter("ContactSetPredictor(); counter");
