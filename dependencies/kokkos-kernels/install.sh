@@ -12,7 +12,6 @@ DEPS_ROOT="$1"
 NPROCS=${NPROCS:=4}
 # git sha from Kokkos-Kernels repository:
 VERSION="6c5b5a3b3626fd873a1164c80d00c42ac8ed7092"
-#a4cadc8c3113cfc81238181caa28f4ab5f962229"
 
 CMAKE_COMMAND=cmake
 
