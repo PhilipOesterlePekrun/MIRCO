@@ -1,0 +1,230 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage{fancyhdr}
+
+\usepackage[colorlinks=true, linkcolor=blue, urlcolor=blue, citecolor=blue]{hyperref}
+\usepackage[normalem]{ulem}
+\newcommand{\ulink}[2]{\href{#1}{\uline{#2}}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%  	BEGIN DOCUMENT
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+
+\pagestyle{fancyplain}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Section 1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Building and installing MIRCO} \label{sec:intro}
+
+As stated in the \textsc{README}, building MIRCO requires:
+
+\begin{itemize}
+	\item C++ compiler
+	\item \ulink{www.cmake.org}{\textsc{CMake}} (version: $\ge$ 3.28)
+	\item \ulink{https://github.com/kokkos/kokkos}{\textsc{Kokkos}} (version $\ge$ 3.7)s
+	\item \ulink{https://github.com/kokkos/kokkos-kernels}{\textsc{Kokkos-Kernels}} (version $\ge$ 3.7)
+\end{itemize}
+
+The \textsc{Kokkos} programming model is used
+
+\begin{verbatim}
+#serial:
+cd debug_develop_serial/build
+
+cmake \
+  -DCMAKE_INSTALL_PREFIX=../install \
+  \
+  -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+  -DCMAKE_BUILD_TYPE=Debug \
+  -DCMAKE_CXX_STANDARD=20 \
+  \
+  -DKokkos_ENABLE_SERIAL=ON \
+  \
+  -DCMAKE_CXX_COMPILER=g++ \
+../../kokkos
+
+##kokkos-kernels:
+
+cmake \
+  -DKokkos_ROOT=/home/oesterle/rd/kokkos_Base/debug_develop_serial/install \
+  -DKokkosKernels_ENABLE_TPL_BLAS=ON \
+  -DKokkosKernels_ENABLE_TPL_LAPACK=ON \
+  \
+  -DCMAKE_INSTALL_PREFIX=../install \
+  \
+  -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+  -DCMAKE_BUILD_TYPE=Debug \
+  -DCMAKE_CXX_STANDARD=20 \
+  \
+  -DKokkos_ENABLE_SERIAL=ON \
+  \
+  -DCMAKE_CXX_COMPILER=g++ \
+  \
+../../kokkos-kernels
+
+
+#openmp:
+cd debug_develop_openmp/build
+
+cmake \
+  -DCMAKE_INSTALL_PREFIX=../install \
+  \
+  -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+  -DCMAKE_BUILD_TYPE=Debug \
+  -DCMAKE_CXX_STANDARD=20 \
+  \
+  -DKokkos_ENABLE_OPENMP=ON \
+  \
+  -DCMAKE_CXX_COMPILER=g++ \
+  \
+  -DKokkos_ENABLE_DEBUG=ON \
+  -DKokkos_ENABLE_DEBUG_PRINT=ON \
+../../kokkos
+
+##kokkos-kernels:
+
+cmake \
+  -DKokkos_ROOT=/home/oesterle/rd/kokkos_Base/debug_develop_openmp/install \
+  -DKokkosKernels_ENABLE_TPL_BLAS=ON \
+  -DKokkosKernels_ENABLE_TPL_LAPACK=ON \
+  \
+  -DCMAKE_INSTALL_PREFIX=../install \
+  \
+  -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+  -DCMAKE_BUILD_TYPE=Debug \
+  -DCMAKE_CXX_STANDARD=20 \
+  \
+  -DKokkos_ENABLE_OPENMP=ON \
+  \
+  -DCMAKE_CXX_COMPILER=g++ \
+../../kokkos-kernels
+
+"-DBLAS_LIBRARIES=/usr/lib/x86_64-linux-gnu/libblas.so \
+  -DLAPACK_LIBRARIES=/usr/lib/x86_64-linux-gnu/liblapack.so \"?
+
+
+#CUDA:
+cd debug_develop_cuda/build
+
+cmake \
+  -DCMAKE_INSTALL_PREFIX=../installRel \
+  \
+  -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_CXX_STANDARD=20 \
+  \
+  -DKokkos_ENABLE_SERIAL=ON \
+  -DKokkos_ENABLE_CUDA=ON \
+  \
+  -DCMAKE_CXX_COMPILER=/home/oesterle/rd/kokkos_Base/kokkos/bin/nvcc_wrapper \
+  -DKokkos_ARCH_ADA100=ON \
+../../kokkos
+
+"-DKokkos_ENABLE_CUDA_LAMBDA=ON \"?
+
+  -DKOKKOS_HOST_COMPILER=clang++ \
+  
+
+##kokkos-kernels:
+cmake \
+  -DKokkos_ROOT=/home/oesterle/rd/kokkos_Base/debug_develop_cuda/installRel \
+  -DKokkosKernels_ENABLE_TPL_BLAS=ON \
+  -DKokkosKernels_ENABLE_TPL_LAPACK=ON \
+  -DKokkosKernels_ENABLE_TPL_CUSOLVER=ON \
+  \
+  -DCMAKE_INSTALL_PREFIX=../installRel \
+  \
+  -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_CXX_STANDARD=20 \
+  \
+  -DKokkos_ENABLE_SERIAL=ON \
+  -DKokkos_ENABLE_CUDA=ON \
+  \
+  -DCMAKE_CXX_COMPILER=/home/oesterle/rd/kokkos_Base/kokkos/bin/nvcc_wrapper \
+  -DKokkos_ARCH_ADA100=ON \
+../../kokkos-kernels
+
+
+  -DKokkosKernels_INST_FLOAT=ON \
+
+  -DKokkosKernels_ENABLE_TPL_MAGMA=ON \
+  -DKokkosKernels_MAGMA_ROOT=/home/oesterle/rd/tpl/magma_base/install \
+
+  -DKokkosKernels_ENABLE_TPL_CUSOLVER=OFF \
+  -DKokkosKernels_ENABLE_TPL_CUBLAS=OFF \
+  -DKokkosKernels_ENABLE_TPL_CUSPARSE=OFF \
+  -DKokkosKernels_NO_DEFAULT_CUDA_TPLS=ON \
+
+
+
+
+
+
+OR, INSTEAD OF `-DKokkosKernels_MAGMA_ROOT=/home/oesterle/rd/tpl/magma_base/install`, YOU CAN export MAGMA_DIR=/home/oesterle/rd/tpl/magma_base/install INTO THE ENV
+
+
+
+  -D MAGMA_INCLUDE_DIRS="/home/oesterle/rd/tpl/magma_base/install/include" \
+  -D MAGMA_LIBRARIES="/home/oesterle/rd/tpl/magma_base/install/lib/libmagma.a" \
+  
+  -DKokkosKernels_MAGMA_ROOT=/home/oesterle/rd/tpl/magma_base/install/lib/cmake/magma \
+
+
+
+
+"-DBLAS_LIBRARIES=/usr/lib/x86_64-linux-gnu/libblas.so \
+  -DLAPACK_LIBRARIES=/usr/lib/x86_64-linux-gnu/liblapack.so \"?
+
+
+#openmp+CUDA:
+cd debug_develop_openmp+cuda/build
+
+cmake \
+  -DCMAKE_INSTALL_PREFIX=../install \
+  \
+  -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+  -DCMAKE_BUILD_TYPE=Debug \
+  -DCMAKE_CXX_STANDARD=20 \
+  \
+  -DKokkos_ENABLE_SERIAL=ON \
+  -DKokkos_ENABLE_OPENMP=ON \
+  -DKokkos_ENABLE_CUDA=ON \
+  \
+  -DCMAKE_CXX_COMPILER=/home/oesterle/rd/kokkos_Base/kokkos/bin/nvcc_wrapper \
+  -DKokkos_ARCH_ADA100=ON \
+../../kokkos
+
+"-DKokkos_ENABLE_CUDA_LAMBDA=ON \"?
+
+##kokkos-kernels:
+
+cmake \
+  -DKokkos_ROOT=/home/oesterle/rd/kokkos_Base/debug_develop_openmp+cuda/install \
+  -DKokkosKernels_ENABLE_TPL_BLAS=ON \
+  -DKokkosKernels_ENABLE_TPL_LAPACK=ON \
+  \
+  -DCMAKE_INSTALL_PREFIX=../install \
+  \
+  -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+  -DCMAKE_BUILD_TYPE=Debug \
+  -DCMAKE_CXX_STANDARD=20 \
+  \
+  -DKokkos_ENABLE_SERIAL=ON \
+  -DKokkos_ENABLE_OPENMP=ON \
+  -DKokkos_ENABLE_CUDA=ON \
+  \
+  -DCMAKE_CXX_COMPILER=/home/oesterle/rd/kokkos_Base/kokkos/bin/nvcc_wrapper \
+  -DKokkos_ARCH_ADA100=ON \
+../../kokkos-kernels
+
+
+"-DBLAS_LIBRARIES=/usr/lib/x86_64-linux-gnu/libblas.so \
+  -DLAPACK_LIBRARIES=/usr/lib/x86_64-linux-gnu/liblapack.so \"?
+\end{verbatim}
+
+\end{document}
