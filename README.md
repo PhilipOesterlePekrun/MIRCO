@@ -1,7 +1,7 @@
-# MIRCO (MUSAM-IMCS Rough Contact cOde)
+#MIRCO(MUSAM - IMCS Rough Contact cOde)
 
 `MIRCO` is a Boundary element algorithm for simulating linear elastic frictionless normal contact between a rigid rough indentor and an elastic half-space.
-The research code uses the Kokkos programming model (https://kokkos.org) for on-node parallelism. To this end, it has been tested for Kokkos' OpenMP backend.
+The research code uses the Kokkos programming model (https://kokkos.org) for on-node parallelism. To this end, it has been tested for Kokkos' OpenMP and CUDA (and Serial) backends.
 
 ## Getting up and running
 
@@ -12,7 +12,7 @@ MIRCO requires
 - C++ compiler
 - [CMake](www.cmake.org) (version: >= 3.28)
 - [Kokkos](https://github.com/kokkos/kokkos) (version >= 3.7)
-- [Kokkos-Kernels](https://github.com/kokkos/kokkos-kernels) (version >= 3.7) with BLAS and LAPACK enabled (additional APIs need to be enabled when using a GPU backend, depending on the vendor)
+- [Kokkos-Kernels](https://github.com/kokkos/kokkos-kernels) (version >= 3.7) with BLAS and LAPACK enabled (additional APIs need to be enabled when using a GPU backend, depending on the vendor; more details in `doc/MIRCO_Tutorial.tex`)
 
 ### Clone the repository
 
@@ -65,7 +65,9 @@ cd <buildDir>
 cmake --preset=<name_of_your_preset> <sourceDir>
 ```
 
-> **IMPORTANT** Make sure to set `Trilinos_DIR` to point to you Trilinos installation.
+> **IMPORTANT** Unless you are using MIRCO as a library for a project which already has the necessary Kokkos and Kokkos-Kernels targets (more details in `doc/MIRCO_Tutorial.tex`), make sure to set:
+- `KOKKOS_IN_MIRCO` and `KOKKOS_KERNELS_IN_MIRCO` to "ON"
+- `KOKKOS_PATH` and `KOKKOS_KERNELS_PATH` to your Kokkos and Kokkos-Kernels install directories, respectively
 
 Build the `mirco` executable in the build directory using:
 
@@ -90,10 +92,10 @@ ctest
 To run the code with an input file, use the following command in your build directory:
 
 ```bash
-./mirco <sourceDir>/Input/<someInputFile.xml>
+./mirco <sourceDir>/Input/<someInputFile.yaml>
 ```
 
-where `<someInputFile.xml>` is any input file in the prescribed format.
+where `<someInputFile.yaml>` is any input file in the prescribed format.
 
 ### Developing MIRCO
 
