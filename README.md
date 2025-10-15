@@ -65,7 +65,7 @@ cd <buildDir>
 cmake --preset=<name_of_your_preset> <sourceDir>
 ```
 
-> **IMPORTANT** Unless you are using MIRCO as a library for a project which already has the necessary Kokkos and Kokkos-Kernels targets (more details in `doc/MIRCO_Tutorial.tex`), make sure to set:
+**IMPORTANT** Unless you are using MIRCO as a library for a project which already has the necessary Kokkos and Kokkos-Kernels targets (more details in `doc/MIRCO_Tutorial.tex`), make sure to set:
 - `KOKKOS_IN_MIRCO` and `KOKKOS_KERNELS_IN_MIRCO` to "ON"
 - `KOKKOS_PATH` and `KOKKOS_KERNELS_PATH` to your Kokkos and Kokkos-Kernels install directories, respectively
 
