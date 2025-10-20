@@ -44,18 +44,9 @@ option(KOKKOS_IN_MIRCO "Find Kokkos in the MIRCO project. If set to OFF, use the
 if(KOKKOS_IN_MIRCO)
   set(CMAKE_PREFIX_PATH ${KOKKOS_PATH} ${CMAKE_PREFIX_PATH})
   find_package(Kokkos REQUIRED)
-else()
-  # Use a Kokkos from an upstream project
-  if(TARGET Kokkos::kokkos)
-    message(STATUS "Kokkos included from upstream project.")
-  else()
-    message(FATAL_ERROR "KOKKOS_IN_MIRCO=OFF but no Kokkos target was available in the upstream project.")
-  endif()
-endif()
 
-# Print details on the Kokkos configuration
-if(KOKKOS_IN_MIRCO)
   if(Kokkos_FOUND)
+    # Print details on the Kokkos configuration
     message("\nFound Kokkos! Here are the details:")
     get_target_property(Kokkos_INCLUDE_DIRS Kokkos::kokkos INTERFACE_INCLUDE_DIRECTORIES)
     message("   Kokkos_INCLUDE_DIRS = ${Kokkos_INCLUDE_DIRS}")
@@ -67,6 +58,13 @@ if(KOKKOS_IN_MIRCO)
   else()
     message(FATAL_ERROR "Could not find Kokkos!")
   endif()
+else()
+  # Use a Kokkos from an upstream project
+  if(TARGET Kokkos::kokkos)
+    message(STATUS "Kokkos included from upstream project.")
+  else()
+    message(FATAL_ERROR "KOKKOS_IN_MIRCO=OFF but no Kokkos target was available in the upstream project.")
+  endif()
 endif()
 
 # Kokkos-Kernels
@@ -74,18 +72,9 @@ option(KOKKOS_KERNELS_IN_MIRCO "Find Kokkos-Kernels in the MIRCO project. If set
 if(KOKKOS_KERNELS_IN_MIRCO)
   set(CMAKE_PREFIX_PATH ${KOKKOS_KERNELS_PATH} ${CMAKE_PREFIX_PATH})
   find_package(KokkosKernels REQUIRED)
-else()
-  # Use a KokkosKernels from an upstream project
-  if(TARGET KokkosKernels::kokkoskernels)
-    message(STATUS "KokkosKernels included from upstream project.")
-  else()
-    message(FATAL_ERROR "KOKKOS_KERNELS_IN_MIRCO=OFF but no KokkosKernels target was available in the upstream project.")
-  endif()
-endif()
 
-# Print details on the Kokkos-Kernels configuration
-if(KOKKOS_KERNELS_IN_MIRCO)
   if(KokkosKernels_FOUND)
+    # Print details on the Kokkos-Kernels configuration
     message("\nFound KokkosKernels! Here are the details:")
     get_target_property(KokkosKernels_INCLUDE_DIRS KokkosKernels::kokkoskernels INTERFACE_INCLUDE_DIRECTORIES)
     message("   KokkosKernels_INCLUDE_DIRS = ${KokkosKernels_INCLUDE_DIRS}")
@@ -96,6 +85,13 @@ if(KOKKOS_KERNELS_IN_MIRCO)
     message("End of KokkosKernels details\n")
   else()
     message(FATAL_ERROR "Could not find KokkosKernels!")
+  endif()
+else()
+  # Use a KokkosKernels from an upstream project
+  if(TARGET KokkosKernels::kokkoskernels)
+    message(STATUS "KokkosKernels included from upstream project.")
+  else()
+    message(FATAL_ERROR "KOKKOS_KERNELS_IN_MIRCO=OFF but no KokkosKernels target was available in the upstream project.")
   endif()
 endif()
 
