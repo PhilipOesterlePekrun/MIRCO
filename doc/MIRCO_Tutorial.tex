@@ -6,6 +6,9 @@
 \usepackage[normalem]{ulem}
 \newcommand{\ulink}[2]{\href{#1}{\uline{#2}}}
 
+\theoremstyle{remark} % Remarks from amsthm
+\newtheorem{remark}{Remark}[section] %
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%  	BEGIN DOCUMENT
@@ -29,7 +32,116 @@ As stated in the \textsc{README}, building MIRCO requires:
 	\item \ulink{https://github.com/kokkos/kokkos-kernels}{\textsc{Kokkos-Kernels}} (version $\ge$ 3.7)
 \end{itemize}
 
-The \textsc{Kokkos} programming model is used
+While Kokkos and Kokkos-Kernels are required in general, they can also be used...library...target...
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Kokkos}
+
+\textsc{Kokkos} is a programming model which enables on-node parallelism on different backends. The backends which are used depend on the Kokkos installation. For example, the following CMake command can be used to build Kokkos with OpenMP backend (see \ulink{https://kokkos.org/kokkos-core-wiki/get-started/building-from-source.html}{https://kokkos.org/kokkos-core-wiki/get-started/building-from-source.html} for details).
+\begin{verbatim}
+cmake \
+  -DCMAKE_CXX_COMPILER=g++ \
+  -DCMAKE_BUILD_TYPE=<Debug/Release> \
+  -DCMAKE_CXX_STANDARD=20 \
+  -DCMAKE_INSTALL_PREFIX=<kokkosInstallDir_openmp> \
+  \
+  -DKokkos_ENABLE_OPENMP=ON \
+  \
+<kokkosSourceDir>
+\end{verbatim}
+
+MIRCO is designed to support different "device" and "host" backends. The CMake command below, for example, can be used to build Kokkos such that it uses CUDA as the device backend (to run on an Nvidia GPU) and Serial as the host backend. The nvcc_wrapper is wrapper of the CUDA compiler, provided in the Kokkos source code.
+\begin{verbatim}
+cmake \
+  -DCMAKE_CXX_COMPILER=<kokkosSourceDir>/bin/nvcc_wrapper \
+  -DCMAKE_BUILD_TYPE=<Debug/Release> \
+  -DCMAKE_CXX_STANDARD=20 \
+  -DCMAKE_INSTALL_PREFIX=<kokkosInstallDir_serial+cuda> \
+  \
+  -DKokkos_ENABLE_SERIAL=ON \
+  -DKokkos_ENABLE_CUDA=ON \
+  \
+<kokkosSourceDir>
+\end{verbatim}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Kokkos-Kernels}
+
+Kokkos-Kernels is a set of commonly used functions and utilities for Kokkos. MIRCO depends on the \textsc{KokkosLapack::gesv()} function, so a Kokkos-Kernels installation with Lapack enabled is also needed. Below are the two exemplary CMake commands which correspond to the shown Kokkos builds (OpenMP and Serial+CUDA).
+\begin{verbatim}
+cmake \
+  -DCMAKE_CXX_COMPILER=g++ \
+  -DCMAKE_BUILD_TYPE=<Debug/Release> \
+  -DCMAKE_CXX_STANDARD=20 \
+  -DCMAKE_INSTALL_PREFIX=<kokkosKernelsInstallDir_openmp> \
+  \
+  -DKokkos_ROOT=<kokkosInstallDir_openmp> \
+  -DKokkosKernels_ENABLE_TPL_BLAS=ON \
+  -DKokkosKernels_ENABLE_TPL_LAPACK=ON \
+  \
+<kokkosKernelsSourceDir>
+\end{verbatim}
+
+\begin{verbatim}
+cmake \
+  -DCMAKE_CXX_COMPILER=/home/oesterle/rd/kokkos_Base/kokkos/bin/nvcc_wrapper \
+  -DCMAKE_BUILD_TYPE=<Debug/Release> \
+  -DCMAKE_CXX_STANDARD=20 \
+  -DCMAKE_INSTALL_PREFIX=<kokkosKernelsInstallDir_openmp> \
+  \
+  -DKokkos_ROOT=<kokkosInstallDir_openmp> \
+  -DKokkosKernels_ENABLE_TPL_BLAS=ON \
+  -DKokkosKernels_ENABLE_TPL_LAPACK=ON \
+  -DKokkosKernels_ENABLE_TPL_CUSOLVER=ON \
+  \
+<kokkosKernelsSourceDir>
+\end{verbatim}
+
+It can be seen that Kokkos-Kernels requires the third party libraries BLAS and LAPACK, as well as CuSolver if CUDA is enabled.
+
+Refer to \ulink{https://kokkos.org/kokkos-core-wiki/get-started/building-from-source.html}{https://kokkos.org/kokkos-core-wiki/get-started/building-from-source.html} on how to build Kokkos and Kokkos-Kernels for other backends like HIP (for AMD GPUs) and SYCL (for Intel GPUs).
+
+\begin{remark}
+  In case
+\end{remark}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Building MIRCO}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 \begin{verbatim}
 #serial:
@@ -127,7 +239,7 @@ cmake \
 "-DKokkos_ENABLE_CUDA_LAMBDA=ON \"?
 
   -DKOKKOS_HOST_COMPILER=clang++ \
-  
+
 
 ##kokkos-kernels:
 cmake \
@@ -171,7 +283,7 @@ OR, INSTEAD OF `-DKokkosKernels_MAGMA_ROOT=/home/oesterle/rd/tpl/magma_base/inst
 
   -D MAGMA_INCLUDE_DIRS="/home/oesterle/rd/tpl/magma_base/install/include" \
   -D MAGMA_LIBRARIES="/home/oesterle/rd/tpl/magma_base/install/lib/libmagma.a" \
-  
+
   -DKokkosKernels_MAGMA_ROOT=/home/oesterle/rd/tpl/magma_base/install/lib/cmake/magma \
 
 
