@@ -21,9 +21,7 @@
       ],
       "cacheVariables": {
         "KOKKOS_PATH": "/opt/mirco-dependencies/kokkos_install_openmp",
-        "KOKKOS_KERNELS_PATH": "/opt/mirco-dependencies/kokkos-kernels_install_openmp",
-        "KOKKOS_IN_MIRCO": "ON",
-        "KOKKOS_KERNELS_IN_MIRCO": "ON"
+        "KOKKOS_KERNELS_PATH": "/opt/mirco-dependencies/kokkos-kernels_install_openmp"
       }
     },
     {
@@ -36,9 +34,7 @@
         "CMAKE_CXX_COMPILER": "/opt/mirco-dependencies/kokkos/bin/nvcc_wrapper",
         "MIRCO_HOST_CXX_COMPILER": "g++-12",
         "KOKKOS_PATH": "/opt/mirco-dependencies/kokkos_install_cuda",
-        "KOKKOS_KERNELS_PATH": "/opt/mirco-dependencies/kokkos-kernels_install_cuda",
-        "KOKKOS_IN_MIRCO": "ON",
-        "KOKKOS_KERNELS_IN_MIRCO": "ON"
+        "KOKKOS_KERNELS_PATH": "/opt/mirco-dependencies/kokkos-kernels_install_cuda"
       }
     },
     {
@@ -51,9 +47,7 @@
         "CMAKE_CXX_COMPILER_LAUNCHER": "ccache",
         "CMAKE_CXX_FLAGS": "-msse3",
         "KOKKOS_PATH": "/imcs/public/compsim/packages/trilinos/2025.4/install",
-        "KOKKOS_KERNELS_PATH": "/imcs/public/compsim/packages/trilinos/2025.4/install",
-        "KOKKOS_IN_MIRCO": "ON",
-        "KOKKOS_KERNELS_IN_MIRCO": "ON"
+        "KOKKOS_KERNELS_PATH": "/imcs/public/compsim/packages/trilinos/2025.4/install"
       }
     },
     {
@@ -83,9 +77,7 @@
         "CMAKE_CXX_COMPILER_LAUNCHER": "ccache",
         "CMAKE_CXX_FLAGS": "-msse3",
         "KOKKOS_PATH": "$env{TRILINOS_ROOT}",
-        "KOKKOS_KERNELS_PATH": "$env{TRILINOS_ROOT}",
-        "KOKKOS_IN_MIRCO": "ON",
-        "KOKKOS_KERNELS_IN_MIRCO": "ON"
+        "KOKKOS_KERNELS_PATH": "$env{TRILINOS_ROOT}"
       }
     },
     {

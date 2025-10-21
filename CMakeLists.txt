@@ -39,63 +39,75 @@ if(GTEST_IN_MIRCO)
   add_subdirectory("extern/googletest")
 endif()
 
+# Note: For the following, it is useful to know that the first definition of a target name cannot be overwritten by default (see https://cmake.org/cmake/help/latest/policy/CMP0002.html, https://cmake.org/cmake/help/latest/policy/CMP0107.html). Hence, we do not allow KOKKOS_PATH to be provided if target Kokkos:kokkos already exists from an upstream project, as that would cause ambiguity. The same applies to KokkosKernels.
+
 # Kokkos
-option(KOKKOS_IN_MIRCO "Find Kokkos in the MIRCO project. If set to OFF, use the Kokkos installation from an upstream project" ON)
-if(KOKKOS_IN_MIRCO)
+set(KOKKOS_PATH "" CACHE PATH "Path to installation root of Kokkos. If not specified, MIRCO will attempt to find Kokkos from an upstream project.")
+if(TARGET Kokkos::kokkos)
+  if(KOKKOS_PATH)
+    message(FATAL_ERROR "Target Kokkos::kokkos already exists in an upstream project, but KOKKOS_PATH was provided! Use only one Kokkos instance!")
+  else()
+    message(STATUS "Kokkos included from upstream project.")
+  endif()
+elseif(KOKKOS_PATH)
   set(CMAKE_PREFIX_PATH ${KOKKOS_PATH} ${CMAKE_PREFIX_PATH})
   find_package(Kokkos REQUIRED)
 
   if(Kokkos_FOUND)
     # Print details on the Kokkos configuration
-    message("\nFound Kokkos! Here are the details:")
-    get_target_property(Kokkos_INCLUDE_DIRS Kokkos::kokkos INTERFACE_INCLUDE_DIRECTORIES)
-    message("   Kokkos_INCLUDE_DIRS = ${Kokkos_INCLUDE_DIRS}")
+    get_target_property(Kokkos_INCLUDE_DIRECTORIES Kokkos::kokkos INTERFACE_INCLUDE_DIRECTORIES)
     get_target_property(Kokkos_COMPILE_DEFINITIONS Kokkos::kokkos INTERFACE_COMPILE_DEFINITIONS)
-    message("   Kokkos_COMPILE_DEFINITIONS = ${Kokkos_COMPILE_DEFINITIONS}")
     get_target_property(Kokkos_COMPILE_OPTIONS Kokkos::kokkos INTERFACE_COMPILE_OPTIONS)
+    get_target_property(Kokkos_LINK_OPTIONS Kokkos::kokkos INTERFACE_LINK_OPTIONS)
+    get_target_property(Kokkos_LINK_LIBRARIES Kokkos::kokkos INTERFACE_LINK_LIBRARIES)
+    message("\nFound Kokkos! Here are the details:")
+    message("   Kokkos_INCLUDE_DIRECTORIES = ${Kokkos_INCLUDE_DIRECTORIES}")
+    message("   Kokkos_COMPILE_DEFINITIONS = ${Kokkos_COMPILE_DEFINITIONS}")
     message("   Kokkos_COMPILE_OPTIONS = ${Kokkos_COMPILE_OPTIONS}")
+    message("   Kokkos_LINK_OPTIONS = ${Kokkos_LINK_OPTIONS}")
+    message("   Kokkos_LINK_LIBRARIES = ${Kokkos_LINK_LIBRARIES}")
     message("End of Kokkos details\n")
   else()
-    message(FATAL_ERROR "Could not find Kokkos!")
+    message(FATAL_ERROR "Could not find Kokkos in the given path!")
   endif()
 else()
-  # Use a Kokkos from an upstream project
-  if(TARGET Kokkos::kokkos)
-    message(STATUS "Kokkos included from upstream project.")
-  else()
-    message(FATAL_ERROR "KOKKOS_IN_MIRCO=OFF but no Kokkos target was available in the upstream project.")
-  endif()
+  message(FATAL_ERROR "KOKKOS_PATH not specified, but no Kokkos::kokkos target available in the upstream project!")
 endif()
 
-# Kokkos-Kernels
-option(KOKKOS_KERNELS_IN_MIRCO "Find Kokkos-Kernels in the MIRCO project. If set to OFF, use the Kokkos-Kernels installation from an upstream project" ON)
-if(KOKKOS_KERNELS_IN_MIRCO)
+# KokkosKernels
+set(KOKKOS_KERNELS_PATH "" CACHE PATH "Path to installation root of KokkosKernels. If not specified, MIRCO will attempt to find KokkosKernels from an upstream project.")
+if(TARGET KokkosKernels::kokkoskernels)
+  if(KOKKOS_KERNELS_PATH)
+    message(FATAL_ERROR "Target KokkosKernels::kokkoskernels already exists in an upstream project, but KOKKOS_KERNELS_PATH was provided! Use only one KokkosKernels instance!")
+  else()
+    message(STATUS "KokkosKernels included from upstream project.")
+  endif()
+elseif(KOKKOS_KERNELS_PATH)
   set(CMAKE_PREFIX_PATH ${KOKKOS_KERNELS_PATH} ${CMAKE_PREFIX_PATH})
   find_package(KokkosKernels REQUIRED)
 
   if(KokkosKernels_FOUND)
-    # Print details on the Kokkos-Kernels configuration
-    message("\nFound KokkosKernels! Here are the details:")
-    get_target_property(KokkosKernels_INCLUDE_DIRS KokkosKernels::kokkoskernels INTERFACE_INCLUDE_DIRECTORIES)
-    message("   KokkosKernels_INCLUDE_DIRS = ${KokkosKernels_INCLUDE_DIRS}")
+    # Print details on the KokkosKernels configuration
+    get_target_property(KokkosKernels_INCLUDE_DIRECTORIES KokkosKernels::kokkoskernels INTERFACE_INCLUDE_DIRECTORIES)
     get_target_property(KokkosKernels_COMPILE_DEFINITIONS KokkosKernels::kokkoskernels INTERFACE_COMPILE_DEFINITIONS)
-    message("   KokkosKernels_COMPILE_DEFINITIONS = ${KokkosKernels_COMPILE_DEFINITIONS}")
     get_target_property(KokkosKernels_COMPILE_OPTIONS KokkosKernels::kokkoskernels INTERFACE_COMPILE_OPTIONS)
+    get_target_property(KokkosKernels_LINK_OPTIONS KokkosKernels::kokkoskernels INTERFACE_LINK_OPTIONS)
+    get_target_property(KokkosKernels_LINK_LIBRARIES KokkosKernels::kokkoskernels INTERFACE_LINK_LIBRARIES)
+    message("\nFound KokkosKernels! Here are the details:")
+    message("   KokkosKernels_INCLUDE_DIRECTORIES = ${KokkosKernels_INCLUDE_DIRECTORIES}")
+    message("   KokkosKernels_COMPILE_DEFINITIONS = ${KokkosKernels_COMPILE_DEFINITIONS}")
     message("   KokkosKernels_COMPILE_OPTIONS = ${KokkosKernels_COMPILE_OPTIONS}")
+    message("   KokkosKernels_LINK_OPTIONS = ${KokkosKernels_LINK_OPTIONS}")
+    message("   KokkosKernels_LINK_LIBRARIES = ${KokkosKernels_LINK_LIBRARIES}")
     message("End of KokkosKernels details\n")
   else()
-    message(FATAL_ERROR "Could not find KokkosKernels!")
+    message(FATAL_ERROR "Could not find KokkosKernels in the given path!")
   endif()
 else()
-  # Use a KokkosKernels from an upstream project
-  if(TARGET KokkosKernels::kokkoskernels)
-    message(STATUS "KokkosKernels included from upstream project.")
-  else()
-    message(FATAL_ERROR "KOKKOS_KERNELS_IN_MIRCO=OFF but no KokkosKernels target was available in the upstream project.")
-  endif()
+  message(FATAL_ERROR "KOKKOS_KERNELS_PATH not specified, but no KokkosKernels::kokkoskernels target available in the upstream project!")
 endif()
 
-# File(s) which need(s) Kokkos-Kernels
+# File(s) which need(s) KokkosKernels
 add_library(mirco_needKK
   src/mirco_nonlinearsolver.cpp
   )
@@ -122,59 +134,63 @@ add_library(mirco_inputparameters
   )
 target_link_libraries(mirco_inputparameters PRIVATE mirco_topology Kokkos::kokkos)
 
-if(Kokkos_ENABLE_CUDA OR Kokkos_ENABLE_HIP OR Kokkos_ENABLE_SYCL OR Kokkos_ENABLE_OPENMPTARGET)
-  # Compile rapidyaml (ryml) separately to avoid conflicts with device-side/offloaded compilers (e.g. nvcc_wrapper)
-  include(ExternalProject)
-  set(RYML_INSTALL_DIR ${CMAKE_BINARY_DIR}/extern/ryml)
-
-  if(NOT DEFINED MIRCO_HOST_CXX_COMPILER)
-    set(MIRCO_HOST_CXX_COMPILER "g++-12")
-  endif()
-
-  ExternalProject_Add(ryml_build
-    GIT_REPOSITORY https://github.com/biojppm/rapidyaml.git
-    GIT_TAG 47ec2fa184209687c20fd5bc05621e1cb1200311
-    INSTALL_DIR ${RYML_INSTALL_DIR}
-    CMAKE_ARGS
-      -DCMAKE_CXX_COMPILER=${MIRCO_HOST_CXX_COMPILER}
-      -DCMAKE_BUILD_TYPE=Release
-      -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
-      -DCMAKE_POLICY_DEFAULT_CMP0077=NEW
-      -DC4CORE_WITH_FASTFLOAT=OFF
-      -DC4CORE_INSTALL=ON
-      -DRYML_BUILD_TESTS=OFF
-      -DRYML_BUILD_BENCHMARKS=OFF
-      -DCMAKE_CXX_FLAGS=-w
-    INSTALL_COMMAND ${CMAKE_COMMAND} --build <BINARY_DIR> --target install --config $<CONFIG>
-    BUILD_BYPRODUCTS ${RYML_INSTALL_DIR}/lib/libryml.a
-  )
-
-  file(MAKE_DIRECTORY ${RYML_INSTALL_DIR}/include ${RYML_INSTALL_DIR}/lib)
-
-  add_library(ryml_import STATIC IMPORTED)
-  set_target_properties(ryml_import PROPERTIES
-    IMPORTED_LOCATION ${RYML_INSTALL_DIR}/lib/libryml.a
-    INTERFACE_INCLUDE_DIRECTORIES ${RYML_INSTALL_DIR}/include
-    INTERFACE_COMPILE_DEFINITIONS C4CORE_NO_FAST_FLOAT)
-  add_dependencies(ryml_import ryml_build)
-
-  add_library(ryml INTERFACE)
-  add_dependencies(ryml ryml_build)
-  target_include_directories(ryml INTERFACE ${RYML_INSTALL_DIR}/include)
-  target_link_libraries(ryml INTERFACE ${RYML_INSTALL_DIR}/lib/libryml.a)
-  target_compile_definitions(ryml INTERFACE C4CORE_NO_FAST_FLOAT)
-
-  ExternalProject_Add_Step(ryml_build cleanup
-    COMMAND ${CMAKE_COMMAND} -E rm -rf <SOURCE_DIR> <BINARY_DIR> <STAMP_DIR> <TMP_DIR> <DOWNLOAD_DIR>
-    COMMENT "Cleaning ryml external project work directories"
-    DEPENDEES install
-    ALWAYS TRUE
-  )
+if(TARGET ryml)
+  message(STATUS "Rapidyaml (ryml) included from upstream project.")
 else()
-  # Everything is compiled on host; fetch rapidyaml directly
-  include(FetchContent)
-  FetchContent_Declare(rapidyaml GIT_REPOSITORY https://github.com/biojppm/rapidyaml.git GIT_TAG 47ec2fa184209687c20fd5bc05621e1cb1200311)
-  FetchContent_MakeAvailable(rapidyaml)
+  if(Kokkos_ENABLE_CUDA OR Kokkos_ENABLE_HIP OR Kokkos_ENABLE_SYCL OR Kokkos_ENABLE_OPENMPTARGET)
+    # Compile rapidyaml (ryml) separately to avoid conflicts with device-side/offloaded compilers (e.g. nvcc_wrapper)
+    include(ExternalProject)
+    set(RYML_INSTALL_DIR ${CMAKE_BINARY_DIR}/extern/ryml)
+
+    if(NOT DEFINED MIRCO_HOST_CXX_COMPILER)
+      set(MIRCO_HOST_CXX_COMPILER "g++-12")
+    endif()
+
+    ExternalProject_Add(ryml_build
+      GIT_REPOSITORY https://github.com/biojppm/rapidyaml.git
+      GIT_TAG 47ec2fa184209687c20fd5bc05621e1cb1200311
+      INSTALL_DIR ${RYML_INSTALL_DIR}
+      CMAKE_ARGS
+        -DCMAKE_CXX_COMPILER=${MIRCO_HOST_CXX_COMPILER}
+        -DCMAKE_BUILD_TYPE=Release
+        -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
+        -DCMAKE_POLICY_DEFAULT_CMP0077=NEW
+        -DC4CORE_WITH_FASTFLOAT=OFF
+        -DC4CORE_INSTALL=ON
+        -DRYML_BUILD_TESTS=OFF
+        -DRYML_BUILD_BENCHMARKS=OFF
+        -DCMAKE_CXX_FLAGS=-w
+      INSTALL_COMMAND ${CMAKE_COMMAND} --build <BINARY_DIR> --target install --config $<CONFIG>
+      BUILD_BYPRODUCTS ${RYML_INSTALL_DIR}/lib/libryml.a
+    )
+
+    file(MAKE_DIRECTORY ${RYML_INSTALL_DIR}/include ${RYML_INSTALL_DIR}/lib)
+
+    add_library(ryml_import STATIC IMPORTED)
+    set_target_properties(ryml_import PROPERTIES
+      IMPORTED_LOCATION ${RYML_INSTALL_DIR}/lib/libryml.a
+      INTERFACE_INCLUDE_DIRECTORIES ${RYML_INSTALL_DIR}/include
+      INTERFACE_COMPILE_DEFINITIONS C4CORE_NO_FAST_FLOAT)
+    add_dependencies(ryml_import ryml_build)
+
+    add_library(ryml INTERFACE)
+    add_dependencies(ryml ryml_build)
+    target_include_directories(ryml INTERFACE ${RYML_INSTALL_DIR}/include)
+    target_link_libraries(ryml INTERFACE ${RYML_INSTALL_DIR}/lib/libryml.a)
+    target_compile_definitions(ryml INTERFACE C4CORE_NO_FAST_FLOAT)
+
+    ExternalProject_Add_Step(ryml_build cleanup
+      COMMAND ${CMAKE_COMMAND} -E rm -rf <SOURCE_DIR> <BINARY_DIR> <STAMP_DIR> <TMP_DIR> <DOWNLOAD_DIR>
+      COMMENT "Cleaning ryml external project work directories"
+      DEPENDEES install
+      ALWAYS TRUE
+    )
+  else()
+    # Everything is compiled on host; fetch rapidyaml directly
+    include(FetchContent)
+    FetchContent_Declare(rapidyaml GIT_REPOSITORY https://github.com/biojppm/rapidyaml.git GIT_TAG 47ec2fa184209687c20fd5bc05621e1cb1200311)
+    FetchContent_MakeAvailable(rapidyaml)
+  endif()
 endif()
 
 add_library(mirco_utils
