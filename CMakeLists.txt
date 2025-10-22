@@ -135,15 +135,16 @@ add_library(mirco_inputparameters
 target_link_libraries(mirco_inputparameters PRIVATE mirco_topology Kokkos::kokkos)
 
 if(TARGET ryml)
-  message(STATUS "Rapidyaml (ryml) included from upstream project.")
+  message(STATUS "Using Rapidyaml (target ryml) from upstream project.")
 else()
   if(Kokkos_ENABLE_CUDA OR Kokkos_ENABLE_HIP OR Kokkos_ENABLE_SYCL OR Kokkos_ENABLE_OPENMPTARGET)
     # Compile rapidyaml (ryml) separately to avoid conflicts with device-side/offloaded compilers (e.g. nvcc_wrapper)
+    message(STATUS "Building rapidyaml separately, using MIRCO_HOST_CXX_COMPILER.")
     include(ExternalProject)
     set(RYML_INSTALL_DIR ${CMAKE_BINARY_DIR}/extern/ryml)
 
     if(NOT DEFINED MIRCO_HOST_CXX_COMPILER)
-      set(MIRCO_HOST_CXX_COMPILER "g++-12")
+      message(FATAL_ERROR "A host compiler, MIRCO_HOST_CXX_COMPILER, must be provided when building with a device-side compiler!")
     endif()
 
     ExternalProject_Add(ryml_build
@@ -187,6 +188,7 @@ else()
     )
   else()
     # Everything is compiled on host; fetch rapidyaml directly
+    message(STATUS "Fetching rapidyaml.")
     include(FetchContent)
     FetchContent_Declare(rapidyaml GIT_REPOSITORY https://github.com/biojppm/rapidyaml.git GIT_TAG 47ec2fa184209687c20fd5bc05621e1cb1200311)
     FetchContent_MakeAvailable(rapidyaml)
