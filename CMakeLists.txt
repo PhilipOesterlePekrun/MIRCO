@@ -139,7 +139,7 @@ if(TARGET ryml)
 else()
   if(Kokkos_ENABLE_CUDA OR Kokkos_ENABLE_HIP OR Kokkos_ENABLE_SYCL OR Kokkos_ENABLE_OPENMPTARGET)
     # Compile rapidyaml (ryml) separately to avoid conflicts with device-side/offloaded compilers (e.g. nvcc_wrapper)
-    message(STATUS "Building rapidyaml separately, using MIRCO_HOST_CXX_COMPILER.")
+    message(STATUS "Building rapidyaml separately, using MIRCO_HOST_CXX_COMPILER")
     include(ExternalProject)
     set(RYML_INSTALL_DIR ${CMAKE_BINARY_DIR}/extern/ryml)
 

@@ -73,8 +73,8 @@ namespace MIRCO
         bool WarmStartingFlag, bool PressureGreenFunFlag);
 
     int N = 0;
-    double composite_youngs = 0.0, elastic_compliance_correction = 0.0, shape_factor = 0.0,
-           tolerance = 0.0, delta = 0.0, lateral_length = 0.0, grid_size = 0.0;
+    double composite_youngs = 0.0, elastic_compliance_correction = 0.0, tolerance = 0.0,
+           delta = 0.0, lateral_length = 0.0, grid_size = 0.0;
     int max_iteration = 0;
     bool warm_starting_flag = false;
     bool pressure_green_funct_flag = false;

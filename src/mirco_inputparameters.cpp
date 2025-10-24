@@ -53,14 +53,8 @@ namespace MIRCO
     topology = Kokkos::create_mirror_view_and_copy(ExecSpace_Default_t(), topology_h);
 
     // resolution is available; no interpolation needed
-    if (PressureGreenFunFlag)
-    {
-      shape_factor = shape_factors_pressure.at(Resolution);
-    }
-    else
-    {
-      shape_factor = shape_factors_force.at(Resolution);
-    }
+    double shape_factor = PressureGreenFunFlag ? shape_factors_pressure.at(Resolution)
+                                               : shape_factors_force.at(Resolution);
 
     composite_youngs = 1.0 / ((1 - nu1 * nu1) / E1 + (1 - nu2 * nu2) / E2);
     elastic_compliance_correction = LateralLength * composite_youngs / shape_factor;
@@ -82,14 +76,8 @@ namespace MIRCO
     topology = Kokkos::create_mirror_view_and_copy(ExecSpace_Default_t(), topology_h);
 
     // interpolation needed
-    if (PressureGreenFunFlag)
-    {
-      shape_factor = InterpolatedShapeFactor(shape_factors_pressure, N);
-    }
-    else
-    {
-      shape_factor = InterpolatedShapeFactor(shape_factors_force, N);
-    }
+    double shape_factor = PressureGreenFunFlag ? InterpolatedShapeFactor(shape_factors_pressure, N)
+                                               : InterpolatedShapeFactor(shape_factors_force, N);
 
     composite_youngs = 1.0 / ((1 - nu1 * nu1) / E1 + (1 - nu2 * nu2) / E2);
     elastic_compliance_correction = LateralLength * composite_youngs / shape_factor;
