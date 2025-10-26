@@ -17,9 +17,10 @@ namespace MIRCO
      * @brief Constructor which sets the necessary member variable parameters from an input (.xml)
      * file and creates the topology
      *
-     * @param inputFileName Input file w.r.t. the calling directory
+     * @param inputFileName Input file w.r.t. the calling directory. Here, the topology is also
+     * constructed immediately.
      */
-    InputParameters(const std::string& inputFileName);
+    InputParameters(const std::string& inputFileName, ViewMatrix_d topology);
 
     /**
      * @brief Constructor which sets the necessary member variable parameters without an input
@@ -78,9 +79,6 @@ namespace MIRCO
     int max_iteration = 0;
     bool warm_starting_flag = false;
     bool pressure_green_funct_flag = false;
-    // Note: topology is a lightweight handle, similar to std::shared_ptr. This struct does not
-    // own topology.
-    ViewMatrix_d topology;
   };
 }  // namespace MIRCO
 
