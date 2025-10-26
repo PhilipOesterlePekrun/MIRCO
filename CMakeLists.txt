@@ -99,11 +99,16 @@ if(KOKKOS_KERNELS_IN_MIRCO)
   endif()
 endif()
 
+# --- myUtils ---
+set(MYUTILS_DIR "$ENV{HOME}/misc/myUtils_Base/install")
+set(CMAKE_PREFIX_PATH ${MYUTILS_DIR} ${CMAKE_PREFIX_PATH})
+find_package(myUtils REQUIRED)
+
 # File(s) which need(s) Kokkos-Kernels
 add_library(mirco_needKK
   src/mirco_nonlinearsolver.cpp
   )
-target_link_libraries(mirco_needKK PRIVATE Kokkos::kokkos KokkosKernels::kokkoskernels)
+target_link_libraries(mirco_needKK PRIVATE Kokkos::kokkos KokkosKernels::kokkoskernels myUtils::myUtils)
 
 # Compile mirco library
 add_library(mirco_core
@@ -113,18 +118,18 @@ add_library(mirco_core
   src/mirco_contactstatus.cpp
   src/mirco_warmstart.cpp
   )
-target_link_libraries(mirco_core PRIVATE mirco_needKK Kokkos::kokkos)
+target_link_libraries(mirco_core PRIVATE mirco_needKK Kokkos::kokkos myUtils::myUtils)
 
 add_library(mirco_topology
   src/mirco_topology.cpp
   src/mirco_topologyutilities.cpp
   )
-target_link_libraries(mirco_topology PRIVATE Kokkos::kokkos)
+target_link_libraries(mirco_topology PRIVATE Kokkos::kokkos myUtils::myUtils)
 
 add_library(mirco_inputparameters
   src/mirco_inputparameters.cpp
   )
-target_link_libraries(mirco_inputparameters PRIVATE mirco_topology Kokkos::kokkos)
+target_link_libraries(mirco_inputparameters PRIVATE mirco_topology Kokkos::kokkos myUtils::myUtils)
 
 if(Kokkos_ENABLE_CUDA OR Kokkos_ENABLE_HIP OR Kokkos_ENABLE_SYCL OR Kokkos_ENABLE_OPENMPTARGET)
   # Compile rapidyaml (ryml) separately to avoid conflicts with device-side/offloaded compilers (e.g. nvcc_wrapper)
@@ -185,15 +190,15 @@ add_library(mirco_utils
   src/mirco_utils.cpp
   )
 
-target_link_libraries(mirco_utils PUBLIC ryml)
+target_link_libraries(mirco_utils PUBLIC ryml myUtils::myUtils)
 
 add_library(mirco_inputparameters_yaml
   src/mirco_inputparameters_yaml.cpp
   )
-target_link_libraries(mirco_inputparameters_yaml PRIVATE mirco_utils Kokkos::kokkos)
+target_link_libraries(mirco_inputparameters_yaml PRIVATE mirco_utils Kokkos::kokkos myUtils::myUtils)
 
 add_library(mirco_lib INTERFACE)
-target_link_libraries(mirco_lib INTERFACE mirco_needKK mirco_core mirco_topology mirco_inputparameters)
+target_link_libraries(mirco_lib INTERFACE mirco_needKK mirco_core mirco_topology mirco_inputparameters myUtils::myUtils)
 
 # Compile mirco itself
 add_executable(mirco src/main.cpp)
@@ -205,7 +210,7 @@ target_include_directories(mirco_lib INTERFACE
 
 add_library(mirco::mirco_lib ALIAS mirco_lib)
 
-target_link_libraries(mirco PUBLIC mirco::mirco_lib mirco_inputparameters_yaml mirco_utils Kokkos::kokkos)
+target_link_libraries(mirco PUBLIC mirco::mirco_lib mirco_inputparameters_yaml mirco_utils Kokkos::kokkos myUtils::myUtils)
 
 # Install mirco (to be used as a library by other codes)
 install(TARGETS mirco_lib mirco_needKK mirco_core mirco_topology mirco_inputparameters
