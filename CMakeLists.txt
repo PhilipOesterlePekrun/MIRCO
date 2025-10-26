@@ -203,6 +203,9 @@ target_link_libraries(mirco_lib INTERFACE mirco_needKK mirco_core mirco_topology
 # Compile mirco itself
 add_executable(mirco src/main.cpp)
 
+# arg exe with timers
+add_executable(timedMirco src/main_argsAndTimers.cpp)
+
 target_include_directories(mirco_lib INTERFACE
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/>
   $<INSTALL_INTERFACE:include/mirco/>
@@ -211,6 +214,8 @@ target_include_directories(mirco_lib INTERFACE
 add_library(mirco::mirco_lib ALIAS mirco_lib)
 
 target_link_libraries(mirco PUBLIC mirco::mirco_lib mirco_inputparameters_yaml mirco_utils Kokkos::kokkos myUtils::myUtils)
+
+target_link_libraries(timedMirco PUBLIC mirco::mirco_lib Kokkos::kokkos myUtils::myUtils)
 
 # Install mirco (to be used as a library by other codes)
 install(TARGETS mirco_lib mirco_needKK mirco_core mirco_topology mirco_inputparameters
