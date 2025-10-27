@@ -31,6 +31,13 @@ namespace MIRCO
       const double ElasticComplianceCorrection, const ViewMatrix_d topology, const double zmax,
       const ViewVector_d meshgrid, const bool PressureGreenFunFlag);
 
+  void EvaluateRet(double& pressure, double& effectiveContactAreaFraction, const double Delta,
+      const double LateralLength, const double GridSize, const double Tolerance,
+      const int MaxIteration, const double CompositeYoungs, const bool WarmStartingFlag,
+      const double ElasticComplianceCorrection, const ViewMatrix_d topology, const double zmax,
+      const ViewVector_d meshgrid, const bool PressureGreenFunFlag, ViewVectorInt_d& activeSetf,
+      ViewVector_d& pf);  //, ViewVector_d& w);
+
   /**
    * @brief Relate the far-field displacement with pressure, taking the parameters from an
    * InputParameters object

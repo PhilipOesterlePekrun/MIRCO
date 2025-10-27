@@ -25,6 +25,10 @@ namespace MIRCO
   void nonlinearSolve(ViewVector_d& pf, ViewVectorInt_d& activeSetf, ViewVector_d& p,
       const ViewVectorInt_d activeSet0, const ViewMatrix_d matrix, const ViewVector_d b0,
       double nnlstol = 1.0e-08, int maxiter = 10000);
+
+  void nonlinearSolveRet(ViewVector_d& pf, ViewVectorInt_d& activeSetf, ViewVector_d& p,
+      const ViewVectorInt_d activeSet0, const ViewMatrix_d matrix, const ViewVector_d b0,
+      ViewVector_d& w, double nnlstol = 1.0e-08, int maxiter = 10000);
 }  // namespace MIRCO
 
 #endif  // SRC_NONLINEARSOLVER_H_
