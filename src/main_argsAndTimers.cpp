@@ -10,7 +10,6 @@
 #include "mirco_kokkostypes.h"
 #include "mirco_topologyutilities.h"
 
-#define myUtils_ENABLE_TIMERS true
 #include <myUtils/Timers.hpp>
 
 using namespace MIRCO;
@@ -158,6 +157,10 @@ int main(int argc, char* argv[])
     ////}
 
     std::string sTim = globalR.timingReportStr();  // we do this before other stuff
+    // Then do
+    // MyUtils::Timers::ScopedTimer sTimer0("TIMERNAME()")
+    // and remember to
+    // #include <myUtils/Timers.hpp>
 
     std::string sTot = "";
     sTot += "\n__[[/]]\n";
@@ -181,7 +184,7 @@ int main(int argc, char* argv[])
 
     sTot += "__[[outputs]]\n";
     sTot += "meanPressure = " + std::to_string(meanPressure) + "\n";
-    sTot += "effectiveContactAreaFraction" + std::to_string(effectiveContactAreaFraction) + "\n";
+    sTot += "effectiveContactAreaFraction = " + std::to_string(effectiveContactAreaFraction) + "\n";
 
     std::ofstream fOut(outFile, std::ios::app);  // we append
     fOut << sTot;

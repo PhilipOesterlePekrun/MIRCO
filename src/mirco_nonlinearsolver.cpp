@@ -2,6 +2,8 @@
 
 #include <KokkosLapack_gesv.hpp>
 
+#include <myUtils/Timers.hpp>
+
 namespace
 {
   using namespace MIRCO;
@@ -31,6 +33,8 @@ namespace MIRCO
       const ViewVectorInt_d activeSet0, const ViewMatrix_d matrix, const ViewVector_d b0,
       double nnlstol, int maxiter)
   {
+    MyUtils::Timers::ScopedTimer sTimer0("nonlinearSolve()");
+    
     using minloc_t = Kokkos::MinLoc<double, int, MemorySpace_ofDefaultExec_t>;
     using minloc_value_t = typename minloc_t::value_type;
     const std::string kokkosLabelPrefix = "nonlinearSolve(); ";
@@ -142,7 +146,7 @@ namespace MIRCO
               });
 
           ViewVectorInt_d ipiv(kokkosLabelPrefix + "ipiv", activeSetSize);
-
+MyUtils::Timers::ScopedTimer sTimer1("gesv()");
           // Solve H_I s_I = b0_I; b0s_compact becomes s_I
           KokkosLapack::gesv(H_compact, b0s_compact, ipiv);
         }

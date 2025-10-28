@@ -5,6 +5,8 @@
 #include <fstream>
 #include <random>
 
+#include <myUtils/Timers.hpp>
+
 namespace MIRCO
 {
   ViewMatrix_h CreateSurfaceFromFile(const std::string& filepath, int& dimension)
@@ -43,6 +45,8 @@ namespace MIRCO
   ViewMatrix_h CreateRmgSurface(int resolution, double InitialTopologyStdDeviation, double Hurst,
       bool RandomSeedFlag, int RandomGeneratorSeed)
   {
+    MyUtils::Timers::ScopedTimer sTimer0("CreateRmgSurface()");
+    
     srand(time(NULL));
 
     int seed;

@@ -2,6 +2,8 @@
 
 #include <cmath>
 
+#include <myUtils/Timers.hpp>
+
 namespace MIRCO
 {
   ViewVector_d CreateMeshgrid(const int ngrid, const double GridSize)
@@ -17,6 +19,8 @@ namespace MIRCO
 
   TopologyMaxAndMean ComputeMaxAndMean(ViewMatrix_d topology)
   {
+    MyUtils::Timers::ScopedTimer sTimer0("ComputeMaxAndMean()");
+    
     const int n0 = topology.extent(0);
     const int n1 = topology.extent(1);
 

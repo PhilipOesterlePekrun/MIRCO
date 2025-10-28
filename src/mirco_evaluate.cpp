@@ -12,6 +12,8 @@
 #include "mirco_nonlinearsolver.h"
 #include "mirco_warmstart.h"
 
+#include <myUtils/Timers.hpp>
+
 namespace MIRCO
 {
   void Evaluate(double& pressure, double& effectiveContactAreaFraction, const double Delta,
@@ -20,6 +22,8 @@ namespace MIRCO
       const double ElasticComplianceCorrection, const ViewMatrix_d topology, const double zmax,
       const ViewVector_d meshgrid, const bool PressureGreenFunFlag)
   {
+    MyUtils::Timers::ScopedTimer sTimer0("Evaluate()");
+    
     // Initialise the area vector and force vector. Each element contains the
     // area and force calculated at every iteration.
     std::vector<double> totalForceVector;

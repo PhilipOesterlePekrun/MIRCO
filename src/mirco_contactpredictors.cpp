@@ -1,11 +1,15 @@
 #include "mirco_contactpredictors.h"
 
+#include <myUtils/Timers.hpp>
+
 namespace MIRCO
 {
   void ContactSetPredictor(ViewVectorInt_d& activeSet0, ViewVector_d& xv0, ViewVector_d& yv0,
       ViewVector_d& b0, double zmax, double Delta, double w_el, const ViewMatrix_d topology,
       const ViewVector_d meshgrid)
   {
+    MyUtils::Timers::ScopedTimer sTimer0("ComputeContactForceAndArea()");
+    
     const int N = topology.extent(0);
 
     const double critValue = zmax - Delta - w_el;

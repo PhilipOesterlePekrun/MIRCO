@@ -2,11 +2,15 @@
 
 #include <cmath>
 
+#include <myUtils/Timers.hpp>
+
 namespace MIRCO
 {
   void ComputeContactForceAndArea(double& totalForce, double& contactArea, const ViewVector_d pf,
       const double GridSize, const double LateralLength, const bool PressureGreenFunFlag)
   {
+    MyUtils::Timers::ScopedTimer sTimer0("ComputeContactForceAndArea()");
+    
     totalForce = 0;
 
     const int activeSetSize = pf.extent(0);

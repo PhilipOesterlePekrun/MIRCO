@@ -34,6 +34,11 @@ set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
+option(myUtils_ENABLE_TIMERS "Enable timers" ON)
+add_compile_definitions(
+  myUtils_ENABLE_TIMERS=$<IF:$<BOOL:${myUtils_ENABLE_TIMERS}>,1,0>
+)
+
 # Add libraries
 if(GTEST_IN_MIRCO)
   add_subdirectory("extern/googletest")

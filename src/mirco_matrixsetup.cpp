@@ -2,12 +2,15 @@
 
 #include <math.h>
 
+#include <myUtils/Timers.hpp>
+
 namespace MIRCO
 {
   ViewMatrix_d MatrixGeneration::SetupMatrix(const ViewVector_d xv0, const ViewVector_d yv0,
       const double GridSize, const double CompositeYoungs, const int systemsize,
       const bool PressureGreenFunFlag)
   {
+    MyUtils::Timers::ScopedTimer sTimer0("SetupMatrix()");
     constexpr double pi = M_PI;
     const double frac_GridSize_2 = GridSize / 2;
 
