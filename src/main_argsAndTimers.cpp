@@ -112,13 +112,7 @@ int main(int argc, char* argv[])
     std::cout << "Default memory space: " << typeid(MemorySpace_ofDefaultExec_t).name() << "\n";
     std::cout << "Default host memory space: " << typeid(MemorySpace_Host_t).name() << "\n";
     std::cout << "\n";
-
-    if (argc > 11)
-    {
-      std::cout << "E " << argc << "\n";
-      return 1;
-    }
-
+    
     double compositeYoungs = std::stod(argv[1]);
     double tol = std::stod(argv[2]);
     double delta = std::stod(argv[3]);
@@ -130,6 +124,15 @@ int main(int argc, char* argv[])
     bool greenf = argv[9][0] == 't';
 
     std::string outFile = argv[10];
+    
+    double numThreads = std::stoi(argv[11]);
+    
+    if (argc != 12)
+    {
+      std::cout << "E: Incorrect arg count: " << argc << "\n";
+      return 1;
+    }
+    
 
     int RandomSeed =
         285928127;  // # I suppose we should keep this the same to not introduce randomness
@@ -164,8 +167,9 @@ int main(int argc, char* argv[])
 
     std::string sTot = "";
     sTot += "\n__[[/]]\n";
-
+    sTot += "Default execution space = " + std::string(typeid(ExecSpace_Default_t).name()) + "\n";
     sTot += "__[[inputs]]\n";
+    sTot += "numThreads = " + std::to_string(numThreads) + "\n";
     sTot += "compositeYoungs = " + std::to_string(compositeYoungs) + "\n";
     sTot += "tol = " + std::to_string(tol) + "\n";
     sTot += "delta = " + std::to_string(delta) + "\n";
