@@ -9,8 +9,8 @@ namespace
   // Shape factors (See section 3.3 of https://doi.org/10.1007/s00466-019-01791-3)
   // These are the shape factors to calculate the elastic compliance correction of the micro-scale
   // contact constitutive law for various resolutions.
-  // NOTE: Currently MIRCO works for resoulution of 1 to 8. The following map store the shape
-  // factors for resolution of 1 to 8.
+  // NOTE: Currently MIRCO works most accurately for resoulutions of 1 to 8. The following maps
+  // store the shape factors for resolutions of 1 to 8.
 
   // The following pressure based constants are calculated by solving a flat indentor problem using
   // the pressure based Green function described in Pohrt and Li (2014).
@@ -25,13 +25,35 @@ namespace
       {3, 0.826126871395416}, {4, 0.841369158110513}, {5, 0.851733020725652},
       {6, 0.858342234203154}, {7, 0.862368243479785}, {8, 0.864741597831785}};
 
-  double InterpolatedShapeFactor(const std::map<int, double>& shapeFactors, int N)
+  // Linear interpolation of the resolution is possible but may not be very accurate; we split cases
+  // for efficiency
+  double GetShapeFactor_intRes(const std::map<int, double>& shapeFactors, int resolution)
   {
-    const double resolution = log2(N - 1);
-    const int resFloor = static_cast<int>(std::floor(resolution));
-    const double sfFloor = shapeFactors.at(resFloor);
-    if (((N - 1) & (N - 2)) == 0) return sfFloor;
-    return sfFloor + (resolution - resFloor) * (shapeFactors.at(resFloor + 1) - sfFloor);
+    if (resolution < 9) return shapeFactors.at(resolution);
+    // else
+    const double sf8 = shapeFactors.at(8);
+    return sf8 + (resolution - 8) * (sf8 - shapeFactors.at(7));
+  }
+  double GetShapeFactor_equivRes(const std::map<int, double>& shapeFactors, double equivResolution)
+  {
+    const int resFloor = static_cast<int>(std::floor(equivResolution));
+    const double sfLower = GetShapeFactor_intRes(shapeFactors, resFloor);
+    return sfLower + (equivResolution - resFloor) *
+                         (GetShapeFactor_intRes(shapeFactors, resFloor + 1) - sfLower);
+  }
+  double GetShapeFactor_N(const std::map<int, double>& shapeFactors, int N)
+  {
+    if ((N - 1) && ((N - 1) & (N - 2)) == 0)
+    {
+      // N is a power of 2
+      int equivRes = 0;
+      N--;
+      while (N >>= 1) ++equivRes;
+      return GetShapeFactor_intRes(shapeFactors, equivRes);
+    }
+    // else
+    const double equivRes = log2(N - 1);
+    return GetShapeFactor_equivRes(shapeFactors, equivRes);
   }
 }  // namespace
 
@@ -52,14 +74,13 @@ namespace MIRCO
         Resolution, InitialTopologyStdDeviation, Hurst, RandomSeedFlag, RandomGeneratorSeed);
     topology = Kokkos::create_mirror_view_and_copy(ExecSpace_Default_t(), topology_h);
 
-    // resolution is available; no interpolation needed
     if (PressureGreenFunFlag)
     {
-      shape_factor = shape_factors_pressure.at(Resolution);
+      shape_factor = GetShapeFactor_intRes(shape_factors_pressure, Resolution);
     }
     else
     {
-      shape_factor = shape_factors_force.at(Resolution);
+      shape_factor = GetShapeFactor_intRes(shape_factors_force, Resolution);
     }
 
     composite_youngs = 1.0 / ((1 - nu1 * nu1) / E1 + (1 - nu2 * nu2) / E2);
@@ -84,11 +105,11 @@ namespace MIRCO
     // interpolation needed
     if (PressureGreenFunFlag)
     {
-      shape_factor = InterpolatedShapeFactor(shape_factors_pressure, N);
+      shape_factor = GetShapeFactor_N(shape_factors_pressure, N);
     }
     else
     {
-      shape_factor = InterpolatedShapeFactor(shape_factors_force, N);
+      shape_factor = GetShapeFactor_N(shape_factors_force, N);
     }
 
     composite_youngs = 1.0 / ((1 - nu1 * nu1) / E1 + (1 - nu2 * nu2) / E2);
