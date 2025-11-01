@@ -136,77 +136,9 @@ add_library(mirco_inputparameters
   )
 target_link_libraries(mirco_inputparameters PRIVATE mirco_topology Kokkos::kokkos myUtils::myUtils)
 
-if(Kokkos_ENABLE_CUDA OR Kokkos_ENABLE_HIP OR Kokkos_ENABLE_SYCL OR Kokkos_ENABLE_OPENMPTARGET)
-  # Compile rapidyaml (ryml) separately to avoid conflicts with device-side/offloaded compilers (e.g. nvcc_wrapper)
-  include(ExternalProject)
-  set(RYML_INSTALL_DIR ${CMAKE_BINARY_DIR}/extern/ryml)
-
-  if(NOT DEFINED MIRCO_HOST_CXX_COMPILER)
-    set(MIRCO_HOST_CXX_COMPILER "g++-12")
-  endif()
-
-  ExternalProject_Add(ryml_build
-    GIT_REPOSITORY https://github.com/biojppm/rapidyaml.git
-    GIT_TAG 47ec2fa184209687c20fd5bc05621e1cb1200311
-    INSTALL_DIR ${RYML_INSTALL_DIR}
-    CMAKE_ARGS
-      -DCMAKE_CXX_COMPILER=${MIRCO_HOST_CXX_COMPILER}
-      -DCMAKE_BUILD_TYPE=Release
-      -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
-      -DCMAKE_POLICY_DEFAULT_CMP0077=NEW
-      -DC4CORE_WITH_FASTFLOAT=OFF
-      -DC4CORE_INSTALL=ON
-      -DRYML_BUILD_TESTS=OFF
-      -DRYML_BUILD_BENCHMARKS=OFF
-      -DCMAKE_CXX_FLAGS=-w
-    INSTALL_COMMAND ${CMAKE_COMMAND} --build <BINARY_DIR> --target install --config $<CONFIG>
-    BUILD_BYPRODUCTS ${RYML_INSTALL_DIR}/lib/libryml.a
-  )
-
-  file(MAKE_DIRECTORY ${RYML_INSTALL_DIR}/include ${RYML_INSTALL_DIR}/lib)
-
-  add_library(ryml_import STATIC IMPORTED)
-  set_target_properties(ryml_import PROPERTIES
-    IMPORTED_LOCATION ${RYML_INSTALL_DIR}/lib/libryml.a
-    INTERFACE_INCLUDE_DIRECTORIES ${RYML_INSTALL_DIR}/include
-    INTERFACE_COMPILE_DEFINITIONS C4CORE_NO_FAST_FLOAT)
-  add_dependencies(ryml_import ryml_build)
-
-  add_library(ryml INTERFACE)
-  add_dependencies(ryml ryml_build)
-  target_include_directories(ryml INTERFACE ${RYML_INSTALL_DIR}/include)
-  target_link_libraries(ryml INTERFACE ${RYML_INSTALL_DIR}/lib/libryml.a)
-  target_compile_definitions(ryml INTERFACE C4CORE_NO_FAST_FLOAT)
-
-  ExternalProject_Add_Step(ryml_build cleanup
-    COMMAND ${CMAKE_COMMAND} -E rm -rf <SOURCE_DIR> <BINARY_DIR> <STAMP_DIR> <TMP_DIR> <DOWNLOAD_DIR>
-    COMMENT "Cleaning ryml external project work directories"
-    DEPENDEES install
-    ALWAYS TRUE
-  )
-else()
-  # Everything is compiled on host; fetch rapidyaml directly
-  include(FetchContent)
-  FetchContent_Declare(rapidyaml GIT_REPOSITORY https://github.com/biojppm/rapidyaml.git GIT_TAG 47ec2fa184209687c20fd5bc05621e1cb1200311)
-  FetchContent_MakeAvailable(rapidyaml)
-endif()
-
-add_library(mirco_utils
-  src/mirco_utils.cpp
-  )
-
-target_link_libraries(mirco_utils PUBLIC ryml myUtils::myUtils)
-
-add_library(mirco_inputparameters_yaml
-  src/mirco_inputparameters_yaml.cpp
-  )
-target_link_libraries(mirco_inputparameters_yaml PRIVATE mirco_utils Kokkos::kokkos myUtils::myUtils)
-
 add_library(mirco_lib INTERFACE)
 target_link_libraries(mirco_lib INTERFACE mirco_needKK mirco_core mirco_topology mirco_inputparameters myUtils::myUtils)
 
-# Compile mirco itself
-add_executable(mirco src/main.cpp)
 
 # arg exe with timers
 add_executable(timedMirco src/main_argsAndTimers.cpp)
@@ -218,7 +150,6 @@ target_include_directories(mirco_lib INTERFACE
 
 add_library(mirco::mirco_lib ALIAS mirco_lib)
 
-target_link_libraries(mirco PUBLIC mirco::mirco_lib mirco_inputparameters_yaml mirco_utils Kokkos::kokkos myUtils::myUtils)
 
 target_link_libraries(timedMirco PUBLIC mirco::mirco_lib Kokkos::kokkos myUtils::myUtils)
 
@@ -245,26 +176,3 @@ install(FILES
   )
 
 install(DIRECTORY ${PROJECT_SOURCE_DIR}/src/ DESTINATION include/mirco FILES_MATCHING PATTERN "*.h")
-
-option(GTEST_IN_MIRCO "Enable GoogleTest in MIRCO" ON)
-# Compile unittest executable
-if(GTEST_IN_MIRCO)
-  enable_testing()
-  include(GoogleTest)
-
-  add_executable(tests
-    tests/unittests/test.cpp
-    )
-  target_link_libraries(tests PUBLIC mirco::mirco_lib mirco_inputparameters_yaml mirco_utils gtest Kokkos::kokkos)
-
-  # Copy tests/unittests/data folder to the build dir
-  add_custom_command(
-    TARGET tests POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-            ${CMAKE_CURRENT_SOURCE_DIR}/tests/unittests/data
-            $<TARGET_FILE_DIR:tests>/test/data
-  )
-
-  gtest_discover_tests(tests)
-  include(TestingFramework.cmake)
-endif()

@@ -50,6 +50,7 @@ namespace MIRCO
         bool RandomSeedFlag, int RandomGeneratorSeed, int MaxIteration, bool WarmStartingFlag,
         bool PressureGreenFunFlag);
 
+        //#
     InputParameters(double compositeYoungs, double Tolerance, double Delta, double LateralLength,
         int Resolution, double InitialTopologyStdDeviation, double Hurst, bool RandomSeedFlag,
         int RandomGeneratorSeed, int MaxIteration, bool WarmStartingFlag,

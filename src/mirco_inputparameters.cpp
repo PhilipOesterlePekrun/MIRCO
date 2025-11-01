@@ -89,6 +89,7 @@ namespace MIRCO
     grid_size = LateralLength / N;
   }
 
+  //#
   InputParameters::InputParameters(double compositeYoungs, double Tolerance, double Delta,
       double LateralLength, int Resolution, double InitialTopologyStdDeviation, double Hurst,
       bool RandomSeedFlag, int RandomGeneratorSeed, int MaxIteration, bool WarmStartingFlag,
@@ -107,11 +108,11 @@ namespace MIRCO
     // resolution is available; no interpolation needed
     if (PressureGreenFunFlag)
     {
-      shape_factor = shape_factors_pressure.at(Resolution);
+      shape_factor = GetShapeFactor_intRes(shape_factors_pressure, Resolution);
     }
     else
     {
-      shape_factor = shape_factors_force.at(Resolution);
+      shape_factor = GetShapeFactor_intRes(shape_factors_force, Resolution);
     }
 
     composite_youngs = compositeYoungs;  // 1.0 / ((1 - nu1 * nu1) / E1 + (1 - nu2 * nu2) / E2);

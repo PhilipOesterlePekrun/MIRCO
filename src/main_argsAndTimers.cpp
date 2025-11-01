@@ -125,9 +125,7 @@ int main(int argc, char* argv[])
 
     std::string outFile = argv[10];
     
-    double numThreads = std::stoi(argv[11]);
-    
-    if (argc != 12)
+    if (argc != 11)
     {
       std::cout << "E: Incorrect arg count: " << argc << "\n";
       return 1;
@@ -145,7 +143,7 @@ int main(int argc, char* argv[])
     globalR.start();  ////{
 
     InputParameters inputParams(compositeYoungs, tol, delta, lateralLength, res, stdDev, hurst,
-        false, RandomSeed, 100, warmst, greenf);
+        false, RandomSeed, 1000, warmst, greenf);
 
     ViewVector_d meshgrid = CreateMeshgrid(inputParams.N, inputParams.grid_size);
     const auto maxAndMean = ComputeMaxAndMean(inputParams.topology);
@@ -153,10 +151,7 @@ int main(int argc, char* argv[])
     // Main evaluation agorithm
     double meanPressure, effectiveContactAreaFraction;
     Evaluate(meanPressure, effectiveContactAreaFraction, inputParams, maxAndMean.max, meshgrid);
-
-    // write deformed topology and pressure //#{
-    // #}
-
+    
     ////}
 
     std::string sTim = globalR.timingReportStr();  // we do this before other stuff
@@ -169,7 +164,7 @@ int main(int argc, char* argv[])
     sTot += "\n__[[/]]\n";
     sTot += "Default execution space = " + std::string(typeid(ExecSpace_Default_t).name()) + "\n";
     sTot += "__[[inputs]]\n";
-    sTot += "numThreads = " + std::to_string(numThreads) + "\n";
+    sTot += "numThreads = " + std::to_string((int)ExecSpace_Default_t().concurrency()) + "\n";
     sTot += "compositeYoungs = " + std::to_string(compositeYoungs) + "\n";
     sTot += "tol = " + std::to_string(tol) + "\n";
     sTot += "delta = " + std::to_string(delta) + "\n";
@@ -179,8 +174,6 @@ int main(int argc, char* argv[])
     sTot += "hurst = " + std::to_string(hurst) + "\n";
     sTot += "warmstartFlag = " + (warmst ? std::string("true") : std::string("false")) + "\n";
     sTot += "greenFunctionFlag = " + (greenf ? std::string("true") : std::string("false")) + "\n";
-
-    sTot += "__[[alwaysConstInputs]]\n";
     sTot += "RandomSeed = " + std::to_string(RandomSeed) + "\n";
 
     sTot += "__[[timers]]\n";
