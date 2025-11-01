@@ -6,10 +6,14 @@
 #include <Teuchos_SerialSpdDenseSolver.hpp>
 #include <Teuchos_SerialSymDenseMatrix.hpp>
 
+#include <myUtils/Timers.hpp>
+
 Teuchos::SerialDenseVector<int, double> MIRCO::LinearSolver::Solve(
     Teuchos::SerialSymDenseMatrix<int, double>& matrix,
     Teuchos::SerialDenseVector<int, double>& vector_b)
 {
+  MyUtils::Timers::ScopedTimer sTimer0("Teuchos::SerialSpdDenseSolver()");
+  
   Teuchos::SerialSpdDenseSolver<int, double> solver;
   int err = solver.setMatrix(Teuchos::rcpFromRef(matrix));
   if (err != 0)

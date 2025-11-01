@@ -7,6 +7,8 @@
 #include <random>
 #include <string>
 
+#include <myUtils/Timers.hpp>
+
 Teuchos::SerialDenseMatrix<int, double> MIRCO::CreateSurfaceFromFile(
     const std::string& filepath, int& N)
 {
@@ -45,6 +47,8 @@ Teuchos::SerialDenseMatrix<int, double> MIRCO::CreateSurfaceFromFile(
 Teuchos::SerialDenseMatrix<int, double> MIRCO::CreateRmgSurface(int resolution,
     double InitialTopologyStdDeviation, double Hurst, bool RandomSeedFlag, int RandomGeneratorSeed)
 {
+  MyUtils::Timers::ScopedTimer sTimer0("CreateRmgSurface()");
+  
   srand(time(NULL));
 
   int seed;

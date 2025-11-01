@@ -2,6 +2,19 @@
   "version": 8,
   "configurePresets": [
     {
+      "name": "rel",
+      "hidden": false,
+      "generator": "Ninja",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RELEASE",
+        "CMAKE_CXX_COMPILER": "mpic++",
+        "TRILINOS_PATH": "/home/oesterle/Trilinos_Base/install/",
+        "TRILINOS_IN_MIRCO": "ON",
+        "GTEST_IN_MIRCO": "OFF",
+        "myUtils_ENABLE_TIMERS": "ON"
+      }
+    },
+    {
       "name": ".imcs_workstation_base",
       "hidden": true,
       "generator": "Ninja",

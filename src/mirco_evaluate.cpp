@@ -16,6 +16,8 @@
 #include "mirco_matrixsetup.h"
 #include "mirco_nonlinearsolver.h"
 
+#include <myUtils/Timers.hpp>
+
 void MIRCO::Evaluate(double& pressure, const double Delta, const double LateralLength,
     const double GridSize, const double Tolerance, const int MaxIteration,
     const double CompositeYoungs, const bool WarmStartingFlag,
@@ -23,6 +25,8 @@ void MIRCO::Evaluate(double& pressure, const double Delta, const double LateralL
     const Teuchos::SerialDenseMatrix<int, double>& topology, const double zmax,
     const std::vector<double>& meshgrid, const bool PressureGreenFunFlag)
 {
+  MyUtils::Timers::ScopedTimer sTimer0("Evaluate()");
+  
   // Initialise the area vector and force vector. Each element containing the
   // area and force calculated at every iteration.
   std::vector<double> area0;

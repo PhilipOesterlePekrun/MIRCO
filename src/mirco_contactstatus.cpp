@@ -4,6 +4,8 @@
 #include <cmath>
 #include <vector>
 
+#include <myUtils/Timers.hpp>
+
 void MIRCO::ComputeContactNodes(std::vector<double> &xvf, std::vector<double> &yvf,
     std::vector<double> &pf, int &nf, Teuchos::SerialDenseMatrix<int, double> y,
     std::vector<double> xv0, std::vector<double> yv0)
@@ -38,6 +40,8 @@ void MIRCO::ComputeContactForceAndArea(std::vector<double> &force0, std::vector<
     double &w_el, int nf, std::vector<double> pf, int k, double GridSize, double LateralLength,
     double ElasticComplianceCorrection, bool PressureGreenFunFlag)
 {
+  MyUtils::Timers::ScopedTimer sTimer0("ComputeContactForceAndArea()");
+  
   force0.push_back(0);
   double sum = 0;
 #pragma omp parallel for schedule(static, 16) reduction(+ : sum)  // Always same workload -> Static!

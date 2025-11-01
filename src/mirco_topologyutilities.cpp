@@ -4,6 +4,8 @@
 #include <cmath>
 #include <vector>
 
+#include <myUtils/Timers.hpp>
+
 std::vector<double> MIRCO::CreateMeshgrid(const int ngrid, const double GridSize)
 {
   std::vector<double> meshgrid(ngrid);
@@ -18,6 +20,8 @@ std::vector<double> MIRCO::CreateMeshgrid(const int ngrid, const double GridSize
 MIRCO::TopologyMaxAndMean MIRCO::ComputeMaxAndMean(
     const Teuchos::SerialDenseMatrix<int, double>& topology)
 {
+  MyUtils::Timers::ScopedTimer sTimer0("ComputeMaxAndMean()");
+  
   double zmax = -1.0;
   double zmean = 0.0;
 #pragma omp parallel for schedule(guided, 16) reduction(+ : zmean) reduction(max : zmax)

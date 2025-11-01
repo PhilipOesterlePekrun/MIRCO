@@ -7,10 +7,14 @@
 
 #include "mirco_linearsolver.h"
 
+#include <myUtils/Timers.hpp>
+
 Teuchos::SerialDenseVector<int, double> MIRCO::NonLinearSolver::Solve(
     const Teuchos::SerialDenseMatrix<int, double>& matrix, const std::vector<double>& b0,
     const Teuchos::SerialDenseMatrix<int, double>& y0, Teuchos::SerialDenseMatrix<int, double>& w)
 {
+  MyUtils::Timers::ScopedTimer sTimer0("nonlinearSolve()");
+  
   double nnlstol = 1.0000e-08;
   double maxiter = 10000;
   double eps = 2.2204e-16;

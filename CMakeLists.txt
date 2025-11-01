@@ -26,6 +26,11 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # is that CMake and/or clang-tidy will be updated to handle modules better.
 set(CMAKE_CXX_SCAN_FOR_MODULES OFF)
 
+option(myUtils_ENABLE_TIMERS "Enable timers" ON)
+add_compile_definitions(
+  myUtils_ENABLE_TIMERS=$<IF:$<BOOL:${myUtils_ENABLE_TIMERS}>,1,0>
+)
+
 # Ensure cmake setup the correct runtime path when installing
 # see here for more information: https://gitlab.kitware.com/cmake/community/-/wikis/doc/cmake/RPATH-handling
 include(GNUInstallDirs)
@@ -97,6 +102,10 @@ if(TRILINOS_IN_MIRCO)
   endif()
 endif()
 
+set(MYUTILS_DIR "$ENV{HOME}/misc/myUtils_Base/install")
+set(CMAKE_PREFIX_PATH ${MYUTILS_DIR} ${CMAKE_PREFIX_PATH})
+find_package(myUtils REQUIRED)
+
 # Find OpenMP
 find_package(OpenMP REQUIRED)
 
@@ -118,25 +127,25 @@ add_library(mirco_core
   src/mirco_contactpredictors.cpp
   src/mirco_contactstatus.cpp
   )
-target_link_libraries(mirco_core PUBLIC Trilinos::all_selected_libs OpenMP::OpenMP_CXX)
+target_link_libraries(mirco_core PUBLIC Trilinos::all_selected_libs OpenMP::OpenMP_CXX myUtils::myUtils)
 
 add_library(mirco_topology
   src/mirco_topology.cpp
   )
-target_link_libraries(mirco_topology PRIVATE Trilinos::all_selected_libs)
+target_link_libraries(mirco_topology PRIVATE Trilinos::all_selected_libs myUtils::myUtils)
 
 add_library(mirco_io
   src/mirco_inputparameters.cpp
   )
 target_link_libraries(mirco_io PRIVATE mirco_utils mirco_topology)
-target_link_libraries(mirco_io PUBLIC Trilinos::all_selected_libs)
+target_link_libraries(mirco_io PUBLIC Trilinos::all_selected_libs myUtils::myUtils)
 
 add_library(mirco_utils
   src/mirco_filesystem_utils.cpp
   )
 
 add_library(mirco_lib INTERFACE)
-target_link_libraries(mirco_lib INTERFACE mirco_core mirco_io mirco_utils mirco_topology)
+target_link_libraries(mirco_lib INTERFACE mirco_core mirco_io mirco_utils mirco_topology myUtils::myUtils)
 target_link_libraries(mirco_lib
   INTERFACE OpenMP::OpenMP_CXX
   Trilinos::all_selected_libs
@@ -153,6 +162,9 @@ add_library(mirco::mirco_lib ALIAS mirco_lib)
 # Compile mirco itself
 add_executable(mirco src/main.cpp)
 target_link_libraries(mirco PUBLIC mirco::mirco_lib)
+
+add_executable(timedMirco src/main_argsAndTimers.cpp)
+target_link_libraries(timedMirco PUBLIC mirco::mirco_lib myUtils::myUtils)
 
 # Install mirco (to be used as a library by other codes)
 install(TARGETS mirco_lib mirco_core mirco_io mirco_utils mirco_topology

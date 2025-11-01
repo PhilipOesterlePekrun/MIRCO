@@ -49,6 +49,12 @@ namespace MIRCO
         double LateralLength, int Resolution, double InitialTopologyStdDeviation, double Hurst,
         bool RandomSeedFlag, int RandomGeneratorSeed, int MaxIteration, bool WarmStartingFlag,
         bool PressureGreenFunFlag);
+        
+        //#
+InputParameters(double compositeYoungs, double Tolerance, double Delta, double LateralLength,
+        int Resolution, double InitialTopologyStdDeviation, double Hurst, bool RandomSeedFlag,
+        int RandomGeneratorSeed, int MaxIteration, bool WarmStartingFlag,
+        bool PressureGreenFunFlag);
 
     /**
      * @brief Constructor which sets the necessary member variable parameters without an input
