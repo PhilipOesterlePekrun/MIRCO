@@ -9,8 +9,9 @@ namespace
   // Shape factors (See section 3.3 of https://doi.org/10.1007/s00466-019-01791-3)
   // These are the shape factors to calculate the elastic compliance correction of the micro-scale
   // contact constitutive law for various resolutions.
-  // NOTE: Currently MIRCO works most accurately for resoulutions of 1 to 8. The following maps
-  // store the shape factors for resolutions of 1 to 8.
+  // NOTE: MIRCO works most accurately the integer resolutions of 1 to 8, which are given below. For
+  // other values of the (equivalent) resolution, shape factors are interpolated/extrapolated
+  // linearly.
 
   // The following pressure based constants are calculated by solving a flat indentor problem using
   // the pressure based Green function described in Pohrt and Li (2014).
