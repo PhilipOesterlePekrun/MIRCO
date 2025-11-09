@@ -188,10 +188,15 @@ else()
     )
   else()
     # Everything is compiled on host; fetch rapidyaml directly
-    message(STATUS "Fetching rapidyaml.")
+    message(STATUS "Fetching rapidyaml...")
     include(FetchContent)
+    
+    set(CMAKE_SUPPRESS_DEVELOPER_WARNINGS ON CACHE BOOL "" FORCE) # Suppress developer warnings from ryml
+    
     FetchContent_Declare(rapidyaml GIT_REPOSITORY https://github.com/biojppm/rapidyaml.git GIT_TAG 47ec2fa184209687c20fd5bc05621e1cb1200311)
     FetchContent_MakeAvailable(rapidyaml)
+    
+    set(CMAKE_SUPPRESS_DEVELOPER_WARNINGS OFF CACHE BOOL "" FORCE)
   endif()
 endif()
 
