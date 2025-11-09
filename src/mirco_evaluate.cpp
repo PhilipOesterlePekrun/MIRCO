@@ -121,9 +121,12 @@ namespace MIRCO
       const double LateralLength, const double GridSize, const double Tolerance,
       const int MaxIteration, const double CompositeYoungs, const bool WarmStartingFlag,
       const double ElasticComplianceCorrection, const ViewMatrix_d topology, const double zmax,
-      const ViewVector_d meshgrid, const bool PressureGreenFunFlag, ViewVectorInt_d& activeSetf,
-      ViewVector_d& pf)  //, ViewVector_d& w)
+      const ViewVector_d meshgrid, const bool PressureGreenFunFlag, int& iterCount, int& activeSetSize)  //, ViewVector_d& w)
   {
+    
+    MyUtils::Timers::ScopedTimer sTimer0("EvaluateRet()");
+    
+    
     // Initialise the area vector and force vector. Each element contains the
     // area and force calculated at every iteration.
     std::vector<double> totalForceVector;
@@ -132,6 +135,12 @@ namespace MIRCO
 
     // Initialise number of iterations
     int k = 0;
+
+    // Points in contact in the previous iteration (only needed for warmstart)
+    ViewVectorInt_d activeSetf;
+
+    // Contact force at (xvf,yvf) predicted in the previous iteration
+    ViewVector_d pf;
 
     // Points in contact in the previous iteration (only needed for warmstart)
     /// ViewVectorInt_d activeSetf;
@@ -203,9 +212,13 @@ namespace MIRCO
 
       ++k;
     }
+std::cout<<"pf.extent(0)="<<pf.extent(0)<<"\n";
+    iterCount = k;
 
-    if (deltaTotalForce > Tolerance)
+    if (deltaTotalForce > Tolerance) {
+      iterCount = -k;
       std::runtime_error("The solver did not converge in the maximum number of iterations.");
+    }
 
     // Calculate the final force value at the end of the iteration
     const double finalForce = totalForceVector.back();

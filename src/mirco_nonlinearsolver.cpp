@@ -226,6 +226,7 @@ MyUtils::Timers::ScopedTimer sTimer1("gesv()");
     }
     // Construct the final active set (the lower half of activeInactiveSet), as well as the compact
     // final pressure vector
+//MyUtils::Timers::ScopedTimer sTimer2("nonlinearSolve();cnstrctFinal");
     activeSetf = ViewVectorInt_d("activeSetf", activeSetSize);
     pf = ViewVector_d("pf", activeSetSize);
     Kokkos::parallel_for(

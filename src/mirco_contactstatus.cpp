@@ -26,7 +26,7 @@ namespace MIRCO
           activeSetSize, KOKKOS_LAMBDA(const int i, double& local_sum) { local_sum += pf(i); },
           totalForce);
 
-    contactArea = activeSetSize * (GridSize2 / LateralLength * LateralLength);
+    contactArea = activeSetSize * GridSize2;
   }
 
 }  // namespace MIRCO

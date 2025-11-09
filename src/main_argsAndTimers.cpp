@@ -152,6 +152,9 @@ int main(int argc, char* argv[])
     double meanPressure, effectiveContactAreaFraction;
     Evaluate(meanPressure, effectiveContactAreaFraction, inputParams, maxAndMean.max, meshgrid);
     
+    ///int iterCount=-1;
+    ///EvaluateRet(meanPressure, effectiveContactAreaFraction, inputParams, maxAndMean.max, meshgrid, iterCount);
+    
     ////}
 
     std::string sTim = globalR.timingReportStr();  // we do this before other stuff
@@ -159,32 +162,37 @@ int main(int argc, char* argv[])
     // MyUtils::Timers::ScopedTimer sTimer0("TIMERNAME()")
     // and remember to
     // #include <myUtils/Timers.hpp>
+    
+    
+    std::ostringstream ossTot;
+    ossTot.setf(std::ios::scientific);
 
-    std::string sTot = "";
-    sTot += "\n__[[/]]\n";
-    sTot += "Default execution space = " + std::string(typeid(ExecSpace_Default_t).name()) + "\n";
-    sTot += "__[[inputs]]\n";
-    sTot += "numThreads = " + std::to_string((int)ExecSpace_Default_t().concurrency()) + "\n";
-    sTot += "compositeYoungs = " + std::to_string(compositeYoungs) + "\n";
-    sTot += "tol = " + std::to_string(tol) + "\n";
-    sTot += "delta = " + std::to_string(delta) + "\n";
-    sTot += "lateralLength = " + std::to_string(lateralLength) + "\n";
-    sTot += "res = " + std::to_string(res) + "\n";
-    sTot += "stdDev = " + std::to_string(stdDev) + "\n";
-    sTot += "hurst = " + std::to_string(hurst) + "\n";
-    sTot += "warmstartFlag = " + (warmst ? std::string("true") : std::string("false")) + "\n";
-    sTot += "greenFunctionFlag = " + (greenf ? std::string("true") : std::string("false")) + "\n";
-    sTot += "RandomSeed = " + std::to_string(RandomSeed) + "\n";
+    ossTot << "\n__[[/]]\n";
+    ossTot << "Default execution space = " << std::string(typeid(ExecSpace_Default_t).name()) << "\n";
+    ossTot << "__[[inputs]]\n";
+    ossTot << "numThreads = " << (int)ExecSpace_Default_t().concurrency() << "\n";
+    ossTot << "compositeYoungs = " << std::setprecision(16 - 1) << compositeYoungs << "\n";
+    ossTot << "tol = " << std::setprecision(16 - 1) << tol << "\n";
+    ossTot << "delta = " << std::setprecision(16 - 1) << delta << "\n";
+    ossTot << "lateralLength = " << std::setprecision(16 - 1) << lateralLength << "\n";
+    ossTot << "res = " << res << "\n";
+    ossTot << "stdDev = " << std::setprecision(16 - 1) << stdDev << "\n";
+    ossTot << "hurst = " << std::setprecision(16 - 1) << hurst << "\n";
+    ossTot << "warmstartFlag = " << (warmst ? std::string("true") : std::string("false")) << "\n";
+    ossTot << "greenFunctionFlag = " << (greenf ? std::string("true") : std::string("false")) << "\n";
+    ossTot << "RandomSeed = " << RandomSeed << "\n";
 
-    sTot += "__[[timers]]\n";
-    sTot += sTim;
+    ossTot << "__[[timers]]\n";
+    ossTot << sTim;
 
-    sTot += "__[[outputs]]\n";
-    sTot += "meanPressure = " + std::to_string(meanPressure) + "\n";
-    sTot += "effectiveContactAreaFraction = " + std::to_string(effectiveContactAreaFraction) + "\n";
-
+    ossTot << "__[[outputs]]\n";
+    ossTot << "meanPressure = " << std::setprecision(16 - 1) << meanPressure << "\n";
+    ossTot << "effectiveContactAreaFraction = " << std::setprecision(16 - 1) << effectiveContactAreaFraction << "\n";
+    ///ossTot << "evalIterCount = " << iterCount << "\n";
+    
     std::ofstream fOut(outFile, std::ios::app);  // we append
-    fOut << sTot;
+    fOut << ossTot.str();
+    
 
 
 
@@ -223,6 +231,7 @@ int main(int argc, char* argv[])
     }
     std::cout << "\n";
 
+    std::cout<<ossTot.str()<<"\n";
 
     std::cout << std::setprecision(16) << "Mean pressure is: " << meanPressure
               << "\nEffective contact area fraction is: " << effectiveContactAreaFraction

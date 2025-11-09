@@ -35,8 +35,19 @@ namespace MIRCO
       const double LateralLength, const double GridSize, const double Tolerance,
       const int MaxIteration, const double CompositeYoungs, const bool WarmStartingFlag,
       const double ElasticComplianceCorrection, const ViewMatrix_d topology, const double zmax,
-      const ViewVector_d meshgrid, const bool PressureGreenFunFlag, ViewVectorInt_d& activeSetf,
-      ViewVector_d& pf);  //, ViewVector_d& w);
+      const ViewVector_d meshgrid, const bool PressureGreenFunFlag, int& iterCount);  //, ViewVector_d& w);
+      
+      
+      
+inline void EvaluateRet(double& pressure, double& effectiveContactAreaFraction,
+      const InputParameters& inputParams, const double zmax, const ViewVector_d meshgrid, int& iterCount)
+  {
+    EvaluateRet(pressure, effectiveContactAreaFraction, inputParams.delta, inputParams.lateral_length,
+        inputParams.grid_size, inputParams.tolerance, inputParams.max_iteration,
+        inputParams.composite_youngs, inputParams.warm_starting_flag,
+        inputParams.elastic_compliance_correction, inputParams.topology, zmax, meshgrid,
+        inputParams.pressure_green_funct_flag, iterCount);
+  }
 
   /**
    * @brief Relate the far-field displacement with pressure, taking the parameters from an
