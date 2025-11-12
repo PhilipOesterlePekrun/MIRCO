@@ -70,7 +70,7 @@ Evaluate(meanPressure, effectiveContactAreaFraction, inputParams, maxAndMean.max
     
     
     InputParameters inputParams(compositeYoungs, tol, delta, lateralLength, res, stdDev, hurst,
-    false, RandomSeed, 1000, warmst, greenf);
+    false, RandomSeed, 10000, warmst, greenf);
 
   // Identical Vectors/Matricies, therefore only created one here.
   auto meshgrid = MIRCO::CreateMeshgrid(inputParams.N, inputParams.grid_size);
@@ -89,33 +89,37 @@ Evaluate(meanPressure, effectiveContactAreaFraction, inputParams, maxAndMean.max
     // MyUtils::Timers::ScopedTimer sTimer0("TIMERNAME()")
     // and remember to
     // #include <myUtils/Timers.hpp>
+    
+    std::ostringstream ossTot;
+    ossTot.setf(std::ios::scientific);
 
-    std::string sTot = "";
-    sTot += "\n__[[/]]\n";
-    sTot += "Original Implementation (Teuchos, raw OpenMP)\n";
-    sTot += "__[[inputs]]\n";
-    sTot += "numThreads = " + std::to_string((int)omp_get_max_threads()) + "\n";
-    sTot += "compositeYoungs = " + std::to_string(compositeYoungs) + "\n";
-    sTot += "tol = " + std::to_string(tol) + "\n";
-    sTot += "delta = " + std::to_string(delta) + "\n";
-    sTot += "lateralLength = " + std::to_string(lateralLength) + "\n";
-    sTot += "res = " + std::to_string(res) + "\n";
-    sTot += "stdDev = " + std::to_string(stdDev) + "\n";
-    sTot += "hurst = " + std::to_string(hurst) + "\n";
-    sTot += "warmstartFlag = " + (warmst ? std::string("true") : std::string("false")) + "\n";
-    sTot += "greenFunctionFlag = " + (greenf ? std::string("true") : std::string("false")) + "\n";
-    sTot += "RandomSeed = " + std::to_string(RandomSeed) + "\n";
+    ossTot << "\n__[[/]]\n";
+    ossTot << "Original Implementation (Teuchos, raw OpenMP)\n";
+    ossTot << "__[[inputs]]\n";
+    ossTot << "numThreads = " + (int)omp_get_max_threads() << "\n";
+    ossTot << "compositeYoungs = " << std::setprecision(16 - 1) << compositeYoungs << "\n";
+    ossTot << "tol = " << std::setprecision(16 - 1) << tol << "\n";
+    ossTot << "delta = " << std::setprecision(16 - 1) << delta << "\n";
+    ossTot << "lateralLength = " << std::setprecision(16 - 1) << lateralLength << "\n";
+    ossTot << "res = " << res << "\n";
+    ossTot << "stdDev = " << std::setprecision(16 - 1) << stdDev << "\n";
+    ossTot << "hurst = " << std::setprecision(16 - 1) << hurst << "\n";
+    ossTot << "warmstartFlag = " << (warmst ? std::string("true") : std::string("false")) << "\n";
+    ossTot << "greenFunctionFlag = " << (greenf ? std::string("true") : std::string("false")) << "\n";
+    ossTot << "RandomSeed = " << RandomSeed << "\n";
 
-    sTot += "__[[timers]]\n";
-    sTot += sTim;
+    ossTot << "__[[timers]]\n";
+    ossTot << sTim;
 
-    sTot += "__[[outputs]]\n";
-    sTot += "meanPressure = " + std::to_string(meanPressure) + "\n";
+    ossTot << "__[[outputs]]\n";
+    ossTot << "meanPressure = " << std::setprecision(16 - 1) << meanPressure << "\n";
 
     std::ofstream fOut(outFile, std::ios::app);  // we append
-    fOut << sTot;
+    fOut << ossTot.str();
+    
+    std::cout<<"\n";
 
-
+std::cout<<ossTot.str()<<"\n";
 
 
     std::cout << std::setprecision(16) << "Mean pressure is: " << meanPressure
