@@ -143,7 +143,7 @@ int main(int argc, char* argv[])
     globalR.start();  ////{
 
     InputParameters inputParams(compositeYoungs, tol, delta, lateralLength, res, stdDev, hurst,
-        false, RandomSeed, 1000, warmst, greenf);
+        false, RandomSeed, 10000, warmst, greenf);
 
     ViewVector_d meshgrid = CreateMeshgrid(inputParams.N, inputParams.grid_size);
     const auto maxAndMean = ComputeMaxAndMean(inputParams.topology);
