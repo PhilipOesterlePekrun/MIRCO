@@ -109,8 +109,6 @@ find_package(myUtils REQUIRED)
 # Find OpenMP
 find_package(OpenMP REQUIRED)
 
-# Find OpenMPI
-find_package(MPI REQUIRED)
 
 # Compiler flags: delay this modification after MPI was found. Otherwise,
 # trying to compile with MPI can give warnings.
@@ -149,7 +147,6 @@ target_link_libraries(mirco_lib INTERFACE mirco_core mirco_io mirco_utils mirco_
 target_link_libraries(mirco_lib
   INTERFACE OpenMP::OpenMP_CXX
   Trilinos::all_selected_libs
-  MPI::MPI_CXX
   )
 
 target_include_directories(mirco_lib INTERFACE
