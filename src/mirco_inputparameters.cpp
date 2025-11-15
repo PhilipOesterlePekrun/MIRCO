@@ -35,12 +35,11 @@ namespace
   }
 }  // namespace
 
-namespace MIRCO
+namespace MIRCO::Input
 {
   InputParameters::InputParameters(double E1, double E2, double nu1, double nu2, double Tolerance,
-      double Delta, double LateralLength, int Resolution, double InitialTopologyStdDeviation,
-      double Hurst, bool RandomSeedFlag, int RandomGeneratorSeed, int MaxIteration,
-      bool WarmStartingFlag, bool PressureGreenFunFlag)
+      double Delta, double LateralLength, int MaxIteration, bool WarmStartingFlag,
+      bool PressureGreenFunFlag)
       : tolerance(Tolerance),
         delta(Delta),
         lateral_length(LateralLength),
@@ -48,8 +47,25 @@ namespace MIRCO
         warm_starting_flag(WarmStartingFlag),
         pressure_green_funct_flag(PressureGreenFunFlag)
   {
-    auto topology_h = CreateRmgSurface(
-        Resolution, InitialTopologyStdDeviation, Hurst, RandomSeedFlag, RandomGeneratorSeed);
+    composite_youngs = 1.0 / ((1 - nu1 * nu1) / E1 + (1 - nu2 * nu2) / E2);
+    elastic_compliance_correction = LateralLength * composite_youngs / shape_factor;
+    N = (1 << Resolution) + 1;
+    grid_size = LateralLength / N;
+  }
+
+  InputParameters::InputParameters(double E1, double E2, double nu1, double nu2, double Tolerance,
+      double Delta, double LateralLength, int Resolution, double InitialTopologyStdDeviation,
+      double Hurst, std::optional<int> RandomGeneratorSeed, int MaxIteration, bool WarmStartingFlag,
+      bool PressureGreenFunFlag)
+      : tolerance(Tolerance),
+        delta(Delta),
+        lateral_length(LateralLength),
+        max_iteration(MaxIteration),
+        warm_starting_flag(WarmStartingFlag),
+        pressure_green_funct_flag(PressureGreenFunFlag)
+  {
+    auto topology_h =
+        CreateRmgSurface(Resolution, InitialTopologyStdDeviation, Hurst, RandomGeneratorSeed);
     topology = Kokkos::create_mirror_view_and_copy(ExecSpace_Default_t(), topology_h);
 
     // resolution is available; no interpolation needed
@@ -78,7 +94,8 @@ namespace MIRCO
         warm_starting_flag(WarmStartingFlag),
         pressure_green_funct_flag(PressureGreenFunFlag)
   {
-    auto topology_h = CreateSurfaceFromFile(TopologyFilePath, N);
+    auto topology_h = CreateSurfaceFromFile(TopologyFilePath);
+    N = topology_h.extent(0);
     topology = Kokkos::create_mirror_view_and_copy(ExecSpace_Default_t(), topology_h);
 
     // interpolation needed
@@ -96,4 +113,45 @@ namespace MIRCO
     grid_size = LateralLength / N;
   }
 
-}  // namespace MIRCO
+  InputParameters::InputParameters(Solver_Parameters& SolverParameters,
+      Material_Parameters& MaterialParameters, Geometrical_Parameters& GeometricalParameters,
+      optional<Result_Description&> ResultDescription, std::optional<ViewMatrix_d&> Topology)
+      : composite_youngs(MaterialParameters.composite_youngs()),
+        delta(GeometricalParameters.Delta),
+        lateral_length(GeometricalParameters.Topology_LateralLength),
+        pressure_green_funct_flag(SolverParameters.PressureGreenFunFlag),
+        topology(Topology),
+        result_description(ResultDescription)
+  {
+    if (Topology) grid_size = LateralLength / Topology.extent(0);
+    if (SolverParameters.ElasticCorrection)
+      if (!Topology)
+      {
+        if (auto topParams = std::get_if<Topology_RMG>(&GeometricalParameters.Topology))
+        {
+          auto topology_h = CreateRmgSurface(topParams.);
+          topology = Kokkos::create_mirror_view_and_copy(ExecSpace_Default_t(), topology_h);
+        }
+        else if (auto topParams = std::get_if<Topology_File>(&GeometricalParameters.Topology))
+        {
+          auto topology_h = CreateSurfaceFromFile(topParams);
+          topology = Kokkos::create_mirror_view_and_copy(ExecSpace_Default_t(), topology_h);
+        }
+        else if (auto topParams = std::get_if<Topology_Flat>(&GeometricalParameters.Topology))
+        {
+          auto topology_h = CreateSurfaceFromFile(topParams);
+          topology = Kokkos::create_mirror_view_and_copy(ExecSpace_Default_t(), topology_h);
+        }
+      }
+
+    if (PressureGreenFunFlag)
+    {
+      shape_factor = InterpolatedShapeFactor(shape_factors_pressure, N);
+    }
+    else
+    {
+      shape_factor = InterpolatedShapeFactor(shape_factors_force, N);
+    }
+  }
+
+}  // namespace MIRCO::Input

@@ -5,10 +5,78 @@
 
 #include "mirco_kokkostypes.h"
 
-namespace MIRCO
+namespace MIRCO::Input
 {
+  using std::optional;
+
+  struct Pptimization_Algorithm_NNLS
+  {
+    optional<double> Tolerance;
+    optional<int> MaxIter;
+  };  // -> all
+
+  struct Solver_Parameters
+  {
+    bool ElasticCorrection;
+    optional<int> MaxIterations;
+    optional<double> Tolerance;
+    bool PressureGreenFunFlag;
+    optional<bool> WarmStartingFlag;
+    // std::variant<optimization_algorithm_nnls, /*etc*/> optimization_algorithm;
+    std::optional<Pptimization_Algorithm_NNLS> optimization_algorithm;
+  };  // -> all
+
+  struct Material_Parameters
+  {
+    double E1;
+    double nu1;
+    double E2;
+    double nu2;
+    inline double composite_youngs()
+    {
+      return 1.0 / ((1 - nu1 * nu1) / E1 + (1 - nu2 * nu2) / E2);
+    };
+  };  // -> compositeYoungsLateralLength: 1000.0
+
+  struct Topology_RMG
+  {
+    int Resolution;
+    double HurstExponent;
+    double InitialTopologyStdDeviation;
+    std::optional<int> RandomGeneratorSeed;
+  };
+
+  /*struct Topology_File {
+    std::string TopologyFilePath;
+  };
+  struct Topology_Flat {
+    int N;
+  };*/
+  using Topology_File = std::string;
+  using Topology_Flat = int;
+
+  struct Geometrical_Parameters
+  {
+    double Delta;
+    // optional<std::string> topology_Type;
+    double Topology_LateralLength;
+
+    std::variant<Topology_File, Topology_Flat, Topology_RMG> topology;
+  };
+
+  struct Result_Description
+  {
+    double ExpectedPressure;
+    double ExpectedPressureTolerance;
+    double ExpectedEffectiveContactAreaFraction;
+    double ExpectedEffectiveContactAreaFractionTolerance;
+  };
+
+
+
   /**
-   * @brief This struct stores the input parameters and topology
+   * @brief This struct is constructed from a set of initial input parameters. It then stores or
+   * derives and stores those parameters which are needed by the solver.
    *
    */
   struct InputParameters
@@ -47,7 +115,7 @@ namespace MIRCO
      */
     InputParameters(double E1, double E2, double nu1, double nu2, double Tolerance, double Delta,
         double LateralLength, int Resolution, double InitialTopologyStdDeviation, double Hurst,
-        bool RandomSeedFlag, int RandomGeneratorSeed, int MaxIteration, bool WarmStartingFlag,
+        std::optional<int> RandomGeneratorSeed, int MaxIteration, bool WarmStartingFlag,
         bool PressureGreenFunFlag);
 
     /**
@@ -72,16 +140,24 @@ namespace MIRCO
         double LateralLength, const std::string& TopologyFilePath, int MaxIteration,
         bool WarmStartingFlag, bool PressureGreenFunFlag);
 
-    int N = 0;
-    double composite_youngs = 0.0, elastic_compliance_correction = 0.0, shape_factor = 0.0,
-           tolerance = 0.0, delta = 0.0, lateral_length = 0.0, grid_size = 0.0;
-    int max_iteration = 0;
-    bool warm_starting_flag = false;
+    /**
+     * @brief Constructor which sets the necessary member variable parameters without an input
+     * (.xml) file and creates the topology from a specified topology (.dat) file
+     *
+     */
+    InputParameters(Solver_Parameters& SolverParameters, Material_Parameters& MaterialParameters,
+        Geometrical_Parameters& GeometricalParameters,
+        optional<Result_Description&> ResultDescription = std::nullopt,
+        std::optional<ViewMatrix_d&> Topology = std::nullopt);
+
+    optional<double> elastic_compliance_correction, shape_factor, tolerance;
+    optional<int> max_iterations;
+    optional<bool> warm_starting_flag;
+    double composite_youngs, delta, lateral_length, grid_size;
     bool pressure_green_funct_flag = false;
-    // Note: topology is a lightweight handle, similar to std::shared_ptr. This struct does not
-    // own topology.
     ViewMatrix_d topology;
+    std::optional<Result_Description> result_description;
   };
-}  // namespace MIRCO
+}  // namespace MIRCO::Input
 
 #endif  // SRC_INPUTPARAMETERS_H_

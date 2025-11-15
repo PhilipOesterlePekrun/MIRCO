@@ -33,7 +33,8 @@ int main(int argc, char* argv[])
 
     InputParameters inputParams(inputFileName);
 
-    ViewVector_d meshgrid = CreateMeshgrid(inputParams.N, inputParams.grid_size);
+    const int topext = topology.extent(0);
+    ViewVector_d meshgrid = CreateMeshgrid(topext, inputParams.LateralLength / topext);
     const auto maxAndMean = ComputeMaxAndMean(inputParams.topology);
 
     // Main evaluation agorithm

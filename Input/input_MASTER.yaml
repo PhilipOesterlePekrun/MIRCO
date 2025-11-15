@@ -1,0 +1,80 @@
+# if it is not explicitly stated to be optional, it is not optional and will throw an error if not given (except for topology, where it will only throw if none of the available generator types can be fully defined)
+solver_parameters:
+  ElasticCorrection: true
+  MaxIterations: 100 # unused iff !ElasticCorrection
+  Tolerance: 0.01 # unused iff !ElasticCorrection
+  PressureGreenFunFlag: true
+  WarmStartingFlag: true # unused iff !ElasticCorrection
+  optimization_algorithm: # NEW; optional;default=NNLS with its default params
+    Algorithm: NNLS # NEW; optional;default=NNLS; [NNLS, Greedy, ADMM]
+    Tolerance: 10e-5 # NEW; optional
+    MaxIter: 10000 # NEW; optional
+    # or other params for other optimization algos
+material_parameters:
+  E1: 1.0
+  nu1: 0.3
+  E2: 1.0
+  nu2: 0.3
+geometrical_parameters:
+  Delta: 10.0
+  topology:
+    # We could have `Generator: [File, RMG, Flat, etc.]` here. Here, RMG is implied by unique parameter set. In case the parameter set contains the parameters for more than one type of generator, we could either throw an error or just throw a warning and follow a precedence (e.g. File, then RMG, then Flat). Or we make this optional--if it does not line up with the parameter set, we throw error; so more or less a self check
+    LateralLength: 1000.0
+    Resolution: 7
+    HurstExponent: 0.7
+    InitialTopologyStdDeviation: 20.0
+    RandomGeneratorSeed: 95 # existence implies what was originally RandomSeedFlag: true
+result_description: # optional
+  ExpectedPressure: 0.0004526213923013545
+  ExpectedPressureTolerance: 1e-10
+  ExpectedEffectiveContactAreaFraction: 0.006970734931794964
+  ExpectedEffectiveContactAreaFractionTolerance: 1e-10
+
+## OR
+solver_parameters:
+  ElasticCorrection: true
+  MaxIterations: 100 # unused iff !ElasticCorrection
+  Tolerance: 0.01 # unused iff !ElasticCorrection
+  PressureGreenFunFlag: true
+  WarmStartingFlag: true # unused iff !ElasticCorrection
+  optimization_algorithm: # NEW; optional;default=NNLS with its default params
+    Algorithm: NNLS # NEW; optional;default=NNLS; [NNLS, Greedy, ADMM]
+    Tolerance: 10e-5 # NEW; optional
+    MaxIter: 10000 # NEW; optional
+material_parameters:
+  E1: 1.0
+  nu1: 0.3
+  E2: 1.0
+  nu2: 0.3
+geometrical_parameters:
+  Delta: 10.0
+  topology:
+    LateralLength: 1000.0
+    TopologyFilePath: sup2.dat # implies File
+result_description:
+  ExpectedPressure: 0.0004526213923013545
+  ExpectedPressureTolerance: 1e-10
+  ExpectedEffectiveContactAreaFraction: 0.006970734931794964
+  ExpectedEffectiveContactAreaFractionTolerance: 1e-10
+
+## OR
+solver_parameters:
+  MaxIterations: 100
+  Tolerance: 0.01
+  PressureGreenFunFlag: true
+  WarmStartingFlag: true
+material_parameters:
+  E1: 1.0
+  nu1: 0.3
+  E2: 1.0
+  nu2: 0.3
+geometrical_parameters:
+  Delta: 10.0
+  topology:
+    LateralLength: 1000.0
+    N: 200 # implies Flat
+result_description:
+  ExpectedPressure: 0.0004526213923013545
+  ExpectedPressureTolerance: 1e-10
+  ExpectedEffectiveContactAreaFraction: 0.006970734931794964
+  ExpectedEffectiveContactAreaFractionTolerance: 1e-10

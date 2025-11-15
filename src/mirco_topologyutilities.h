@@ -18,21 +18,9 @@ namespace MIRCO
   ViewVector_d CreateMeshgrid(const int ngrid, const double GridSize);
 
   /**
-   * @brief Store maximum and mean height of the topology
-   *
+   * @brief Compute the maximum value of a ViewMatrix_d v.
    */
-  struct TopologyMaxAndMean
-  {
-    double max;  /*!< Maximum height of the topology */
-    double mean; /*!< Mean height of the topology */
-  };
-
-  /**
-   * @brief Compute the maximum height and the mean height of the topology.
-   *
-   * @param topology Topology matrix containing heights
-   */
-  TopologyMaxAndMean ComputeMaxAndMean(ViewMatrix_d topology);
+  double ComputeMax(ViewMatrix_d v);
 }  // namespace MIRCO
 
 #endif  // SRC_TOPOLOGYUTILITIES_H_
