@@ -12,13 +12,22 @@
 #include "mirco_nonlinearsolver.h"
 #include "mirco_warmstart.h"
 
+#ifdef MIRCO_ENABLE_VISUALIZATION_EXPORT
+#include "mirco_visualizationexport.h"
+#endif
+
 namespace MIRCO
 {
   void Evaluate(double& pressure, double& effectiveContactAreaFraction, const double Delta,
       const double LateralLength, const double GridSize, const double Tolerance,
       const int MaxIteration, const double CompositeYoungs, const bool WarmStartingFlag,
       const double ElasticComplianceCorrection, const ViewMatrix_d topology, const double zmax,
-      const ViewVector_d meshgrid, const bool PressureGreenFunFlag)
+      const ViewVector_d meshgrid, const bool PressureGreenFunFlag
+#ifdef MIRCO_ENABLE_VISUALIZATION_EXPORT
+      ,
+      std::optional<VisualizationData>& visData = std::nullopt
+#endif
+  )
   {
     // Initialise the area vector and force vector. Each element contains the
     // area and force calculated at every iteration.
@@ -99,6 +108,14 @@ namespace MIRCO
 
       ++k;
     }
+
+#ifdef MIRCO_ENABLE_VISUALIZATION_EXPORT
+    if (visData)
+    {
+      visData.xv = xv0;
+      visData.yv = yv0;
+    }
+#endif
 
     if (deltaTotalForce > Tolerance)
       std::runtime_error("The solver did not converge in the maximum number of iterations.");

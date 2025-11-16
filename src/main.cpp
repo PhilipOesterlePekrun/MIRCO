@@ -11,6 +11,10 @@
 #include "mirco_topologyutilities.h"
 #include "mirco_utils.h"
 
+#ifdef MIRCO_ENABLE_VISUALIZATION_EXPORT
+#include "mirco_visualizationexport.h"
+#endif
+
 using namespace MIRCO;
 
 int main(int argc, char* argv[])
@@ -25,8 +29,16 @@ int main(int argc, char* argv[])
     std::cout << "Default host memory space: " << typeid(MemorySpace_Host_t).name() << "\n";
     std::cout << "\n";
 
-    if (argc != 2) std::runtime_error("The code expects (only) an input file as argument");
-    // Read the input file name from the command line
+    bool exportVisualization = false;
+#ifdef MIRCO_ENABLE_VISUALIZATION_EXPORT
+    if (argc < 2 || argc > 3) throw std::runtime_error("The code expects one or two arguments");
+    if (!(exportVisualization = argc >= 3 && (std::string(argv[2]) == "--export-visualization")))
+      throw std::runtime_error("Unknown second argument");
+#else
+    if (argc != 2) throw std::runtime_error("The code expects (only) an input file as argument");
+// Read the input file name from the command line
+#endif
+
     std::string inputFileName = argv[1];
 
     const auto start = std::chrono::high_resolution_clock::now();
@@ -38,7 +50,18 @@ int main(int argc, char* argv[])
 
     // Main evaluation agorithm
     double meanPressure, effectiveContactAreaFraction;
-    Evaluate(meanPressure, effectiveContactAreaFraction, inputParams, maxAndMean.max, meshgrid);
+#ifdef MIRCO_ENABLE_VISUALIZATION_EXPORT
+    VisualizationData visData;
+    visData.meshgrid = meshgrid;
+    visData.topology = inputParams.topology;
+    if (exportVisualization)
+      Evaluate(meanPressure, effectiveContactAreaFraction, inputParams, maxAndMean.max, meshgrid,
+          visData);
+    else
+      ()
+#endif
+          Evaluate(
+              meanPressure, effectiveContactAreaFraction, inputParams, maxAndMean.max, meshgrid);
 
     std::cout << std::setprecision(16) << "Mean pressure is: " << meanPressure
               << "\nEffective contact area fraction is: " << effectiveContactAreaFraction
