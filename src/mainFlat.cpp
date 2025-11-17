@@ -13,6 +13,7 @@
 
 using namespace MIRCO;
 
+// flat and args
 int main(int argc, char* argv[])
 {
   Kokkos::initialize(argc, argv);
@@ -25,17 +26,17 @@ int main(int argc, char* argv[])
     std::cout << "Default host memory space: " << typeid(MemorySpace_Host_t).name() << "\n";
     std::cout << "\n";
 
-    const auto start = std::chrono::high_resolution_clock::now();
-
     int res = std::stoi(argv[1]);
+    int N = (1 << res) + 1;
     double Delta = std::stod(argv[2]);
     double LateralLength = std::stod(argv[3]);
     double Tol = std::stod(argv[4]);
     int maxIter = std::stoi(argv[5]);
-    // double Tol = std::stod(argv[4]);
 
-    InputParameters inputParams(1.0, 1.0, 0.3, 0.3, Tol, Delta, LateralLength, res, 5.0, 0.7, false,
-        1201, maxIter, false, true);
+    const auto start = std::chrono::high_resolution_clock::now();
+
+    InputParameters inputParams(
+        1.0, 1.0, 0.3, 0.3, Tol, Delta, LateralLength, N, maxIter, false, true);
 
     ViewVector_d meshgrid = CreateMeshgrid(inputParams.N, inputParams.grid_size);
     const auto maxAndMean = ComputeMaxAndMean(inputParams.topology);

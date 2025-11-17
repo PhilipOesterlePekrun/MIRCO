@@ -5,6 +5,7 @@
 #include <cmath>
 #include <cstdio>
 #include <ctime>
+#include <iostream>
 
 #include "mirco_contactpredictors.h"
 #include "mirco_contactstatus.h"
@@ -25,6 +26,8 @@ namespace MIRCO
     std::vector<double> totalForceVector;
     std::vector<double> contactAreaVector;
     double w_el = 0.0;
+
+    std::cout << "ElasticComplianceCorrection=" << ElasticComplianceCorrection << "\n";
 
     // Initialise number of iterations
     int k = 0;
@@ -89,6 +92,7 @@ namespace MIRCO
       contactAreaVector.push_back(contactArea);
 
       // Elastic correction, used in the next iteration
+      std::cout << "\tk=" << k << ", w_el=" << w_el << "\n";
       w_el = totalForce / ElasticComplianceCorrection;
 
       // Compute error due to nonlinear correction
@@ -100,8 +104,12 @@ namespace MIRCO
       ++k;
     }
 
+    std::cout << "Total evaluate() iterations = " << k << "\n";
+
     if (deltaTotalForce > Tolerance)
-      std::runtime_error("The solver did not converge in the maximum number of iterations.");
+      std::cerr << "ERR: The solver did not converge in the maximum number of "
+                   "iterations.\n\tdeltaTotalForce="
+                << deltaTotalForce << "\n";
 
     // Calculate the final force value at the end of the iteration
     const double finalForce = totalForceVector.back();

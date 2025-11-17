@@ -72,6 +72,10 @@ namespace MIRCO
         double LateralLength, const std::string& TopologyFilePath, int MaxIteration,
         bool WarmStartingFlag, bool PressureGreenFunFlag);
 
+    InputParameters(double E1, double E2, double nu1, double nu2, double Tolerance, double Delta,
+        double LateralLength, int N, int MaxIteration, bool WarmStartingFlag,
+        bool PressureGreenFunFlag);
+
     int N = 0;
     double composite_youngs = 0.0, elastic_compliance_correction = 0.0, shape_factor = 0.0,
            tolerance = 0.0, delta = 0.0, lateral_length = 0.0, grid_size = 0.0;
