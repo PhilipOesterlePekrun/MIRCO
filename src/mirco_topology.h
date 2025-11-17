@@ -33,14 +33,6 @@ namespace MIRCO
   ViewMatrix_h CreateRmgSurface(int resolution, double initialTopologyStdDeviation, double hurst,
       bool randomSeedFlag, int randomGeneratorSeed);
 
-  inline ViewMatrix_h CreateFlatSurface(int N)
-  {
-    ViewMatrix_h z("CreateFlatSurface(); z", N, N);
-    for (int i = 0; i < N; ++i)
-      for (int j = 0; j < N; ++j) z(i, j) = 0;
-    return z;
-  }
-
 }  // namespace MIRCO
 
 #endif  // SRC_TOPOLOGY_H_

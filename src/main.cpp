@@ -44,11 +44,12 @@ int main(int argc, char* argv[])
     double meanPressure, effectiveContactAreaFraction;
     Evaluate(meanPressure, effectiveContactAreaFraction, inputParams, maxAndMean.max, meshgrid);
 
+    const auto finish = std::chrono::high_resolution_clock::now();
+
     std::cout << std::setprecision(16) << "Mean pressure is: " << meanPressure
               << "\nEffective contact area fraction is: " << effectiveContactAreaFraction
               << std::endl;
 
-    const auto finish = std::chrono::high_resolution_clock::now();
     const double elapsedTime =
         std::chrono::duration_cast<std::chrono::duration<double>>(finish - start).count();
     std::cout << "Elapsed time is: " + std::to_string(elapsedTime) + "s" << std::endl;

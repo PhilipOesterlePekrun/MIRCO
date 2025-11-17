@@ -207,7 +207,7 @@ target_include_directories(mirco_lib INTERFACE
 add_library(mirco::mirco_lib ALIAS mirco_lib)
 
 target_link_libraries(mirco PUBLIC mirco::mirco_lib mirco_inputparameters_yaml mirco_utils Kokkos::kokkos)
-target_link_libraries(mircoFlat PUBLIC mirco::mirco_lib mirco_inputparameters_yaml mirco_utils Kokkos::kokkos)
+target_link_libraries(mircoFlat PUBLIC mirco::mirco_lib mirco_utils Kokkos::kokkos KokkosKernels::kokkoskernels)
 
 # Install mirco (to be used as a library by other codes)
 install(TARGETS mirco_lib mirco_needKK mirco_core mirco_topology mirco_inputparameters

@@ -5,11 +5,14 @@
 #include <sstream>
 #include <string>
 
-#include "mirco_evaluate.h"
-#include "mirco_inputparameters.h"
+// #include "mirco_inputparameters.h"
 #include "mirco_kokkostypes.h"
 #include "mirco_topologyutilities.h"
-#include "mirco_utils.h"
+// #include "mirco_utils.h"
+#include <KokkosLapack_gesv.hpp>
+
+#include "mirco_contactstatus.h"
+#include "mirco_matrixsetup.h"
 
 using namespace MIRCO;
 
@@ -18,6 +21,19 @@ int main(int argc, char* argv[])
 {
   Kokkos::initialize(argc, argv);
   {
+    std::string argv1 = std::string(argv[1]);
+    if (argv1 == "-help" || argv1 == "-h" || argv1 == "--help" || argv1 == "--h")
+    {
+      std::cout << "TODO description\n"
+                << "\tInputs: N (lateral mesh grid count), Delta (far-field displacement), "
+                   "Composite Young's Modulus, LateralLength, Pressure Green Function Flag\n"
+                << "\tOutput: TODO\n"
+                << std::endl;
+      return 0;
+    }
+    if (argc != 6)
+      throw std::runtime_error("The code expects 5 arguments. Use --help for detials.");
+
     std::cout << "-- Kokkos information --\n";
     std::cout << "Threads in use: " << ExecSpace_Default_t().concurrency() << "\n";
     std::cout << "Default execution space: " << typeid(ExecSpace_Default_t).name() << "\n";
@@ -26,33 +42,72 @@ int main(int argc, char* argv[])
     std::cout << "Default host memory space: " << typeid(MemorySpace_Host_t).name() << "\n";
     std::cout << "\n";
 
-    int res = std::stoi(argv[1]);
-    int N = (1 << res) + 1;
+    int N = std::stoi(argv[1]);
     double Delta = std::stod(argv[2]);
-    double LateralLength = std::stod(argv[3]);
-    double Tol = std::stod(argv[4]);
-    int maxIter = std::stoi(argv[5]);
+    double CompositeYoungs = std::stod(argv[3]);
+    double LateralLength = std::stod(argv[4]);
+    std::string argv5 = std::string(argv[5]);
+    bool pressureGreenFunFlag =
+        (argv5 == "t" || argv5 == "T" || argv5 == "true" || argv5 == "True" || argv5 == "1");
 
     const auto start = std::chrono::high_resolution_clock::now();
 
-    InputParameters inputParams(
-        1.0, 1.0, 0.3, 0.3, Tol, Delta, LateralLength, N, maxIter, false, true);
+    const double gridSize = LateralLength / N;
 
-    ViewVector_d meshgrid = CreateMeshgrid(inputParams.N, inputParams.grid_size);
-    const auto maxAndMean = ComputeMaxAndMean(inputParams.topology);
+    ViewVector_d meshgrid = CreateMeshgrid(N, gridSize);
 
-    // Main evaluation agorithm
-    double meanPressure, effectiveContactAreaFraction;
-    Evaluate(meanPressure, effectiveContactAreaFraction, inputParams, maxAndMean.max, meshgrid);
+    const int N2 = N * N;
 
-    std::cout << std::setprecision(16) << "Mean pressure is: " << meanPressure
-              << "\nEffective contact area fraction is: " << effectiveContactAreaFraction
-              << std::endl;
+    ViewVector_d xv0 = ViewVector_d("xv0", N2);
+    ViewVector_d yv0 = ViewVector_d("yv0", N2);
+    ViewScalarInt_d counter("counter");
+    Kokkos::deep_copy(counter, 0);
+    Kokkos::parallel_for(
+        N2, KOKKOS_LAMBDA(const int a) {
+          const int i = a / N;
+          const int j = a % N;
+          const int aa = Kokkos::atomic_fetch_add(&counter(), 1);
+          xv0(aa) = meshgrid(i);
+          yv0(aa) = meshgrid(j);
+        });
+
+    // For a flat indentor, the following hold: displacement field = const, active set = entire
+    // domain
+    ViewMatrix_d H = MatrixGeneration::SetupMatrix(
+        xv0, yv0, gridSize, CompositeYoungs, N2, pressureGreenFunFlag);
+    ViewVector_d b0p("b0p", N2);
+    Kokkos::deep_copy(b0p, Delta);
+    ViewVectorInt_d ipiv("ipiv", N2);
+    // Solve H s = b0; b0p becomes s
+    KokkosLapack::gesv(H, b0p, ipiv);
+
+    double totalForce;
+    double contactArea;
+    ComputeContactForceAndArea(
+        totalForce, contactArea, b0p, gridSize, LateralLength, pressureGreenFunFlag);
+
+    double domainArea = LateralLength * LateralLength;
+
+    double meanPressure = totalForce / domainArea;
+    double effectiveContactAreaFraction = contactArea / domainArea;
 
     const auto finish = std::chrono::high_resolution_clock::now();
+
+    std::cout << std::setprecision(16) << "Mean pressure is: " << meanPressure
+              << "\nEffective contact area fraction (should be 1 for a flat topology) is: "
+              << effectiveContactAreaFraction << std::endl;
+
     const double elapsedTime =
         std::chrono::duration_cast<std::chrono::duration<double>>(finish - start).count();
     std::cout << "Elapsed time is: " + std::to_string(elapsedTime) + "s" << std::endl;
+
+    // w_{el} = Delta = meanPressure * l * \alpha / CompositeYoungs
+    double shapeFactor_alpha = Delta * CompositeYoungs * LateralLength / (totalForce);
+
+    std::cout << std::setprecision(16) << "Calculated shape factor is: " << shapeFactor_alpha
+              << std::endl;
   }
   Kokkos::finalize();
+
+  return 0;
 }

@@ -69,35 +69,6 @@ namespace MIRCO
   }
 
   InputParameters::InputParameters(double E1, double E2, double nu1, double nu2, double Tolerance,
-      double Delta, double LateralLength, int N, int MaxIteration, bool WarmStartingFlag,
-      bool PressureGreenFunFlag)
-      : tolerance(Tolerance),
-        delta(Delta),
-        lateral_length(LateralLength),
-        max_iteration(MaxIteration),
-        warm_starting_flag(WarmStartingFlag),
-        pressure_green_funct_flag(PressureGreenFunFlag),
-        N(N)
-  {
-    auto topology_h = CreateFlatSurface(N);
-    topology = Kokkos::create_mirror_view_and_copy(ExecSpace_Default_t(), topology_h);
-
-    // resolution is available; no interpolation needed
-    if (PressureGreenFunFlag)
-    {
-      shape_factor = InterpolatedShapeFactor(shape_factors_pressure, N);
-    }
-    else
-    {
-      shape_factor = InterpolatedShapeFactor(shape_factors_force, N);
-    }
-
-    composite_youngs = 1.0 / ((1 - nu1 * nu1) / E1 + (1 - nu2 * nu2) / E2);
-    elastic_compliance_correction = LateralLength * composite_youngs / shape_factor;
-    grid_size = LateralLength / N;
-  }
-
-  InputParameters::InputParameters(double E1, double E2, double nu1, double nu2, double Tolerance,
       double Delta, double LateralLength, const std::string& TopologyFilePath, int MaxIteration,
       bool WarmStartingFlag, bool PressureGreenFunFlag)
       : tolerance(Tolerance),
