@@ -1,6 +1,7 @@
 mirco_input:
   WarmStartingFlag: true
   RandomTopologyFlag: true
+  RandomSeedFlag: false
   RandomGeneratorSeed: 95
   MaxIteration: 100
   PressureGreenFunFlag: true
@@ -18,7 +19,7 @@ mirco_input:
       Delta: 40.0
       Tolerance: 0.01
   result_description:
-    ExpectedPressure: 0.001180947601387169
+    ExpectedPressure: 0.001181045297945221
     ExpectedPressureTolerance: 1e-10
     ExpectedEffectiveContactAreaFraction: 0.002352100741348715
     ExpectedEffectiveContactAreaFractionTolerance: 1e-10

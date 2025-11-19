@@ -41,26 +41,26 @@ namespace MIRCO
     return z;
   }
 
-  ViewMatrix_h CreateRmgSurface(int resolution, double InitialTopologyStdDeviation, double Hurst,
-      std::optional<int> RandomGeneratorSeed)
+  ViewMatrix_h CreateRmgSurface(int Resolution, double InitialTopologyStdDeviation, double Hurst,
+      bool RandomSeedFlag, std::optional<int> RandomGeneratorSeed)
   {
     srand(time(NULL));
 
     int seed;
 
-    if (RandomGeneratorSeed)
-    {
-      seed = *RandomGeneratorSeed;  // seed can be fixed to reproduce result
-    }
-    else
-    {
+    if (RandomSeedFlag)
       seed = rand();
-    }
+    else if (RandomGeneratorSeed)
+      seed = *RandomGeneratorSeed;
+    else
+      throw std::runtime_error(
+          "Please provide 'RandomGeneratorSeed' when 'RandomSeedFlag' is false.");
+
     std::default_random_engine generate(seed);
     std::normal_distribution<double> distribution(
         0.0, 1.0);  // normal distribution: mean = 0.0, standard deviation = 1.0
 
-    int N = (1 << resolution) + 1;
+    int N = (1 << Resolution) + 1;
     ViewMatrix_h z("CreateRmgSurface(); z", N, N);
 
     const double scaling_factor = pow(2.0, 0.5 * Hurst);
@@ -70,7 +70,7 @@ namespace MIRCO
     int D = D_0;
     int d = D_0 / 2;
 
-    for (int i = 0; i < resolution; i++)
+    for (int i = 0; i < Resolution; i++)
     {
       alpha = alpha / scaling_factor;
 

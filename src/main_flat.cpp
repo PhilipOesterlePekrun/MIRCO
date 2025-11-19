@@ -1,29 +1,29 @@
+#include <KokkosLapack_gesv.hpp>
 #include <chrono>
 #include <iomanip>
 #include <iostream>
 #include <string>
 
-#include "mirco_kokkostypes.h"
-#include "mirco_topologyutilities.h"
 #include "mirco_contactstatus.h"
+#include "mirco_kokkostypes.h"
 #include "mirco_matrixsetup.h"
-
-#include <KokkosLapack_gesv.hpp>
+#include "mirco_topologyutilities.h"
 
 using namespace MIRCO;
 
 // flat and args
 int main(int argc, char* argv[])
 {
-  std::string errorOutput = "The code expects 5 arguments. Use --help for detials.";
-  if (argc == 0) throw std::runtime_error(errorOutput);
+  std::string errorOutput = "The code expects 5 arguments. Use --help for details.";
+  if (argc == 1) throw std::runtime_error(errorOutput);
   std::string argv1 = std::string(argv[1]);
   if (argv1 == "-help" || argv1 == "-h" || argv1 == "--help" || argv1 == "--h")
   {
-    std::cout
-        << "Usage: flatMirco [N] [Delta] [CompositeYoungs] [LateralLength] [PressureGreenFunctionFlag]\n"
-        << "\tNote: if [N] is prefixed with 'a' (e.g. a217) all shape factors from 0 to N (inclusive) will be sequentially computed"
-        << std::endl;
+    std::cout << "Usage: flatMirco [N] [Delta] [CompositeYoungs] [LateralLength] "
+                 "[PressureGreenFunctionFlag]\n\n"
+              << "Note: if [N] is prefixed with 'a' (e.g. a217) all shape factors from 0 to N "
+                 "(inclusive) will be sequentially computed."
+              << std::endl;
     return 0;
   }
   if (argc != 6) throw std::runtime_error(errorOutput);
@@ -37,14 +37,14 @@ int main(int argc, char* argv[])
   std::string argv5 = std::string(argv[5]);
   bool PressureGreenFunFlag =
       (argv5 == "t" || argv5 == "T" || argv5 == "true" || argv5 == "True" || argv5 == "1");
-      
+
   Kokkos::initialize(argc, argv);
   {
     const auto start = std::chrono::high_resolution_clock::now();
 
     if (computeAllUpToN)
-      std::cout << "Shape factors (PressureGreenFunFlag=" << (PressureGreenFunFlag ? "true" : "false")
-                << "):\n{\n";
+      std::cout << "Shape factors (PressureGreenFunFlag="
+                << (PressureGreenFunFlag ? "true" : "false") << "):\n{\n";
     int N;
     for (N = (computeAllUpToN ? 0 : nominalN); N <= nominalN; ++N)
     {
@@ -77,12 +77,11 @@ int main(int argc, char* argv[])
 
         // For a flat indentor, the following hold: displacement field = const, active set = entire
         // domain
-        ViewMatrix_d H = SetupMatrix(
-            xv0, yv0, gridSize, CompositeYoungs, N2, PressureGreenFunFlag);
+        ViewMatrix_d H = SetupMatrix(xv0, yv0, gridSize, CompositeYoungs, N2, PressureGreenFunFlag);
         ViewVector_d b0p("b0p", N2);
         Kokkos::deep_copy(b0p, Delta);
         ViewVectorInt_d ipiv("ipiv", N2);
-        // Solve H s = b0; b0p becomes s
+        // Solve H p = b0; b0p becomes s
         KokkosLapack::gesv(H, b0p, ipiv);
 
         double totalForce;
@@ -113,7 +112,6 @@ int main(int argc, char* argv[])
                     << "Calculated shape factor is: " << shapeFactor_alpha;
         }
       }
-      // catch (const Kokkos::Experimental::RawMemoryAllocationFailure&) {break;}
       catch (const std::bad_alloc&)
       {
         break;
@@ -123,14 +121,19 @@ int main(int argc, char* argv[])
         break;
       }
     }
-    
+
     const auto finish = std::chrono::high_resolution_clock::now();
 
-    if (computeAllUpToN) std::cout << "\n}\n\nComputed shape factors up to N=" << N - 1 << " ";
+    if (computeAllUpToN) std::cout << "\n}\n\nComputed shape factors up to N=" << N - 1 << "\n";
     if (N - 1 != nominalN) std::cerr << "(ran out of memory)";
-    
-    std::cout << "\n\nElapsed time is: " + std::to_string(std::chrono::duration_cast<std::chrono::duration<double>>(finish - start).count()) + "s"<<std::endl;
-    
+
+    std::cout << "Elapsed time is: " +
+                     std::to_string(
+                         std::chrono::duration_cast<std::chrono::duration<double>>(finish - start)
+                             .count()) +
+                     "s"
+              << std::endl;
+
     if (N - 1 != nominalN) return 1;
   }
   Kokkos::finalize();

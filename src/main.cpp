@@ -39,7 +39,7 @@ int main(int argc, char* argv[])
     // Main evaluation agorithm
     double meanPressure, effectiveContactAreaFraction;
     Evaluate(meanPressure, effectiveContactAreaFraction, inputParams, topologyMax, meshgrid);
-    
+
     const auto finish = std::chrono::high_resolution_clock::now();
 
     std::cout << std::setprecision(16) << "Mean pressure is: " << meanPressure
@@ -76,7 +76,8 @@ int main(int argc, char* argv[])
         if (std::abs(meanPressure - ExpectedPressure) > ExpectedPressureTolerance)
         {
           passedResultChecks = false;
-          std::cerr << std::setprecision(16) << "The output pressure does not match the expected result." << "\n";
+          std::cerr << std::setprecision(16)
+                    << "The output pressure does not match the expected result." << "\n";
           std::cerr << "\tMean pressure = " << meanPressure << "\n";
           std::cerr << "\tExpected pressure = " << ExpectedPressure << "\n";
           std::cerr << "\tExpected pressureTolerance = " << ExpectedPressureTolerance << std::endl;
@@ -85,7 +86,8 @@ int main(int argc, char* argv[])
             ExpectedEffectiveContactAreaFractionTolerance)
         {
           passedResultChecks = false;
-          std::cerr << std::setprecision(16) << "The output effective contact area does not match the expected result."
+          std::cerr << std::setprecision(16)
+                    << "The output effective contact area does not match the expected result."
                     << "\n";
           std::cerr << "\tEffective contact area = " << effectiveContactAreaFraction << "\n";
           std::cerr << "\tExpected effective contact area fraction = "

@@ -3,7 +3,7 @@
 
 namespace MIRCO
 {
-  double getShapeFactor(int N, bool PressureGreenFunFlag);
+  double getShapeFactor(const int N, const bool PressureGreenFunFlag);
 }  // namespace MIRCO
 
-#endif // SRC_DATA_SHAPEFACTORS_H_
+#endif  // SRC_DATA_SHAPEFACTORS_H_
