@@ -34,6 +34,8 @@ set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
+option(MIRCO_ENABLE_FLAT "Build the flatMirco utility, which can be used to compute shape factors" OFF)
+
 # Add libraries
 if(GTEST_IN_MIRCO)
   add_subdirectory("extern/googletest")
@@ -195,10 +197,6 @@ target_link_libraries(mirco_inputparameters_yaml PRIVATE mirco_utils Kokkos::kok
 add_library(mirco_lib INTERFACE)
 target_link_libraries(mirco_lib INTERFACE mirco_needKK mirco_core mirco_topology mirco_inputparameters)
 
-# Compile mirco itself
-add_executable(mirco src/main.cpp)
-add_executable(mircoFlat src/mainFlat.cpp)
-
 target_include_directories(mirco_lib INTERFACE
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/>
   $<INSTALL_INTERFACE:include/mirco/>
@@ -206,8 +204,14 @@ target_include_directories(mirco_lib INTERFACE
 
 add_library(mirco::mirco_lib ALIAS mirco_lib)
 
+# Compile mirco itself
+add_executable(mirco src/main.cpp)
 target_link_libraries(mirco PUBLIC mirco::mirco_lib mirco_inputparameters_yaml mirco_utils Kokkos::kokkos)
-target_link_libraries(mircoFlat PUBLIC mirco::mirco_lib mirco_utils Kokkos::kokkos KokkosKernels::kokkoskernels)
+
+if(TRUE)#MIRCO_ENABLE_FLAT OR TRUE)
+  add_executable(flatMirco src/mainFlat.cpp)
+  target_link_libraries(flatMirco PUBLIC mirco::mirco_lib mirco_utils Kokkos::kokkos KokkosKernels::kokkoskernels)
+endif()
 
 # Install mirco (to be used as a library by other codes)
 install(TARGETS mirco_lib mirco_needKK mirco_core mirco_topology mirco_inputparameters
