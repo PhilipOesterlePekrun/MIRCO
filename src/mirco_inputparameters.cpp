@@ -7,8 +7,7 @@ namespace MIRCO
 {
   InputParameters::InputParameters(double E1, double E2, double nu1, double nu2, double Tolerance,
       double Delta, double LateralLength, int Resolution, double InitialTopologyStdDeviation,
-      double Hurst, bool RandomSeedFlag, int RandomGeneratorSeed, int MaxIteration,
-      bool WarmStartingFlag, bool PressureGreenFunFlag)
+      double Hurst, int MaxIteration, bool WarmStartingFlag, bool PressureGreenFunFlag, std::optional<int> RandomGeneratorSeed)
       : tolerance(Tolerance),
         delta(Delta),
         lateral_length(LateralLength),
@@ -18,7 +17,7 @@ namespace MIRCO
         N((1 << Resolution) + 1)
   {
     auto topology_h = CreateRmgSurface(
-        Resolution, InitialTopologyStdDeviation, Hurst, RandomSeedFlag, RandomGeneratorSeed);
+        Resolution, InitialTopologyStdDeviation, Hurst, RandomGeneratorSeed);
     topology = Kokkos::create_mirror_view_and_copy(ExecSpace_Default_t(), topology_h);
     
     shape_factor = getShapeFactor(N, PressureGreenFunFlag);

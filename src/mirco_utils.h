@@ -4,6 +4,7 @@
 #include <ryml.hpp>
 #include <ryml_std.hpp>
 #include <string>
+#include <optional>
 
 namespace MIRCO
 {
@@ -19,7 +20,7 @@ namespace MIRCO
      * do nothing.
      */
     void changeRelativePath(std::string& targetfilename, const std::string& sourcefilename);
-
+    
     /*
      * \brief The following 4 functions are used to get the value of a parameter in a list (node) in
      * a yaml tree
@@ -28,6 +29,14 @@ namespace MIRCO
     bool get_bool(ryml::ConstNodeRef node, const std::string& key);
     double get_double(ryml::ConstNodeRef node, const std::string& key);
     int get_int(ryml::ConstNodeRef node, const std::string& key);
+    
+    /*
+     * \brief The following functions are for getting an optional parameters
+     */
+    std::optional<std::string> get_optional_string(ryml::ConstNodeRef node, const std::string& key);
+    std::optional<bool> get_optional_bool(ryml::ConstNodeRef node, const std::string& key);
+    std::optional<double> get_optional_double(ryml::ConstNodeRef node, const std::string& key);
+    std::optional<int> get_optional_int(ryml::ConstNodeRef node, const std::string& key);
   }  // namespace Utils
 }  // namespace MIRCO
 

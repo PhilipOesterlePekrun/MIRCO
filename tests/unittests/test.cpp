@@ -185,7 +185,7 @@ TEST(topology, RMG)
   double InitialTopologyStdDeviation = 20.0;
 
   MIRCO::ViewMatrix_h outsurf_h = MIRCO::CreateRmgSurface(
-      Resolution, InitialTopologyStdDeviation, HurstExponent, RandomSeedFlag, RandomGeneratorSeed);
+      Resolution, InitialTopologyStdDeviation, HurstExponent, RandomGeneratorSeed);
 
   EXPECT_NEAR(outsurf_h(0, 0), 23.5435469989256, 1e-06);
   EXPECT_NEAR(outsurf_h(0, 1), 30.2624522170979, 1e-06);
@@ -215,9 +215,8 @@ TEST(topology, RMG)
 }
 TEST(topology, readFromFile)
 {
-  int N;
   std::string topologyFilePath = "test/data/topologyN5.dat";
-  MIRCO::ViewMatrix_h outsurf_h = MIRCO::CreateSurfaceFromFile(topologyFilePath, N);
+  MIRCO::ViewMatrix_h outsurf_h = MIRCO::CreateSurfaceFromFile(topologyFilePath);
 
   EXPECT_EQ(outsurf_h.extent(0), 5);
   EXPECT_EQ(outsurf_h.extent(1), 5);
@@ -265,7 +264,7 @@ TEST(inputParameters, yaml_dat)
 TEST(inputParameters, directInput_rmg)
 {
   MIRCO::InputParameters inputParams(
-      1.0, 1.0, 0.2, 0.2, 0.005, 10.0, 1000, 2, 15.0, 0.15, false, 46, 100, false, true);
+      1.0, 1.0, 0.2, 0.2, 0.005, 10.0, 1000, 2, 15.0, 0.15, 100, false, true, 46);
 
   MIRCO::ViewMatrix_d topology_d = inputParams.topology;
 
@@ -384,10 +383,10 @@ TEST(shapefactors, check) {
       {6, 0.858342234203154}, {7, 0.862368243479785}, {8, 0.864741597831785}};
     
   for (const auto &entry : shape_factors_pressure) {
-    EXPECT_NEAR(entry.second, MIRCO::getShapeFactor((1<<entry.first)+1, true), 1e-06);
+    EXPECT_NEAR(entry.second, MIRCO::getShapeFactor((1<<entry.first)+1, true), 1e-12);
   }
   for (const auto &entry : shape_factors_force) {
-    EXPECT_NEAR(entry.second, MIRCO::getShapeFactor((1<<entry.first)+1, false), 1e-06);
+    EXPECT_NEAR(entry.second, MIRCO::getShapeFactor((1<<entry.first)+1, false), 1e-12);
   }
 }
 

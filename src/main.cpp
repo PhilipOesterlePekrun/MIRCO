@@ -25,7 +25,7 @@ int main(int argc, char* argv[])
     std::cout << "Default host memory space: " << typeid(MemorySpace_Host_t).name() << "\n";
     std::cout << "\n";
 
-    if (argc != 2) std::runtime_error("The code expects (only) an input file as argument");
+    if (argc != 2) throw std::runtime_error("The code expects (only) an input file as argument");
     // Read the input file name from the command line
     std::string inputFileName = argv[1];
 
@@ -34,17 +34,18 @@ int main(int argc, char* argv[])
     InputParameters inputParams(inputFileName);
 
     ViewVector_d meshgrid = CreateMeshgrid(inputParams.N, inputParams.grid_size);
-    const auto maxAndMean = ComputeMaxAndMean(inputParams.topology);
+    const double topologyMax = GetMax(inputParams.topology);
 
     // Main evaluation agorithm
     double meanPressure, effectiveContactAreaFraction;
-    Evaluate(meanPressure, effectiveContactAreaFraction, inputParams, maxAndMean.max, meshgrid);
+    Evaluate(meanPressure, effectiveContactAreaFraction, inputParams, topologyMax, meshgrid);
+    
+    const auto finish = std::chrono::high_resolution_clock::now();
 
     std::cout << std::setprecision(16) << "Mean pressure is: " << meanPressure
               << "\nEffective contact area fraction is: " << effectiveContactAreaFraction
               << std::endl;
 
-    const auto finish = std::chrono::high_resolution_clock::now();
     const double elapsedTime =
         std::chrono::duration_cast<std::chrono::duration<double>>(finish - start).count();
     std::cout << "Elapsed time is: " + std::to_string(elapsedTime) + "s" << std::endl;
@@ -75,7 +76,7 @@ int main(int argc, char* argv[])
         if (std::abs(meanPressure - ExpectedPressure) > ExpectedPressureTolerance)
         {
           passedResultChecks = false;
-          std::cerr << "The output pressure does not match the expected result." << "\n";
+          std::cerr << std::setprecision(16) << "The output pressure does not match the expected result." << "\n";
           std::cerr << "\tMean pressure = " << meanPressure << "\n";
           std::cerr << "\tExpected pressure = " << ExpectedPressure << "\n";
           std::cerr << "\tExpected pressureTolerance = " << ExpectedPressureTolerance << std::endl;
@@ -84,7 +85,7 @@ int main(int argc, char* argv[])
             ExpectedEffectiveContactAreaFractionTolerance)
         {
           passedResultChecks = false;
-          std::cerr << "The output effective contact area does not match the expected result."
+          std::cerr << std::setprecision(16) << "The output effective contact area does not match the expected result."
                     << "\n";
           std::cerr << "\tEffective contact area = " << effectiveContactAreaFraction << "\n";
           std::cerr << "\tExpected effective contact area fraction = "
@@ -94,7 +95,7 @@ int main(int argc, char* argv[])
         }
 
         if (passedResultChecks)
-          std::cout << "All result checks passed" << std::endl;
+          std::cout << "All result checks passed." << std::endl;
         else
           return EXIT_FAILURE;
       }

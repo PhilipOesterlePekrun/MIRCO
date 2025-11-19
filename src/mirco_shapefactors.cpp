@@ -660,11 +660,11 @@ namespace {
 0.8652606922645413
 };
   constexpr int shape_factors_force_length = sizeof(shape_factors_force) / sizeof(shape_factors_force[0]);
-}
+} // namespace
 
 double MIRCO::getShapeFactor(int N, bool PressureGreenFunFlag) {
   if(N >= (PressureGreenFunFlag?shape_factors_pressure_length:shape_factors_pressure_length)) {
-    throw std::runtime_error("No shape factor is present for N="+std::to_string(N)+" and PressureGreenFunFlag="+(PressureGreenFunFlag?"true":"false"));
+    throw std::runtime_error("No shape factor available for N="+std::to_string(N)+" and PressureGreenFunFlag="+(PressureGreenFunFlag?"true":"false"));
     return -1;
   }
   // else

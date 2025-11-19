@@ -4,14 +4,14 @@
 
 namespace MIRCO
 {
-  ViewMatrix_d MatrixGeneration::SetupMatrix(const ViewVector_d xv0, const ViewVector_d yv0,
+  ViewMatrix_d SetupMatrix(const ViewVector_d xv0, const ViewVector_d yv0,
       const double GridSize, const double CompositeYoungs, const int systemsize,
       const bool PressureGreenFunFlag)
   {
     constexpr double pi = M_PI;
     const double frac_GridSize_2 = GridSize / 2;
 
-    ViewMatrix_d H("MatrixGeneration::SetupMatrix(); H", systemsize, systemsize);
+    ViewMatrix_d H("SetupMatrix(); H", systemsize, systemsize);
     if (PressureGreenFunFlag)
     {
       // The pressure-based Green's function is based on the work of Pohrt and Li (2014)

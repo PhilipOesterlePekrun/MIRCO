@@ -15,7 +15,7 @@ namespace MIRCO
     return meshgrid;
   }
 
-  TopologyMaxAndMean ComputeMaxAndMean(ViewMatrix_d topology)
+  double GetMax(ViewMatrix_d topology)
   {
     const int n0 = topology.extent(0);
     const int n1 = topology.extent(1);
@@ -29,13 +29,7 @@ namespace MIRCO
         },
         Kokkos::Max<double>(zmax));
 
-    double zmean = 0.0;
-    Kokkos::parallel_reduce(
-        Kokkos::MDRangePolicy<Kokkos::Rank<2>>({0, 0}, {n0, n1}),
-        KOKKOS_LAMBDA(int i, int j, double& update) { update += topology(i, j); }, zmean);
-    zmean /= (n0 * n1);
-
-    return TopologyMaxAndMean{zmax, zmean};
+    return zmax;
   }
 
 }  // namespace MIRCO

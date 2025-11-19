@@ -69,7 +69,7 @@ namespace MIRCO
         Kokkos::deep_copy(p0, 0.0);
       }
 
-      auto H = MatrixGeneration::SetupMatrix(
+      auto H = SetupMatrix(
           xv0, yv0, GridSize, CompositeYoungs, n0, PressureGreenFunFlag);
 
       // Defined as (u - u(bar)) in (Bemporad & Paggi, 2015)
@@ -101,16 +101,18 @@ namespace MIRCO
     }
 
     if (deltaTotalForce > Tolerance)
-      std::runtime_error("The solver did not converge in the maximum number of iterations.");
+      throw std::runtime_error("The solver did not converge in the maximum number of iterations.");
 
     // Calculate the final force value at the end of the iteration
     const double finalForce = totalForceVector.back();
 
+    const double LateralLength2 = LateralLength*LateralLength;
+    
     // Mean pressure
-    pressure = finalForce / (LateralLength * LateralLength);
+    pressure = finalForce / LateralLength2;
 
     // Effective contact area in converged state
-    effectiveContactAreaFraction = contactAreaVector.back() / (LateralLength * LateralLength);
+    effectiveContactAreaFraction = contactAreaVector.back() / LateralLength2;
   }
 
 }  // namespace MIRCO

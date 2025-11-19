@@ -134,6 +134,7 @@ target_link_libraries(mirco_inputparameters PRIVATE mirco_topology mirco_shapefa
 
 if(Kokkos_ENABLE_CUDA OR Kokkos_ENABLE_HIP OR Kokkos_ENABLE_SYCL OR Kokkos_ENABLE_OPENMPTARGET)
   # Compile rapidyaml (ryml) separately to avoid conflicts with device-side/offloaded compilers (e.g. nvcc_wrapper)
+  message(STATUS "Building rapidyaml using MIRCO_HOST_CXX_COMPILER")
   include(ExternalProject)
   set(RYML_INSTALL_DIR ${CMAKE_BINARY_DIR}/extern/ryml)
 
@@ -182,9 +183,15 @@ if(Kokkos_ENABLE_CUDA OR Kokkos_ENABLE_HIP OR Kokkos_ENABLE_SYCL OR Kokkos_ENABL
   )
 else()
   # Everything is compiled on host; fetch rapidyaml directly
+  message(STATUS "Fetching rapidyaml...")
   include(FetchContent)
+  
+  set(CMAKE_SUPPRESS_DEVELOPER_WARNINGS ON CACHE BOOL "" FORCE) # Suppress developer warnings from ryml
+  
   FetchContent_Declare(rapidyaml GIT_REPOSITORY https://github.com/biojppm/rapidyaml.git GIT_TAG 47ec2fa184209687c20fd5bc05621e1cb1200311)
   FetchContent_MakeAvailable(rapidyaml)
+  
+  set(CMAKE_SUPPRESS_DEVELOPER_WARNINGS OFF CACHE BOOL "" FORCE)
 endif()
 
 add_library(mirco_utils

@@ -10,6 +10,7 @@
         "CMAKE_CXX_COMPILER": "mpicxx",
         "CMAKE_C_COMPILER_LAUNCHER": "ccache",
         "CMAKE_CXX_FLAGS": "",
+        "MIRCO_ENABLE_FLAT": "OFF",
         "GTEST_IN_MIRCO": "ON"
       }
     },
