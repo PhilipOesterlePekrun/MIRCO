@@ -7,6 +7,7 @@
 #include "../../src/mirco_topology.h"
 #include "../../src/mirco_utils.h"
 #include "../../src/mirco_warmstart.h"
+#include "../../src/mirco_shapefactors.h"
 
 // Functors are sometimes necessary for device-side/offloaded compilation
 struct NonlinearSolverTest_primalvariable_1
@@ -366,6 +367,28 @@ TEST(warmstarting, warmstart2)
   EXPECT_EQ(p0_h(0), 10);
   EXPECT_EQ(p0_h(1), 0);
   EXPECT_EQ(p0_h(2), 30);
+}
+
+TEST(shapefactors, check) {
+  // Originally present shape factors for integer resolutions of 1 to 8:
+  // The following pressure based constants are calculated by solving a flat indentor problem using
+  // the pressure based Green function described in Pohrt and Li (2014).
+  // http://dx.doi.org/10.1134/s1029959914040109
+  const std::map<int, double> shape_factors_pressure{{1, 0.961389237917602}, {2, 0.924715342432435},
+      {3, 0.899837531880697}, {4, 0.884976751041942}, {5, 0.876753783192863},
+      {6, 0.872397956576882}, {7, 0.8701463093314326}, {8, 0.8689982669426167}};
+  // The following force based constants are taken from Table 1 of Bonari et al. (2020).
+  // https://doi.org/10.1007/s00466-019-01791-3
+  const std::map<int, double> shape_factors_force{{1, 0.778958541513360}, {2, 0.805513388666376},
+      {3, 0.826126871395416}, {4, 0.841369158110513}, {5, 0.851733020725652},
+      {6, 0.858342234203154}, {7, 0.862368243479785}, {8, 0.864741597831785}};
+    
+  for (const auto &entry : shape_factors_pressure) {
+    EXPECT_NEAR(entry.second, MIRCO::getShapeFactor((1<<entry.first)+1, true), 1e-06);
+  }
+  for (const auto &entry : shape_factors_force) {
+    EXPECT_NEAR(entry.second, MIRCO::getShapeFactor((1<<entry.first)+1, false), 1e-06);
+  }
 }
 
 int main(int argc, char** argv)
