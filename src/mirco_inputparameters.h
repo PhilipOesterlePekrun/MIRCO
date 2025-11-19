@@ -1,8 +1,8 @@
 #ifndef SRC_INPUTPARAMETERS_H_
 #define SRC_INPUTPARAMETERS_H_
 
-#include <string>
 #include <optional>
+#include <string>
 
 #include "mirco_kokkostypes.h"
 
@@ -42,10 +42,13 @@ namespace MIRCO
      * into contact in the next iteration and hence speeds up the computation.
      * @param PressureGreenFunFlag Flag to use Green function based on uniform pressure instead of
      * point force.
-     * @param RandomGeneratorSeed Set the value of seed for the pseudo-random mid-point generator. If not set or set to `std::nullopt`, then a random seed will be used.
+     * @param RandomGeneratorSeed Set the value of seed for the pseudo-random mid-point generator.
+     * If not set or set to `std::nullopt`, then a random seed will be used.
      */
     InputParameters(double E1, double E2, double nu1, double nu2, double Tolerance, double Delta,
-        double LateralLength, int Resolution, double InitialTopologyStdDeviation, double Hurst, int MaxIteration, bool WarmStartingFlag, bool PressureGreenFunFlag, std::optional<int> RandomGeneratorSeed = std::nullopt);
+        double LateralLength, int Resolution, double InitialTopologyStdDeviation, double Hurst,
+        int MaxIteration, bool WarmStartingFlag, bool PressureGreenFunFlag,
+        std::optional<int> RandomGeneratorSeed = std::nullopt);
 
     /**
      * @brief Constructor which sets the necessary member variable parameters without an input

@@ -1,13 +1,14 @@
 #include "mirco_inputparameters.h"
 
-#include "mirco_topology.h"
 #include "mirco_shapefactors.h"
+#include "mirco_topology.h"
 
 namespace MIRCO
 {
   InputParameters::InputParameters(double E1, double E2, double nu1, double nu2, double Tolerance,
       double Delta, double LateralLength, int Resolution, double InitialTopologyStdDeviation,
-      double Hurst, int MaxIteration, bool WarmStartingFlag, bool PressureGreenFunFlag, std::optional<int> RandomGeneratorSeed)
+      double Hurst, int MaxIteration, bool WarmStartingFlag, bool PressureGreenFunFlag,
+      std::optional<int> RandomGeneratorSeed)
       : tolerance(Tolerance),
         delta(Delta),
         lateral_length(LateralLength),
@@ -16,10 +17,10 @@ namespace MIRCO
         pressure_green_funct_flag(PressureGreenFunFlag),
         N((1 << Resolution) + 1)
   {
-    auto topology_h = CreateRmgSurface(
-        Resolution, InitialTopologyStdDeviation, Hurst, RandomGeneratorSeed);
+    auto topology_h =
+        CreateRmgSurface(Resolution, InitialTopologyStdDeviation, Hurst, RandomGeneratorSeed);
     topology = Kokkos::create_mirror_view_and_copy(ExecSpace_Default_t(), topology_h);
-    
+
     shape_factor = getShapeFactor(N, PressureGreenFunFlag);
     composite_youngs = 1.0 / ((1 - nu1 * nu1) / E1 + (1 - nu2 * nu2) / E2);
     elastic_compliance_correction = LateralLength * composite_youngs / shape_factor;
