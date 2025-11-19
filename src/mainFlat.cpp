@@ -120,15 +120,9 @@ int main(int argc, char* argv[])
       }
       else
       {
-        const auto finish = std::chrono::high_resolution_clock::now();
-
         std::cout << std::fixed << std::setprecision(16) << "Mean pressure is: " << meanPressure
                   << "\nEffective contact area fraction (should be 1 for a flat topology) is: "
                   << effectiveContactAreaFraction << std::endl;
-
-        const double elapsedTime =
-            std::chrono::duration_cast<std::chrono::duration<double>>(finish - start).count();
-        std::cout << "Elapsed time is: " + std::to_string(elapsedTime) + "s";
 
         std::cout << std::fixed << std::setprecision(16)
                   << "Calculated shape factor is: " << shapeFactor_alpha;
@@ -145,9 +139,17 @@ int main(int argc, char* argv[])
     }
   }
 
+  const auto finish = std::chrono::high_resolution_clock::now();
+
   if (computeAllUpToN) std::cout << "\n}\n\nComputed shape factors up to N=" << N - 1 << " ";
   if (N - 1 != nominalN) std::cerr << "(ran out of memory)";
-  std::cout << std::endl;
+
+  std::cout << "\n\nElapsed time is: " +
+                   std::to_string(
+                       std::chrono::duration_cast<std::chrono::duration<double>>(finish - start)
+                           .count()) +
+                   "s"
+            << std::endl;
 
   Kokkos::finalize();
 
