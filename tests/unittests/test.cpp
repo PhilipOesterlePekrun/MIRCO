@@ -4,10 +4,10 @@
 #include "../../src/mirco_inputparameters.h"
 #include "../../src/mirco_kokkostypes.h"
 #include "../../src/mirco_nonlinearsolver.h"
+#include "../../src/mirco_shapefactors.h"
 #include "../../src/mirco_topology.h"
 #include "../../src/mirco_utils.h"
 #include "../../src/mirco_warmstart.h"
-#include "../../src/mirco_shapefactors.h"
 
 // Functors are sometimes necessary for device-side/offloaded compilation
 struct NonlinearSolverTest_primalvariable_1
@@ -185,7 +185,7 @@ TEST(topology, RMG)
   double InitialTopologyStdDeviation = 20.0;
 
   MIRCO::ViewMatrix_h outsurf_h = MIRCO::CreateRmgSurface(
-      Resolution, InitialTopologyStdDeviation, HurstExponent, RandomGeneratorSeed);
+      Resolution, InitialTopologyStdDeviation, HurstExponent, RandomSeedFlag, RandomGeneratorSeed);
 
   EXPECT_NEAR(outsurf_h(0, 0), 23.5435469989256, 1e-06);
   EXPECT_NEAR(outsurf_h(0, 1), 30.2624522170979, 1e-06);
@@ -302,7 +302,7 @@ TEST(inputParameters, directInput_dat)
 
 TEST(warmstarting, warmstart)
 {
-  using ViewVectorInt_h = Kokkos::View<int*, Kokkos::LayoutLeft, MIRCO::ExecSpace_DefaultHost_t>;
+  using ViewVectorInt_h = Kokkos::View<int *, Kokkos::LayoutLeft, MIRCO::ExecSpace_DefaultHost_t>;
   ViewVectorInt_h activeSet0_h("activeSet0_h", 3);
   ViewVectorInt_h activeSetf_h("activeSetf_h", 2);
   MIRCO::ViewVector_h pf_h("", 2);
@@ -334,7 +334,7 @@ TEST(warmstarting, warmstart)
 
 TEST(warmstarting, warmstart2)
 {
-  using ViewVectorInt_h = Kokkos::View<int*, Kokkos::LayoutLeft, MIRCO::ExecSpace_DefaultHost_t>;
+  using ViewVectorInt_h = Kokkos::View<int *, Kokkos::LayoutLeft, MIRCO::ExecSpace_DefaultHost_t>;
   ViewVectorInt_h activeSet0_h("activeSet0_h", 3);
   ViewVectorInt_h activeSetf_h("activeSetf_h", 4);
   MIRCO::ViewVector_h pf_h("", 4);
@@ -368,7 +368,8 @@ TEST(warmstarting, warmstart2)
   EXPECT_EQ(p0_h(2), 30);
 }
 
-TEST(shapefactors, check) {
+TEST(shapefactors, check)
+{
   // Originally present shape factors for integer resolutions of 1 to 8:
   // The following pressure based constants are calculated by solving a flat indentor problem using
   // the pressure based Green function described in Pohrt and Li (2014).
@@ -381,16 +382,18 @@ TEST(shapefactors, check) {
   const std::map<int, double> shape_factors_force{{1, 0.778958541513360}, {2, 0.805513388666376},
       {3, 0.826126871395416}, {4, 0.841369158110513}, {5, 0.851733020725652},
       {6, 0.858342234203154}, {7, 0.862368243479785}, {8, 0.864741597831785}};
-    
-  for (const auto &entry : shape_factors_pressure) {
-    EXPECT_NEAR(entry.second, MIRCO::getShapeFactor((1<<entry.first)+1, true), 1e-12);
+
+  for (const auto &entry : shape_factors_pressure)
+  {
+    EXPECT_NEAR(entry.second, MIRCO::getShapeFactor((1 << entry.first) + 1, true), 1e-12);
   }
-  for (const auto &entry : shape_factors_force) {
-    EXPECT_NEAR(entry.second, MIRCO::getShapeFactor((1<<entry.first)+1, false), 1e-12);
+  for (const auto &entry : shape_factors_force)
+  {
+    EXPECT_NEAR(entry.second, MIRCO::getShapeFactor((1 << entry.first) + 1, false), 1e-12);
   }
 }
 
-int main(int argc, char** argv)
+int main(int argc, char **argv)
 {
   Kokkos::initialize(argc, argv);
   ::testing::InitGoogleTest(&argc, argv);

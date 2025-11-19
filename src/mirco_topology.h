@@ -29,8 +29,8 @@ namespace MIRCO
    *
    * @return Topology heightfield matrix
    */
-  ViewMatrix_h CreateRmgSurface(int resolution, double initialTopologyStdDeviation, double hurst,
-      std::optional<int> RandomGeneratorSeed);
+  ViewMatrix_h CreateRmgSurface(int Resolution, double InitialTopologyStdDeviation, double Hurst,
+      bool RandomSeedFlag, std::optional<int> RandomGeneratorSeed);
 
 }  // namespace MIRCO
 

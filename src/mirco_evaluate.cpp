@@ -69,8 +69,7 @@ namespace MIRCO
         Kokkos::deep_copy(p0, 0.0);
       }
 
-      auto H = SetupMatrix(
-          xv0, yv0, GridSize, CompositeYoungs, n0, PressureGreenFunFlag);
+      auto H = SetupMatrix(xv0, yv0, GridSize, CompositeYoungs, n0, PressureGreenFunFlag);
 
       // Defined as (u - u(bar)) in (Bemporad & Paggi, 2015)
       // Gap between the point on the topology and the half space
@@ -106,8 +105,8 @@ namespace MIRCO
     // Calculate the final force value at the end of the iteration
     const double finalForce = totalForceVector.back();
 
-    const double LateralLength2 = LateralLength*LateralLength;
-    
+    const double LateralLength2 = LateralLength * LateralLength;
+
     // Mean pressure
     pressure = finalForce / LateralLength2;
 
