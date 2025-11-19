@@ -15,42 +15,31 @@ using namespace MIRCO;
 // flat and args
 int main(int argc, char* argv[])
 {
+  std::string errorOutput = "The code expects 5 arguments. Use --help for detials.";
+  if (argc == 0) throw std::runtime_error(errorOutput);
+  std::string argv1 = std::string(argv[1]);
+  if (argv1 == "-help" || argv1 == "-h" || argv1 == "--help" || argv1 == "--h")
+  {
+    std::cout
+        << "Usage: flatMirco [N] [Delta] [CompositeYoungs] [LateralLength] [PressureGreenFunctionFlag]\n"
+        << "\tNote: if [N] is prefixed with 'a' (e.g. a217) all shape factors from 0 to N (inclusive) will be sequentially computed"
+        << std::endl;
+    return 0;
+  }
+  if (argc != 6) throw std::runtime_error(errorOutput);
+
+  bool computeAllUpToN = (argv[1][0] == 'a');
+  if (computeAllUpToN) argv1 = argv1.substr(1, argv1.length());
+  int nominalN = std::stoi(argv1);
+  double Delta = std::stod(argv[2]);
+  double CompositeYoungs = std::stod(argv[3]);
+  double LateralLength = std::stod(argv[4]);
+  std::string argv5 = std::string(argv[5]);
+  bool PressureGreenFunFlag =
+      (argv5 == "t" || argv5 == "T" || argv5 == "true" || argv5 == "True" || argv5 == "1");
+      
   Kokkos::initialize(argc, argv);
   {
-    std::string argv1 = std::string(argv[1]);
-    if (argv1 == "-help" || argv1 == "-h" || argv1 == "--help" || argv1 == "--h")
-    {
-      std::cout
-          << "TODO description\n"
-          << "\tInputs:"
-          << "\t\tN: Lateral mesh grid count (positive integer); if prefixed with a (i.e. aN, where "
-            "N is a positive integer), all N from 0 to N (inclusive) will be sequentially executed"
-          << "\t\tDelta (far-field displacement), "
-            "Composite Young's Modulus, LateralLength, Pressure Green Function Flag\n"
-          << "\tOutput: TODO\n"
-          << std::endl;
-      return 0;
-    }
-    if (argc != 6) throw std::runtime_error("The code expects 5 arguments. Use --help for detials.");
-
-    std::cout << "-- Kokkos information --\n";
-    std::cout << "Threads in use: " << ExecSpace_Default_t().concurrency() << "\n";
-    std::cout << "Default execution space: " << typeid(ExecSpace_Default_t).name() << "\n";
-    std::cout << "Default host execution space: " << typeid(ExecSpace_DefaultHost_t).name() << "\n";
-    std::cout << "Default memory space: " << typeid(MemorySpace_ofDefaultExec_t).name() << "\n";
-    std::cout << "Default host memory space: " << typeid(MemorySpace_Host_t).name() << "\n";
-    std::cout << "\n";
-
-    bool computeAllUpToN = (argv[1][0] == 'a');
-    if (computeAllUpToN) argv1 = argv1.substr(1, argv1.length());
-    int nominalN = std::stoi(argv1);
-    double Delta = std::stod(argv[2]);
-    double CompositeYoungs = std::stod(argv[3]);
-    double LateralLength = std::stod(argv[4]);
-    std::string argv5 = std::string(argv[5]);
-    bool PressureGreenFunFlag =
-        (argv5 == "t" || argv5 == "T" || argv5 == "true" || argv5 == "True" || argv5 == "1");
-
     const auto start = std::chrono::high_resolution_clock::now();
 
     if (computeAllUpToN)
@@ -89,7 +78,7 @@ int main(int argc, char* argv[])
         // For a flat indentor, the following hold: displacement field = const, active set = entire
         // domain
         ViewMatrix_d H = SetupMatrix(
-            xv0, yv0, gridSize, CompositeYoungs, N2, pressureGreenFunFlag);
+            xv0, yv0, gridSize, CompositeYoungs, N2, PressureGreenFunFlag);
         ViewVector_d b0p("b0p", N2);
         Kokkos::deep_copy(b0p, Delta);
         ViewVectorInt_d ipiv("ipiv", N2);

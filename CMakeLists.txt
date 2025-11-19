@@ -221,7 +221,7 @@ target_link_libraries(mirco PUBLIC mirco::mirco_lib mirco_inputparameters_yaml m
 
 # Compile the flatMirco utility
 if(MIRCO_ENABLE_FLAT)
-  add_executable(flatMirco src/mainFlat.cpp)
+  add_executable(flatMirco src/main_flat.cpp)
   target_link_libraries(flatMirco PUBLIC mirco_core mirco_topology mirco_shapefactors Kokkos::kokkos KokkosKernels::kokkoskernels)
 endif()
 

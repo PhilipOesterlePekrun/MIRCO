@@ -24,7 +24,8 @@
         "KOKKOS_PATH": "/opt/mirco-dependencies/kokkos_install_openmp",
         "KOKKOS_KERNELS_PATH": "/opt/mirco-dependencies/kokkos-kernels_install_openmp",
         "KOKKOS_IN_MIRCO": "ON",
-        "KOKKOS_KERNELS_IN_MIRCO": "ON"
+        "KOKKOS_KERNELS_IN_MIRCO": "ON",
+        "MIRCO_ENABLE_FLAT": "ON"
       }
     },
     {
@@ -39,7 +40,8 @@
         "KOKKOS_PATH": "/opt/mirco-dependencies/kokkos_install_cuda",
         "KOKKOS_KERNELS_PATH": "/opt/mirco-dependencies/kokkos-kernels_install_cuda",
         "KOKKOS_IN_MIRCO": "ON",
-        "KOKKOS_KERNELS_IN_MIRCO": "ON"
+        "KOKKOS_KERNELS_IN_MIRCO": "ON",
+        "MIRCO_ENABLE_FLAT": "ON"
       }
     },
     {
