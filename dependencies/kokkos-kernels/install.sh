@@ -21,6 +21,27 @@ cd kokkos-kernels
 git checkout $VERSION
 cd .. && mkdir kokkos-kernels_build && cd kokkos-kernels_build
 
+# Build and install with Serial backend
+$CMAKE_COMMAND \
+  -D CMAKE_BUILD_TYPE:STRING="RELEASE" \
+  -D CMAKE_CXX_STANDARD:STRING="17" \
+  -D CMAKE_CXX_COMPILER=g++ \
+  -D CMAKE_INSTALL_PREFIX:STRING=$DEPS_ROOT/kokkos-kernels_install_serial \
+  -D BUILD_SHARED_LIBS:BOOL=OFF \
+  \
+  -D Kokkos_ROOT=$DEPS_ROOT/kokkos_install_serial \
+  \
+  -D KokkosKernels_ENABLE_TPL_BLAS=ON \
+  -D KokkosKernels_ENABLE_TPL_LAPACK=ON \
+  \
+  -D Kokkos_ENABLE_SERIAL=ON \
+  \
+  ../kokkos-kernels
+make -j${NPROCS} install
+
+# Clean build dir
+rm -rf *
+
 # Build and install with OpenMP backend
 $CMAKE_COMMAND \
   -D CMAKE_BUILD_TYPE:STRING="RELEASE" \

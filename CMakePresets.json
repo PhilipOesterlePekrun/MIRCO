@@ -14,6 +14,19 @@
       }
     },
     {
+      "name": "docker_container_kokkosserial",
+      "displayName": "Release build using Kokkos with Serial backend for CI/CD testing in a docker container",
+      "inherits": [
+        ".base"
+      ],
+      "cacheVariables": {
+        "KOKKOS_PATH": "/opt/mirco-dependencies/kokkos_install_serial",
+        "KOKKOS_KERNELS_PATH": "/opt/mirco-dependencies/kokkos-kernels_install_serial",
+        "KOKKOS_IN_MIRCO": "ON",
+        "KOKKOS_KERNELS_IN_MIRCO": "ON"
+      }
+    },
+    {
       "name": "docker_container_kokkosopenmp",
       "displayName": "Release build using Kokkos with OpenMP backend for CI/CD testing in a docker container",
       "inherits": [
