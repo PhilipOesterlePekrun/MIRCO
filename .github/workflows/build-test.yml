@@ -29,6 +29,33 @@ jobs:
             exit 1
           fi
 
+  mirco-test-kokkosserial:
+    name: mirco_test_kokkosserial
+    runs-on: ubuntu-latest
+
+    container:
+      image: ghcr.io/philipoesterlepekrun/mirco-kokkos-dependencies:latest
+
+    env:
+      CTEST_FAIL_ON_WARNING: "1"
+
+    steps:
+      - name: Checkout code with submodules
+        uses: actions/checkout@v5
+        with:
+          submodules: recursive
+          path: mirco-src
+          fetch-depth: 0  # Necessary for full git history and tags
+
+      - name: Build and test
+        run: |
+          mkdir mirco-build_kokkosserial
+          cd mirco-build_kokkosserial
+          cmake --preset=docker_container_kokkosserial ../mirco-src/
+          ninja -j 12
+          ctest --output-on-failure
+          cd ..&&rm -rf build_kokkosserial
+
   mirco-test-kokkosopenmp:
     name: mirco_test_kokkosopenmp
     runs-on: ubuntu-latest
@@ -54,3 +81,4 @@ jobs:
           cmake --preset=docker_container_kokkosopenmp ../mirco-src/
           ninja -j 12
           ctest --output-on-failure
+          cd ..&&rm -rf build_kokkosopenmp
