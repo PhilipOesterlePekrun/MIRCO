@@ -25,7 +25,7 @@ int main(int argc, char* argv[])
     std::cout << "Default host memory space: " << typeid(MemorySpace_Host_t).name() << "\n";
     std::cout << "\n";
 
-    if (argc != 2) std::runtime_error("The code expects (only) an input file as argument");
+    if (argc != 2) throw std::runtime_error("The code expects (only) an input file as argument");
     // Read the input file name from the command line
     std::string inputFileName = argv[1];
 

@@ -234,6 +234,8 @@ MyUtils::Timers::ScopedTimer sTimer1("gesv()");
           activeSetf(i) = activeSet0(activeInactiveSet(i));
           pf(i) = p(activeInactiveSet(i));
         });
+  //std::cout<<"////////////////////////////////////// iter="<<iter<<"\n";
+        
   }
 
   void nonlinearSolveRet(ViewVector_d& pf, ViewVectorInt_d& activeSetf, ViewVector_d& p,
@@ -438,6 +440,7 @@ MyUtils::Timers::ScopedTimer sTimer1("gesv()");
           activeSetf(i) = activeSet0(activeInactiveSet(i));
           pf(i) = p(activeInactiveSet(i));
         });
+        
   }
 
 }  // namespace MIRCO
