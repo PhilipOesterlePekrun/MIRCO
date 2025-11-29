@@ -17,44 +17,15 @@ namespace
   // http://dx.doi.org/10.1134/s1029959914040109
   const std::map<int, double> shape_factors_pressure{{1, 0.961389237917602}, {2, 0.924715342432435},
       {3, 0.899837531880697}, {4, 0.884976751041942}, {5, 0.876753783192863},
-      {6, 0.872397956576882}, {7, 0.8701463093314326}, {8, 0.8689982669426167}};
+      {6, 0.872397956576882}, {7, 0.8701463093314326}, {8, 0.8689982669426167}, {9, 0.8684174965138375}};
 
   // The following force based constants are taken from Table 1 of Bonari et al. (2020).
   // https://doi.org/10.1007/s00466-019-01791-3
   const std::map<int, double> shape_factors_force{{1, 0.778958541513360}, {2, 0.805513388666376},
       {3, 0.826126871395416}, {4, 0.841369158110513}, {5, 0.851733020725652},
-      {6, 0.858342234203154}, {7, 0.862368243479785}, {8, 0.864741597831785}};
+      {6, 0.858342234203154}, {7, 0.862368243479785}, {8, 0.864741597831785}, {9, 0.8661077069557319}};
 
-  // Linear interpolation of the resolution is possible but may not be very accurate; we split cases
-  // for efficiency
-  double GetShapeFactor_intRes(const std::map<int, double>& shapeFactors, int resolution)
-  {
-    if (resolution < 9) return shapeFactors.at(resolution);
-    // else
-    const double sf8 = shapeFactors.at(8);
-    return sf8 + (resolution - 8) * (sf8 - shapeFactors.at(7));
-  }
-  double GetShapeFactor_equivRes(const std::map<int, double>& shapeFactors, double equivResolution)
-  {
-    const int resFloor = static_cast<int>(std::floor(equivResolution));
-    const double sfLower = GetShapeFactor_intRes(shapeFactors, resFloor);
-    return sfLower + (equivResolution - resFloor) *
-                         (GetShapeFactor_intRes(shapeFactors, resFloor + 1) - sfLower);
-  }
-  double GetShapeFactor_N(const std::map<int, double>& shapeFactors, int N)
-  {
-    if ((N - 1) && ((N - 1) & (N - 2)) == 0)
-    {
-      // N is a power of 2
-      int equivRes = 0;
-      N--;
-      while (N >>= 1) ++equivRes;
-      return GetShapeFactor_intRes(shapeFactors, equivRes);
-    }
-    // else
-    const double equivRes = log2(N - 1);
-    return GetShapeFactor_equivRes(shapeFactors, equivRes);
-  }
+  
 }  // namespace
 
 namespace MIRCO
@@ -76,11 +47,11 @@ namespace MIRCO
 
     if (PressureGreenFunFlag)
     {
-      shape_factor = GetShapeFactor_intRes(shape_factors_pressure, Resolution);
+      shape_factor = shape_factors_pressure.at(Resolution);
     }
     else
     {
-      shape_factor = GetShapeFactor_intRes(shape_factors_force, Resolution);
+      shape_factor = shape_factors_force.at(Resolution);
     }
 
     composite_youngs = 1.0 / ((1 - nu1 * nu1) / E1 + (1 - nu2 * nu2) / E2);
@@ -108,11 +79,11 @@ namespace MIRCO
     // resolution is available; no interpolation needed
     if (PressureGreenFunFlag)
     {
-      shape_factor = GetShapeFactor_intRes(shape_factors_pressure, Resolution);
+      shape_factor = shape_factors_pressure.at(Resolution);
     }
     else
     {
-      shape_factor = GetShapeFactor_intRes(shape_factors_force, Resolution);
+      shape_factor = shape_factors_force.at(Resolution);
     }
 
     composite_youngs = compositeYoungs;  // 1.0 / ((1 - nu1 * nu1) / E1 + (1 - nu2 * nu2) / E2);
@@ -135,14 +106,7 @@ namespace MIRCO
     topology = Kokkos::create_mirror_view_and_copy(ExecSpace_Default_t(), topology_h);
 
     // interpolation needed
-    if (PressureGreenFunFlag)
-    {
-      shape_factor = GetShapeFactor_N(shape_factors_pressure, N);
-    }
-    else
-    {
-      shape_factor = GetShapeFactor_N(shape_factors_force, N);
-    }
+    throw std::runtime_error("broken\n");
 
     composite_youngs = 1.0 / ((1 - nu1 * nu1) / E1 + (1 - nu2 * nu2) / E2);
     elastic_compliance_correction = LateralLength * composite_youngs / shape_factor;
