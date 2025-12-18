@@ -29,7 +29,8 @@ namespace MIRCO
       const double LateralLength, const double GridSize, const double Tolerance,
       const int MaxIteration, const double CompositeYoungs, const bool WarmStartingFlag,
       const double ElasticComplianceCorrection, const ViewMatrix_d topology, const double zmax,
-      const ViewVector_d meshgrid, const bool PressureGreenFunFlag);
+      const ViewVector_d meshgrid, const bool PressureGreenFunFlag,
+      std::optional<std::string> vis_exportPath = std::nullopt);
 
   /**
    * @brief Relate the far-field displacement with pressure, taking the parameters from an
@@ -48,7 +49,7 @@ namespace MIRCO
         inputParams.grid_size, inputParams.tolerance, inputParams.max_iteration,
         inputParams.composite_youngs, inputParams.warm_starting_flag,
         inputParams.elastic_compliance_correction, inputParams.topology, zmax, meshgrid,
-        inputParams.pressure_green_funct_flag);
+        inputParams.pressure_green_funct_flag, inputParams.export_visualization_path);
   }
 }  // namespace MIRCO
 

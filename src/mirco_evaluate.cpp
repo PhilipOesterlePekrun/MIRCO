@@ -5,6 +5,7 @@
 #include <cmath>
 #include <cstdio>
 #include <ctime>
+#include <iostream>
 
 #include "mirco_contactpredictors.h"
 #include "mirco_contactstatus.h"
@@ -12,13 +13,19 @@
 #include "mirco_nonlinearsolver.h"
 #include "mirco_warmstart.h"
 
+#if (MIRCO_ENABLE_VISUALIZATIONEXPORT)
+#include "mirco_exportvisualization.h"
+#include "mirco_topologyutilities.h"
+#endif
+
 namespace MIRCO
 {
   void Evaluate(double& pressure, double& effectiveContactAreaFraction, const double Delta,
       const double LateralLength, const double GridSize, const double Tolerance,
       const int MaxIteration, const double CompositeYoungs, const bool WarmStartingFlag,
       const double ElasticComplianceCorrection, const ViewMatrix_d topology, const double zmax,
-      const ViewVector_d meshgrid, const bool PressureGreenFunFlag)
+      const ViewVector_d meshgrid, const bool PressureGreenFunFlag,
+      std::optional<std::string> VisualizationExportPath)
   {
     // Initialise the area vector and force vector. Each element contains the
     // area and force calculated at every iteration.
@@ -112,6 +119,117 @@ namespace MIRCO
 
     // Effective contact area in converged state
     effectiveContactAreaFraction = contactAreaVector.back() / LateralLength2;
+
+    if (VisualizationExportPath)
+    {
+#if (MIRCO_ENABLE_VISUALIZATIONEXPORT)
+      std::cout << "Computation finished. Exporting visualization...\n\n";
+
+      const int N = topology.extent(0);
+      const int N2 = N * N;
+
+      const int na = activeSetf.extent_int(0);
+
+      ViewMatrix_d p_m("p_m", N, N);
+      Kokkos::deep_copy(p_m, 0);
+      Kokkos::parallel_for(
+          na, KOKKOS_LAMBDA(const int indA) {
+            const int a = activeSetf(indA);
+            p_m(a % N, a / N) = pf(indA);
+          });
+
+      ViewMatrix_d u_m("", N, N);
+      if (true)
+      {  // vis_memoryConstrained.value()) {
+        Kokkos::parallel_for(
+            Kokkos::TeamPolicy<ExecSpace_Default_t>(N2, Kokkos::AUTO),
+            KOKKOS_LAMBDA(const Kokkos::TeamPolicy<ExecSpace_Default_t>::member_type& team) {
+              const int iInd = team.league_rank();
+              const int ix = iInd % N;
+              const int iy = iInd / N;
+
+              double sum = 0.0;
+
+              Kokkos::parallel_reduce(
+                  Kokkos::TeamThreadRange(team, na),
+                  [&](const int k, double& lsum)
+                  {
+                    const int jInd = activeSetf(k);
+                    const int jx = jInd % N;
+                    const int jy = jInd / N;
+
+                    lsum += SetupMatrixOneEntry(ix, iy, jx, jy, GridSize, CompositeYoungs, N,
+                                PressureGreenFunFlag) *
+                            p_m(jx, jy);
+                  },
+                  sum);
+
+              Kokkos::single(Kokkos::PerTeam(team), [&] { u_m(ix, iy) = sum; });
+            });
+      }
+      else
+      {
+        ViewVector_d xv = ViewVector_d("xv", na);
+        ViewVector_d yv = ViewVector_d("yv", na);
+
+        auto H = SetupMatrix(xv, yv, GridSize, CompositeYoungs, na, PressureGreenFunFlag);
+
+        Kokkos::parallel_for(
+            Kokkos::TeamPolicy<ExecSpace_Default_t>(N2, Kokkos::AUTO),
+            KOKKOS_LAMBDA(const Kokkos::TeamPolicy<ExecSpace_Default_t>::member_type& team) {
+              const int iInd = team.league_rank();
+              const int ix = iInd % N;
+              const int iy = iInd / N;
+
+              double sum = 0.0;
+
+              Kokkos::parallel_reduce(
+                  Kokkos::TeamThreadRange(team, na),
+                  [&](const int k, double& lsum)
+                  {
+                    const int jInd = activeSetf(k);
+                    const int jx = jInd % N;
+                    const int jy = jInd / N;
+
+                    lsum += SetupMatrixOneEntry(ix, iy, jx, jy, GridSize, CompositeYoungs, N,
+                                PressureGreenFunFlag) *
+                            p_m(jx, jy);
+                  },
+                  sum);
+
+              Kokkos::single(Kokkos::PerTeam(team), [&] { u_m(ix, iy) = sum; });
+            });
+      }
+
+      double max_u = GetMax(u_m);
+      ViewMatrix_d deformedHalfSpace("deformedHalfSpace", N, N);
+      Kokkos::deep_copy(deformedHalfSpace, Delta);
+      Kokkos::parallel_for(
+          Kokkos::MDRangePolicy<Kokkos::Rank<2>>({0, 0}, {N, N}),
+          KOKKOS_LAMBDA(
+              const int i, const int j) { deformedHalfSpace(i, j) = zmax - max_u + u_m(i, j); });
+
+      /*
+      Kokkos::View<uint8_t**, Kokkos::LayoutLeft, Device_Default_t> activeSet_m(n, n);
+      Kokkos::deep_copy(activeSet_m, uint8_t(0));
+      Kokkos::parallel_for(
+        na, KOKKOS_LAMBDA(const int indA) {
+          const int a = activeSetf(indA);
+          activeSet_m(a % N, a / N) = uint8_t(1);
+        });
+        */
+
+
+
+      ExportVisualization(VisualizationExportPath.value(), GridSize, activeSetf,
+          {u_m, p_m, topology, deformedHalfSpace},
+          {"Displacement", "Pressure", "Topology (Rigid Indentor)", "Deformed Elastic Half-Space"});
+
+#else
+      std::cerr << "WARNING: Unable to export visualization; CMake variable "
+                   "MIRCO_ENABLE_VISUALIZATIONEXPORT is OFF.\n\n";
+#endif
+    }
   }
 
 }  // namespace MIRCO

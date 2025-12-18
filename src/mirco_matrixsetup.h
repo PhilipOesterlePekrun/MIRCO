@@ -20,6 +20,26 @@ namespace MIRCO
    */
   ViewMatrix_d SetupMatrix(const ViewVector_d xv0, const ViewVector_d yv0, const double GridSize,
       const double CompositeYoungs, const int systemsize, const bool PressureGreenFunFlag);
+
+  /**
+   * @brief Get one entry of the full influence coefficient. Use when memory is too constrained to
+   * build the full matrix.
+   *
+   * @param[in] ix x index of first point
+   * @param[in] iy y index of first point
+   * @param[in] jx x index of second point
+   * @param[in] jy y index of second point
+   * @param[in] GridSize Grid size (length of each cell)
+   * @param[in] CompositeYoungs The composite Young's modulus
+   * @param[in] N Element count along one direction
+   * @param[in] PressureGreenFunFlag Flag to use Green function based on uniform pressure instead
+   * of point force
+   *
+   * @return Matrix entry of H
+   */
+  double SetupMatrixOneEntry(const int ix, const int iy, const int jx, const int jy,
+      const double GridSize, const double CompositeYoungs, const int N,
+      const bool PressureGreenFunFlag);
 }  // namespace MIRCO
 
 #endif  // SRC_MATRIXSETUP_H_

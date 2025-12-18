@@ -26,8 +26,8 @@ namespace MIRCO
     Kokkos::deep_copy(counter, 0);
     Kokkos::parallel_for(
         N * N, KOKKOS_LAMBDA(const int a) {
-          const int i = a / N;
-          const int j = a % N;
+          const int i = a % N;
+          const int j = a / N;
           const double topology_a = topology(i, j);
           if (topology_a >= -deltaContact)
           {
