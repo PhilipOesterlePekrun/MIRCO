@@ -8,15 +8,12 @@
 #include <vtkXMLImageDataWriter.h>
 #include <vtkZLibDataCompressor.h>
 
-#include <cstring>  // memset
-#include <fstream>
-#include <stdexcept>
+#include <cstring>  // for memset
 #include <string>
 #include <vector>
 
 namespace MIRCO
 {
-
   void ExportVisualization(const std::string& path, float gridSize, const ViewVectorInt_d activeSet,
       const std::vector<ViewMatrix_d>& otherFields, const std::vector<std::string>& otherFieldNames)
   {
@@ -28,7 +25,7 @@ namespace MIRCO
     img->SetSpacing(gridSize, gridSize, 1.0);
     img->SetOrigin(0.0, 0.0, 0.0);
 
-    // active set
+    // Active set
     {
       ViewVectorInt_h activeSet_h =
           Kokkos::create_mirror_view_and_copy(ExecSpace_DefaultHost_t(), activeSet);
@@ -38,24 +35,16 @@ namespace MIRCO
       vtkArr->SetNumberOfComponents(1);
       vtkArr->SetNumberOfTuples(n2);
 
-      // Fast zero-fill
       auto* vtkArrArr = static_cast<unsigned char*>(vtkArr->WriteVoidPointer(0, n2));
       std::memset(vtkArrArr, 0, static_cast<size_t>(n2));
 
-      // Unordered scatter write (duplicates don’t matter)
       for (int indA = 0; indA < activeSet_h.extent(0); ++indA)
-      {
-        const int a = activeSet_h(indA);
-        vtkArr->SetValue(a, 1);
-      }
+        vtkArr->SetValue(activeSet_h(indA), 1);
 
       img->GetPointData()->AddArray(vtkArr);
-
-      // Optional: make the first field the "active" scalar for coloring/warp defaults
-      img->GetPointData()->SetActiveScalars("Active Set");
     }
 
-    // others
+    // Other fields
     for (int f = 0; f < otherFields.size(); ++f)
     {
       ViewMatrix_h field_h =
@@ -66,35 +55,24 @@ namespace MIRCO
       vtkArr->SetNumberOfComponents(1);
       vtkArr->SetNumberOfTuples(n2);
 
-      // Unordered scatter write (duplicates don’t matter)
       for (int i = 0; i < n; ++i)
-      {
-        for (int j = 0; j < n; ++j)
-        {
-          vtkArr->SetValue(i + n * j, field_h(i, j));
-        }
-      }
+        for (int j = 0; j < n; ++j) vtkArr->SetValue(i + n * j, field_h(i, j));
 
       img->GetPointData()->AddArray(vtkArr);
     }
-
-
 
     vtkNew<vtkXMLImageDataWriter> w;
     w->SetFileName((path + ".vti").c_str());
     w->SetInputData(img);
 
-    // Binary appended data + zlib compression
     vtkNew<vtkZLibDataCompressor> z;
     w->SetCompressor(z);
-    w->SetDataModeToAppended();  // binary appended payload
-    w->EncodeAppendedDataOff();  // raw appended binary (not base64)
+    w->SetDataModeToAppended();
+    w->EncodeAppendedDataOff();
 
     if (!w->Write())
     {
-      throw std::runtime_error("vtkXMLImageDataWriter::Write() failed");
+      std::cerr << "WARNING: ExportVisualization() failed to write to file\n\n";
     }
   }
-
-
 }  // namespace MIRCO

@@ -27,7 +27,8 @@
       "cacheVariables": {
         "KOKKOS_PATH": "/opt/mirco-dependencies/kokkos_install_openmp",
         "KOKKOS_KERNELS_PATH": "/opt/mirco-dependencies/kokkos-kernels_install_openmp",
-        "MIRCO_ENABLE_FLAT": "ON"
+        "MIRCO_ENABLE_FLAT": "ON",
+        "MIRCO_ENABLE_VISUALIZATIONEXPORT": "ON"
       }
     },
     {
@@ -41,7 +42,8 @@
         "MIRCO_HOST_CXX_COMPILER": "g++-12",
         "KOKKOS_PATH": "/opt/mirco-dependencies/kokkos_install_cuda",
         "KOKKOS_KERNELS_PATH": "/opt/mirco-dependencies/kokkos-kernels_install_cuda",
-        "MIRCO_ENABLE_FLAT": "ON"
+        "MIRCO_ENABLE_FLAT": "ON",
+        "MIRCO_ENABLE_VISUALIZATIONEXPORT": "ON"
       }
     },
     {

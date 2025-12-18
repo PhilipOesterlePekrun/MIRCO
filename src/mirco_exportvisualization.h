@@ -7,11 +7,9 @@
 
 namespace MIRCO
 {
-
   void ExportVisualization(const std::string& path, float gridSize, const ViewVectorInt_d activeSet,
       const std::vector<ViewMatrix_d>& otherFields,
       const std::vector<std::string>& otherFieldNames);
-
 }  // namespace MIRCO
 
 #endif  // SRC_EXPORTVISUALIZATION_H_

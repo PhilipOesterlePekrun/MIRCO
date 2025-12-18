@@ -138,68 +138,32 @@ namespace MIRCO
             p_m(a % N, a / N) = pf(indA);
           });
 
-      ViewMatrix_d u_m("", N, N);
-      if (true)
-      {  // vis_memoryConstrained.value()) {
-        Kokkos::parallel_for(
-            Kokkos::TeamPolicy<ExecSpace_Default_t>(N2, Kokkos::AUTO),
-            KOKKOS_LAMBDA(const Kokkos::TeamPolicy<ExecSpace_Default_t>::member_type& team) {
-              const int iInd = team.league_rank();
-              const int ix = iInd % N;
-              const int iy = iInd / N;
+      ViewMatrix_d u_m("u_m", N, N);
+      Kokkos::parallel_for(
+          Kokkos::TeamPolicy<ExecSpace_Default_t>(N2, Kokkos::AUTO),
+          KOKKOS_LAMBDA(const Kokkos::TeamPolicy<ExecSpace_Default_t>::member_type& team) {
+            const int iInd = team.league_rank();
+            const int ix = iInd % N;
+            const int iy = iInd / N;
 
-              double sum = 0.0;
+            double sum = 0.0;
 
-              Kokkos::parallel_reduce(
-                  Kokkos::TeamThreadRange(team, na),
-                  [&](const int k, double& lsum)
-                  {
-                    const int jInd = activeSetf(k);
-                    const int jx = jInd % N;
-                    const int jy = jInd / N;
+            Kokkos::parallel_reduce(
+                Kokkos::TeamThreadRange(team, na),
+                [&](const int k, double& lsum)
+                {
+                  const int jInd = activeSetf(k);
+                  const int jx = jInd % N;
+                  const int jy = jInd / N;
 
-                    lsum += SetupMatrixOneEntry(ix, iy, jx, jy, GridSize, CompositeYoungs, N,
-                                PressureGreenFunFlag) *
-                            p_m(jx, jy);
-                  },
-                  sum);
+                  lsum += SetupMatrixOneEntry(
+                              ix, iy, jx, jy, GridSize, CompositeYoungs, N, PressureGreenFunFlag) *
+                          p_m(jx, jy);
+                },
+                sum);
 
-              Kokkos::single(Kokkos::PerTeam(team), [&] { u_m(ix, iy) = sum; });
-            });
-      }
-      else
-      {
-        ViewVector_d xv = ViewVector_d("xv", na);
-        ViewVector_d yv = ViewVector_d("yv", na);
-
-        auto H = SetupMatrix(xv, yv, GridSize, CompositeYoungs, na, PressureGreenFunFlag);
-
-        Kokkos::parallel_for(
-            Kokkos::TeamPolicy<ExecSpace_Default_t>(N2, Kokkos::AUTO),
-            KOKKOS_LAMBDA(const Kokkos::TeamPolicy<ExecSpace_Default_t>::member_type& team) {
-              const int iInd = team.league_rank();
-              const int ix = iInd % N;
-              const int iy = iInd / N;
-
-              double sum = 0.0;
-
-              Kokkos::parallel_reduce(
-                  Kokkos::TeamThreadRange(team, na),
-                  [&](const int k, double& lsum)
-                  {
-                    const int jInd = activeSetf(k);
-                    const int jx = jInd % N;
-                    const int jy = jInd / N;
-
-                    lsum += SetupMatrixOneEntry(ix, iy, jx, jy, GridSize, CompositeYoungs, N,
-                                PressureGreenFunFlag) *
-                            p_m(jx, jy);
-                  },
-                  sum);
-
-              Kokkos::single(Kokkos::PerTeam(team), [&] { u_m(ix, iy) = sum; });
-            });
-      }
+            Kokkos::single(Kokkos::PerTeam(team), [&] { u_m(ix, iy) = sum; });
+          });
 
       double max_u = GetMax(u_m);
       ViewMatrix_d deformedHalfSpace("deformedHalfSpace", N, N);
@@ -209,22 +173,9 @@ namespace MIRCO
           KOKKOS_LAMBDA(
               const int i, const int j) { deformedHalfSpace(i, j) = zmax - max_u + u_m(i, j); });
 
-      /*
-      Kokkos::View<uint8_t**, Kokkos::LayoutLeft, Device_Default_t> activeSet_m(n, n);
-      Kokkos::deep_copy(activeSet_m, uint8_t(0));
-      Kokkos::parallel_for(
-        na, KOKKOS_LAMBDA(const int indA) {
-          const int a = activeSetf(indA);
-          activeSet_m(a % N, a / N) = uint8_t(1);
-        });
-        */
-
-
-
       ExportVisualization(VisualizationExportPath.value(), GridSize, activeSetf,
           {u_m, p_m, topology, deformedHalfSpace},
           {"Displacement", "Pressure", "Topology (Rigid Indentor)", "Deformed Elastic Half-Space"});
-
 #else
       std::cerr << "WARNING: Unable to export visualization; CMake variable "
                    "MIRCO_ENABLE_VISUALIZATIONEXPORT is OFF.\n\n";
