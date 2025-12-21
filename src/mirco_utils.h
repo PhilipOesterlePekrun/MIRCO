@@ -1,6 +1,7 @@
 #ifndef SRC_UTILS_H_
 #define SRC_UTILS_H_
 
+#include <optional>
 #include <ryml.hpp>
 #include <ryml_std.hpp>
 #include <string>
@@ -28,6 +29,14 @@ namespace MIRCO
     bool get_bool(ryml::ConstNodeRef node, const std::string& key);
     double get_double(ryml::ConstNodeRef node, const std::string& key);
     int get_int(ryml::ConstNodeRef node, const std::string& key);
+
+    /*
+     * \brief The following functions are for getting an optional parameters
+     */
+    std::optional<std::string> get_optional_string(ryml::ConstNodeRef node, const std::string& key);
+    std::optional<bool> get_optional_bool(ryml::ConstNodeRef node, const std::string& key);
+    std::optional<double> get_optional_double(ryml::ConstNodeRef node, const std::string& key);
+    std::optional<int> get_optional_int(ryml::ConstNodeRef node, const std::string& key);
   }  // namespace Utils
 }  // namespace MIRCO
 

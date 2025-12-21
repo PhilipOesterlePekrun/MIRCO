@@ -65,7 +65,11 @@ cd <buildDir>
 cmake --preset=<name_of_your_preset> <sourceDir>
 ```
 
-> **IMPORTANT** Make sure to set `Trilinos_DIR` to point to you Trilinos installation.
+> **IMPORTANT**
+>
+> Make sure to set `KOKKOS_PATH` and `KOKKOS_KERNELS_PATH` to point to the respective installations.
+>
+> When using a non-host backend in Kokkos, set `CMAKE_CXX_COMPILER` to the device compiler (e.g. `<KokkosSrcDir>/bin/nvcc_wrapper` for Nvidia GPUs) and set `MIRCO_HOST_CXX_COMPILER` to a host compiler (e.g. g++). When using a host backend, set `CMAKE_CXX_COMPILER` to the host compiler as usual.
 
 Build the `mirco` executable in the build directory using:
 
@@ -90,10 +94,10 @@ ctest
 To run the code with an input file, use the following command in your build directory:
 
 ```bash
-./mirco <sourceDir>/Input/<someInputFile.xml>
+./mirco <sourceDir>/Input/<someInputFile.yaml>
 ```
 
-where `<someInputFile.xml>` is any input file in the prescribed format.
+where `<someInputFile.yaml>` is any input file in the prescribed format.
 
 ### Developing MIRCO
 

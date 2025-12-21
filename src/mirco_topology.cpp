@@ -3,32 +3,33 @@
 #include <cmath>
 #include <ctime>
 #include <fstream>
+#include <optional>
 #include <random>
 
 namespace MIRCO
 {
-  ViewMatrix_h CreateSurfaceFromFile(const std::string& filepath, int& dimension)
+  ViewMatrix_h CreateSurfaceFromFile(const std::string& filepath)
   {
-    dimension = 0;
+    int N = 0;
 
     std::ifstream reader(filepath);
     std::string line;
 
     while (getline(reader, line))
     {
-      ++dimension;
+      ++N;
     }
     reader.clear();
     // Reuse reader
     reader.seekg(0, std::ios::beg);
 
-    ViewMatrix_h z("CreateSurfaceFromFile(); z", dimension, dimension);
+    ViewMatrix_h z("CreateSurfaceFromFile(); z", N, N);
     std::ifstream stream(filepath);
     int lineCounter = 0;
     while (getline(reader, line))
     {
       ++lineCounter;
-      for (int i = 0; i < dimension; i++)
+      for (int i = 0; i < N; i++)
       {
         const int separatorPosition = line.find_first_of(';');
         z(lineCounter - 1, i) = stod(line.substr(0, separatorPosition));
@@ -40,26 +41,26 @@ namespace MIRCO
     return z;
   }
 
-  ViewMatrix_h CreateRmgSurface(int resolution, double InitialTopologyStdDeviation, double Hurst,
-      bool RandomSeedFlag, int RandomGeneratorSeed)
+  ViewMatrix_h CreateRmgSurface(int Resolution, double InitialTopologyStdDeviation, double Hurst,
+      bool RandomSeedFlag, std::optional<int> RandomGeneratorSeed)
   {
     srand(time(NULL));
 
     int seed;
 
     if (RandomSeedFlag)
-    {
       seed = rand();
-    }
+    else if (RandomGeneratorSeed)
+      seed = *RandomGeneratorSeed;
     else
-    {
-      seed = RandomGeneratorSeed;  // seed can be fixed to reproduce result
-    }
+      throw std::runtime_error(
+          "Please provide 'RandomGeneratorSeed' when 'RandomSeedFlag' is false.");
+
     std::default_random_engine generate(seed);
     std::normal_distribution<double> distribution(
         0.0, 1.0);  // normal distribution: mean = 0.0, standard deviation = 1.0
 
-    int N = (1 << resolution) + 1;
+    int N = (1 << Resolution) + 1;
     ViewMatrix_h z("CreateRmgSurface(); z", N, N);
 
     const double scaling_factor = pow(2.0, 0.5 * Hurst);
@@ -69,7 +70,7 @@ namespace MIRCO
     int D = D_0;
     int d = D_0 / 2;
 
-    for (int i = 0; i < resolution; i++)
+    for (int i = 0; i < Resolution; i++)
     {
       alpha = alpha / scaling_factor;
 

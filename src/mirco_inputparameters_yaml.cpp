@@ -35,9 +35,10 @@ MIRCO::InputParameters::InputParameters(const std::string& inputFileName)
         Utils::get_double(geoParams, "Tolerance"), Utils::get_double(geoParams, "Delta"),
         Utils::get_double(geoParams, "LateralLength"), Utils::get_int(geoParams, "Resolution"),
         Utils::get_double(geoParams, "InitialTopologyStdDeviation"),
-        Utils::get_double(geoParams, "HurstExponent"), Utils::get_bool(root, "RandomSeedFlag"),
-        Utils::get_int(root, "RandomGeneratorSeed"), Utils::get_int(root, "MaxIteration"),
-        Utils::get_bool(root, "WarmStartingFlag"), Utils::get_bool(root, "PressureGreenFunFlag"));
+        Utils::get_double(geoParams, "HurstExponent"), Utils::get_int(root, "MaxIteration"),
+        Utils::get_bool(root, "WarmStartingFlag"), Utils::get_bool(root, "PressureGreenFunFlag"),
+        Utils::get_bool(root, "RandomSeedFlag"),
+        Utils::get_optional_int(root, "RandomGeneratorSeed"));
   }
   else
   {

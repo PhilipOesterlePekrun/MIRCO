@@ -4,6 +4,7 @@
 #include "../../src/mirco_inputparameters.h"
 #include "../../src/mirco_kokkostypes.h"
 #include "../../src/mirco_nonlinearsolver.h"
+#include "../../src/mirco_shapefactors.h"
 #include "../../src/mirco_topology.h"
 #include "../../src/mirco_utils.h"
 #include "../../src/mirco_warmstart.h"
@@ -214,9 +215,8 @@ TEST(topology, RMG)
 }
 TEST(topology, readFromFile)
 {
-  int N;
   std::string topologyFilePath = "test/data/topologyN5.dat";
-  MIRCO::ViewMatrix_h outsurf_h = MIRCO::CreateSurfaceFromFile(topologyFilePath, N);
+  MIRCO::ViewMatrix_h outsurf_h = MIRCO::CreateSurfaceFromFile(topologyFilePath);
 
   EXPECT_EQ(outsurf_h.extent(0), 5);
   EXPECT_EQ(outsurf_h.extent(1), 5);
@@ -264,7 +264,7 @@ TEST(inputParameters, yaml_dat)
 TEST(inputParameters, directInput_rmg)
 {
   MIRCO::InputParameters inputParams(
-      1.0, 1.0, 0.2, 0.2, 0.005, 10.0, 1000, 2, 15.0, 0.15, false, 46, 100, false, true);
+      1.0, 1.0, 0.2, 0.2, 0.005, 10.0, 1000, 2, 15.0, 0.15, 100, false, true, 46);
 
   MIRCO::ViewMatrix_d topology_d = inputParams.topology;
 
@@ -302,7 +302,7 @@ TEST(inputParameters, directInput_dat)
 
 TEST(warmstarting, warmstart)
 {
-  using ViewVectorInt_h = Kokkos::View<int*, Kokkos::LayoutLeft, MIRCO::ExecSpace_DefaultHost_t>;
+  using ViewVectorInt_h = Kokkos::View<int *, Kokkos::LayoutLeft, MIRCO::ExecSpace_DefaultHost_t>;
   ViewVectorInt_h activeSet0_h("activeSet0_h", 3);
   ViewVectorInt_h activeSetf_h("activeSetf_h", 2);
   MIRCO::ViewVector_h pf_h("", 2);
@@ -334,7 +334,7 @@ TEST(warmstarting, warmstart)
 
 TEST(warmstarting, warmstart2)
 {
-  using ViewVectorInt_h = Kokkos::View<int*, Kokkos::LayoutLeft, MIRCO::ExecSpace_DefaultHost_t>;
+  using ViewVectorInt_h = Kokkos::View<int *, Kokkos::LayoutLeft, MIRCO::ExecSpace_DefaultHost_t>;
   ViewVectorInt_h activeSet0_h("activeSet0_h", 3);
   ViewVectorInt_h activeSetf_h("activeSetf_h", 4);
   MIRCO::ViewVector_h pf_h("", 4);
@@ -368,7 +368,32 @@ TEST(warmstarting, warmstart2)
   EXPECT_EQ(p0_h(2), 30);
 }
 
-int main(int argc, char** argv)
+TEST(shapefactors, check)
+{
+  // Originally present shape factors for integer resolutions of 1 to 8:
+  // The following pressure based constants are calculated by solving a flat indentor problem using
+  // the pressure based Green function described in Pohrt and Li (2014).
+  // http://dx.doi.org/10.1134/s1029959914040109
+  const std::map<int, double> shape_factors_pressure{{1, 0.961389237917602}, {2, 0.924715342432435},
+      {3, 0.899837531880697}, {4, 0.884976751041942}, {5, 0.876753783192863},
+      {6, 0.872397956576882}, {7, 0.8701463093314326}, {8, 0.8689982669426167}};
+  // The following force based constants are taken from Table 1 of Bonari et al. (2020).
+  // https://doi.org/10.1007/s00466-019-01791-3
+  const std::map<int, double> shape_factors_force{{1, 0.778958541513360}, {2, 0.805513388666376},
+      {3, 0.826126871395416}, {4, 0.841369158110513}, {5, 0.851733020725652},
+      {6, 0.858342234203154}, {7, 0.862368243479785}, {8, 0.864741597831785}};
+
+  for (const auto &entry : shape_factors_pressure)
+  {
+    EXPECT_NEAR(entry.second, MIRCO::getShapeFactor((1 << entry.first) + 1, true), 1e-12);
+  }
+  for (const auto &entry : shape_factors_force)
+  {
+    EXPECT_NEAR(entry.second, MIRCO::getShapeFactor((1 << entry.first) + 1, false), 1e-12);
+  }
+}
+
+int main(int argc, char **argv)
 {
   Kokkos::initialize(argc, argv);
   ::testing::InitGoogleTest(&argc, argv);

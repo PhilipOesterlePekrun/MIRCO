@@ -1,6 +1,7 @@
 #ifndef SRC_INPUTPARAMETERS_H_
 #define SRC_INPUTPARAMETERS_H_
 
+#include <optional>
 #include <string>
 
 #include "mirco_kokkostypes.h"
@@ -36,19 +37,18 @@ namespace MIRCO
      * @param InitialTopologyStdDeviation Initial Standard deviation for the random-midpoint
      * generator [micrometers]
      * @param Hurst Hurst Exponent (Used in random mid-point generator)
-     * @param RandomSeedFlag Set `true` to fix the seed to generate psuedo random topology to
-     * reproduce results. Set `false` to use random seed.
-     * @param RandomGeneratorSeed Set the value of seed for the random mid-point generator
      * @param MaxIteration Maximum number of iterations for the force to converge.
      * @param WarmStartingFlag Set `true` for using the warm starter. It predicts the nodes coming
      * into contact in the next iteration and hence speeds up the computation.
      * @param PressureGreenFunFlag Flag to use Green function based on uniform pressure instead of
-     * point force
+     * point force.
+     * @param RandomGeneratorSeed Set the value of seed for the pseudo-random mid-point generator.
+     * If not set or set to `std::nullopt`, then a random seed will be used.
      */
     InputParameters(double E1, double E2, double nu1, double nu2, double Tolerance, double Delta,
         double LateralLength, int Resolution, double InitialTopologyStdDeviation, double Hurst,
-        bool RandomSeedFlag, int RandomGeneratorSeed, int MaxIteration, bool WarmStartingFlag,
-        bool PressureGreenFunFlag);
+        int MaxIteration, bool WarmStartingFlag, bool PressureGreenFunFlag, bool RandomSeedFlag,
+        std::optional<int> RandomGeneratorSeed = std::nullopt);
 
     /**
      * @brief Constructor which sets the necessary member variable parameters without an input
