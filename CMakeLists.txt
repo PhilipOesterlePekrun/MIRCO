@@ -101,6 +101,21 @@ if(KOKKOS_KERNELS_IN_MIRCO)
   endif()
 endif()
 
+option(MIRCO_ENABLE_VISUALIZATIONEXPORT "Enable exporting the results for visualization. This requires VTK, either explicitly provided through VTK_PATH, or from an upstream project." OFF)
+if(MIRCO_ENABLE_VISUALIZATIONEXPORT)
+  # If user provided a prefix, help CMake find VTK there
+  if(DEFINED VTK_PATH)
+    set(CMAKE_PREFIX_PATH ${VTK_PATH} ${CMAKE_PREFIX_PATH})
+  endif()
+
+  find_package(VTK QUIET COMPONENTS CommonCore CommonDataModel IOCore IOXML REQUIRED)
+
+  if(NOT VTK_FOUND)
+    message(WARNING "MIRCO_ENABLE_VISUALIZATIONEXPORT is ON, but VTK could not be found!")
+    set(MIRCO_WITH_VTK OFF CACHE BOOL "" FORCE)
+  endif()
+endif()
+
 # File(s) which need(s) Kokkos-Kernels
 add_library(mirco_needKK
   src/mirco_nonlinearsolver.cpp
@@ -116,6 +131,16 @@ add_library(mirco_core
   src/mirco_warmstart.cpp
   )
 target_link_libraries(mirco_core PRIVATE mirco_needKK Kokkos::kokkos)
+
+if(MIRCO_ENABLE_VISUALIZATIONEXPORT)
+  target_sources(mirco_core PRIVATE src/mirco_exportvisualization.cpp)
+  target_link_libraries(mirco_core PRIVATE
+    VTK::CommonCore
+    VTK::CommonDataModel
+    VTK::IOCore
+    VTK::IOXML
+  )
+endif()
 
 add_library(mirco_topology
   src/mirco_topology.cpp
@@ -185,12 +210,12 @@ else()
   # Everything is compiled on host; fetch rapidyaml directly
   message(STATUS "Fetching rapidyaml...")
   include(FetchContent)
-  
+
   set(CMAKE_SUPPRESS_DEVELOPER_WARNINGS ON CACHE BOOL "" FORCE) # Suppress developer warnings from ryml
-  
+
   FetchContent_Declare(rapidyaml GIT_REPOSITORY https://github.com/biojppm/rapidyaml.git GIT_TAG 47ec2fa184209687c20fd5bc05621e1cb1200311)
   FetchContent_MakeAvailable(rapidyaml)
-  
+
   set(CMAKE_SUPPRESS_DEVELOPER_WARNINGS OFF CACHE BOOL "" FORCE)
 endif()
 
@@ -214,6 +239,11 @@ target_include_directories(mirco_lib INTERFACE
   )
 
 add_library(mirco::mirco_lib ALIAS mirco_lib)
+
+target_compile_definitions(mirco_core PUBLIC
+  $<$<BOOL:${MIRCO_ENABLE_VISUALIZATIONEXPORT}>:MIRCO_ENABLE_VISUALIZATIONEXPORT=1>
+  $<$<NOT:$<BOOL:${MIRCO_ENABLE_VISUALIZATIONEXPORT}>>:MIRCO_ENABLE_VISUALIZATIONEXPORT=0>
+)
 
 # Compile mirco itself
 add_executable(mirco src/main.cpp)

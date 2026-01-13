@@ -15,7 +15,7 @@ namespace MIRCO
     return meshgrid;
   }
 
-  double GetMax(ViewMatrix_d topology)
+  double GetMax(const ViewMatrix_d topology)
   {
     const int n0 = topology.extent(0);
     const int n1 = topology.extent(1);

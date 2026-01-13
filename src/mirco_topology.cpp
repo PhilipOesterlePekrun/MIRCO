@@ -3,7 +3,6 @@
 #include <cmath>
 #include <ctime>
 #include <fstream>
-#include <optional>
 #include <random>
 
 namespace MIRCO

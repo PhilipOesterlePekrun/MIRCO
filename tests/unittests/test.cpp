@@ -302,9 +302,8 @@ TEST(inputParameters, directInput_dat)
 
 TEST(warmstarting, warmstart)
 {
-  using ViewVectorInt_h = Kokkos::View<int *, Kokkos::LayoutLeft, MIRCO::ExecSpace_DefaultHost_t>;
-  ViewVectorInt_h activeSet0_h("activeSet0_h", 3);
-  ViewVectorInt_h activeSetf_h("activeSetf_h", 2);
+  MIRCO::ViewVectorInt_h activeSet0_h("activeSet0_h", 3);
+  MIRCO::ViewVectorInt_h activeSetf_h("activeSetf_h", 2);
   MIRCO::ViewVector_h pf_h("", 2);
 
   activeSet0_h(0) = 12;
@@ -334,9 +333,8 @@ TEST(warmstarting, warmstart)
 
 TEST(warmstarting, warmstart2)
 {
-  using ViewVectorInt_h = Kokkos::View<int *, Kokkos::LayoutLeft, MIRCO::ExecSpace_DefaultHost_t>;
-  ViewVectorInt_h activeSet0_h("activeSet0_h", 3);
-  ViewVectorInt_h activeSetf_h("activeSetf_h", 4);
+  MIRCO::ViewVectorInt_h activeSet0_h("activeSet0_h", 3);
+  MIRCO::ViewVectorInt_h activeSetf_h("activeSetf_h", 4);
   MIRCO::ViewVector_h pf_h("", 4);
 
   activeSet0_h(0) = 12;
