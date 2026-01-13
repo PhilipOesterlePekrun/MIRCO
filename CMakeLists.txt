@@ -42,7 +42,7 @@ if(GTEST_IN_MIRCO)
 endif()
 
 # Kokkos
-option(KOKKOS_IN_MIRCO "Find Kokkos in the MIRCO project. If set to OFF, use the Kokkos installation from an upstream project" ON)
+option(KOKKOS_IN_MIRCO "Find Kokkos in the MIRCO project. If set to OFF, use the Kokkos installation from an upstream project" OFF)
 if(KOKKOS_IN_MIRCO)
   set(CMAKE_PREFIX_PATH ${KOKKOS_PATH} ${CMAKE_PREFIX_PATH})
   find_package(Kokkos REQUIRED)
@@ -72,7 +72,7 @@ if(KOKKOS_IN_MIRCO)
 endif()
 
 # Kokkos-Kernels
-option(KOKKOS_KERNELS_IN_MIRCO "Find Kokkos-Kernels in the MIRCO project. If set to OFF, use the Kokkos-Kernels installation from an upstream project" ON)
+option(KOKKOS_KERNELS_IN_MIRCO "Find Kokkos-Kernels in the MIRCO project. If set to OFF, use the Kokkos-Kernels installation from an upstream project" OFF)
 if(KOKKOS_KERNELS_IN_MIRCO)
   set(CMAKE_PREFIX_PATH ${KOKKOS_KERNELS_PATH} ${CMAKE_PREFIX_PATH})
   find_package(KokkosKernels REQUIRED)
@@ -157,66 +157,83 @@ add_library(mirco_inputparameters
   )
 target_link_libraries(mirco_inputparameters PRIVATE mirco_topology mirco_shapefactors Kokkos::kokkos)
 
-if(Kokkos_ENABLE_CUDA OR Kokkos_ENABLE_HIP OR Kokkos_ENABLE_SYCL OR Kokkos_ENABLE_OPENMPTARGET)
-  # Compile rapidyaml (ryml) separately to avoid conflicts with device-side/offloaded compilers (e.g. nvcc_wrapper)
-  message(STATUS "Building rapidyaml using MIRCO_HOST_CXX_COMPILER")
-  include(ExternalProject)
-  set(RYML_INSTALL_DIR ${CMAKE_BINARY_DIR}/extern/ryml)
+option(RYML_IN_MIRCO "Find ryml in MIRCO project. If set to OFF, use the ryml installation from an upstream project" OFF)
 
-  if(NOT DEFINED MIRCO_HOST_CXX_COMPILER)
-    set(MIRCO_HOST_CXX_COMPILER "g++-12")
+if(RYML_IN_MIRCO)
+  message(STATUS "Building ryml within MIRCO project.")
+  if(Kokkos_ENABLE_CUDA OR Kokkos_ENABLE_HIP OR Kokkos_ENABLE_SYCL OR Kokkos_ENABLE_OPENMPTARGET)
+    # Compile rapidyaml (ryml) separately to avoid conflicts with device-side/offloaded compilers (e.g. nvcc_wrapper)
+    message(STATUS "Building rapidyaml using MIRCO_HOST_CXX_COMPILER")
+    include(ExternalProject)
+    set(RYML_INSTALL_DIR ${CMAKE_BINARY_DIR}/extern/ryml)
+
+    if(NOT DEFINED MIRCO_HOST_CXX_COMPILER)
+      set(MIRCO_HOST_CXX_COMPILER "g++-12")
+    endif()
+
+    ExternalProject_Add(ryml_build
+      GIT_REPOSITORY https://github.com/biojppm/rapidyaml.git
+      GIT_TAG 47ec2fa184209687c20fd5bc05621e1cb1200311
+      INSTALL_DIR ${RYML_INSTALL_DIR}
+      CMAKE_ARGS
+        -DCMAKE_CXX_COMPILER=${MIRCO_HOST_CXX_COMPILER}
+        -DCMAKE_BUILD_TYPE=Release
+        -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
+        -DCMAKE_POLICY_DEFAULT_CMP0077=NEW
+        -DC4CORE_WITH_FASTFLOAT=OFF
+        -DC4CORE_INSTALL=ON
+        -DRYML_BUILD_TESTS=OFF
+        -DRYML_BUILD_BENCHMARKS=OFF
+        -DCMAKE_CXX_FLAGS=-w
+      INSTALL_COMMAND ${CMAKE_COMMAND} --build <BINARY_DIR> --target install --config $<CONFIG>
+      BUILD_BYPRODUCTS ${RYML_INSTALL_DIR}/lib/libryml.a
+    )
+
+    file(MAKE_DIRECTORY ${RYML_INSTALL_DIR}/include ${RYML_INSTALL_DIR}/lib)
+
+    add_library(ryml_import STATIC IMPORTED)
+    set_target_properties(ryml_import PROPERTIES
+      IMPORTED_LOCATION ${RYML_INSTALL_DIR}/lib/libryml.a
+      INTERFACE_INCLUDE_DIRECTORIES ${RYML_INSTALL_DIR}/include
+      INTERFACE_COMPILE_DEFINITIONS C4CORE_NO_FAST_FLOAT
+    )
+    add_dependencies(ryml_import ryml_build)
+
+    add_library(ryml INTERFACE)
+    add_dependencies(ryml ryml_build)
+    target_include_directories(ryml INTERFACE ${RYML_INSTALL_DIR}/include)
+    target_link_libraries(ryml INTERFACE ${RYML_INSTALL_DIR}/lib/libryml.a)
+    target_compile_definitions(ryml INTERFACE C4CORE_NO_FAST_FLOAT)
+
+    ExternalProject_Add_Step(ryml_build cleanup
+      COMMAND ${CMAKE_COMMAND} -E rm -rf <SOURCE_DIR> <BINARY_DIR> <STAMP_DIR> <TMP_DIR> <DOWNLOAD_DIR>
+      COMMENT "Cleaning ryml external project work directories"
+      DEPENDEES install
+      ALWAYS TRUE
+    )
+  else()
+    # Everything is compiled on host; fetch rapidyaml directly
+    message(STATUS "Fetching rapidyaml...")
+    include(FetchContent)
+    
+    set(CMAKE_SUPPRESS_DEVELOPER_WARNINGS ON CACHE BOOL "" FORCE) # Suppress developer warnings from ryml
+    
+    FetchContent_Declare(rapidyaml
+      GIT_REPOSITORY https://github.com/biojppm/rapidyaml.git
+      GIT_TAG 47ec2fa184209687c20fd5bc05621e1cb1200311
+    )
+    FetchContent_MakeAvailable(rapidyaml)
+
+    set(CMAKE_SUPPRESS_DEVELOPER_WARNINGS OFF CACHE BOOL "" FORCE)
   endif()
 
-  ExternalProject_Add(ryml_build
-    GIT_REPOSITORY https://github.com/biojppm/rapidyaml.git
-    GIT_TAG 47ec2fa184209687c20fd5bc05621e1cb1200311
-    INSTALL_DIR ${RYML_INSTALL_DIR}
-    CMAKE_ARGS
-      -DCMAKE_CXX_COMPILER=${MIRCO_HOST_CXX_COMPILER}
-      -DCMAKE_BUILD_TYPE=Release
-      -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
-      -DCMAKE_POLICY_DEFAULT_CMP0077=NEW
-      -DC4CORE_WITH_FASTFLOAT=OFF
-      -DC4CORE_INSTALL=ON
-      -DRYML_BUILD_TESTS=OFF
-      -DRYML_BUILD_BENCHMARKS=OFF
-      -DCMAKE_CXX_FLAGS=-w
-    INSTALL_COMMAND ${CMAKE_COMMAND} --build <BINARY_DIR> --target install --config $<CONFIG>
-    BUILD_BYPRODUCTS ${RYML_INSTALL_DIR}/lib/libryml.a
-  )
-
-  file(MAKE_DIRECTORY ${RYML_INSTALL_DIR}/include ${RYML_INSTALL_DIR}/lib)
-
-  add_library(ryml_import STATIC IMPORTED)
-  set_target_properties(ryml_import PROPERTIES
-    IMPORTED_LOCATION ${RYML_INSTALL_DIR}/lib/libryml.a
-    INTERFACE_INCLUDE_DIRECTORIES ${RYML_INSTALL_DIR}/include
-    INTERFACE_COMPILE_DEFINITIONS C4CORE_NO_FAST_FLOAT)
-  add_dependencies(ryml_import ryml_build)
-
-  add_library(ryml INTERFACE)
-  add_dependencies(ryml ryml_build)
-  target_include_directories(ryml INTERFACE ${RYML_INSTALL_DIR}/include)
-  target_link_libraries(ryml INTERFACE ${RYML_INSTALL_DIR}/lib/libryml.a)
-  target_compile_definitions(ryml INTERFACE C4CORE_NO_FAST_FLOAT)
-
-  ExternalProject_Add_Step(ryml_build cleanup
-    COMMAND ${CMAKE_COMMAND} -E rm -rf <SOURCE_DIR> <BINARY_DIR> <STAMP_DIR> <TMP_DIR> <DOWNLOAD_DIR>
-    COMMENT "Cleaning ryml external project work directories"
-    DEPENDEES install
-    ALWAYS TRUE
-  )
 else()
-  # Everything is compiled on host; fetch rapidyaml directly
-  message(STATUS "Fetching rapidyaml...")
-  include(FetchContent)
+  if(TARGET ryml::ryml)
+    message(STATUS "Using ryml from upstream project.")
+  else()
+    message(FATAL_ERROR "RYML_IN_MIRCO=OFF but no ryml target was available in the upstream project.")
+  endif()
 
-  set(CMAKE_SUPPRESS_DEVELOPER_WARNINGS ON CACHE BOOL "" FORCE) # Suppress developer warnings from ryml
-
-  FetchContent_Declare(rapidyaml GIT_REPOSITORY https://github.com/biojppm/rapidyaml.git GIT_TAG 47ec2fa184209687c20fd5bc05621e1cb1200311)
-  FetchContent_MakeAvailable(rapidyaml)
-
-  set(CMAKE_SUPPRESS_DEVELOPER_WARNINGS OFF CACHE BOOL "" FORCE)
 endif()
 
 add_library(mirco_utils

@@ -12,6 +12,7 @@
         "CMAKE_CXX_FLAGS": "",
         "KOKKOS_IN_MIRCO": "ON",
         "KOKKOS_KERNELS_IN_MIRCO": "ON",
+        "RYML_IN_MIRCO": "ON",
         "GTEST_IN_MIRCO": "ON",
         "MIRCO_ENABLE_FLAT": "OFF",
         "MIRCO_ENABLE_VISUALIZATIONEXPORT": "OFF"
