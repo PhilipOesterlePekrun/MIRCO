@@ -27,6 +27,13 @@ MIRCO::InputParameters::InputParameters(const std::string& inputFileName)
   if (matParams.invalid())
     throw std::runtime_error("Input incomplete: missing section `material_parameters`");
 
+  auto exportVisualization = Utils::get_optional_bool(root, "ExportVisualization");
+  std::optional<std::string> exportVisualizationPath;
+  if (exportVisualization && exportVisualization.value())
+    exportVisualizationPath = Utils::get_string(root, "ExportVisualizationPath");
+  else
+    exportVisualizationPath = std::nullopt;
+
   // Set the surface generator based on RandomTopologyFlag
   if (Utils::get_bool(root, "RandomTopologyFlag"))
   {
@@ -38,7 +45,7 @@ MIRCO::InputParameters::InputParameters(const std::string& inputFileName)
         Utils::get_double(geoParams, "HurstExponent"), Utils::get_int(root, "MaxIteration"),
         Utils::get_bool(root, "WarmStartingFlag"), Utils::get_bool(root, "PressureGreenFunFlag"),
         Utils::get_bool(root, "RandomSeedFlag"),
-        Utils::get_optional_int(root, "RandomGeneratorSeed"));
+        Utils::get_optional_int(root, "RandomGeneratorSeed"), exportVisualizationPath);
   }
   else
   {
@@ -51,6 +58,6 @@ MIRCO::InputParameters::InputParameters(const std::string& inputFileName)
         Utils::get_double(geoParams, "Tolerance"), Utils::get_double(geoParams, "Delta"),
         Utils::get_double(geoParams, "LateralLength"), topology_file_path,
         Utils::get_int(root, "MaxIteration"), Utils::get_bool(root, "WarmStartingFlag"),
-        Utils::get_bool(root, "PressureGreenFunFlag"));
+        Utils::get_bool(root, "PressureGreenFunFlag"), exportVisualizationPath);
   }
 }

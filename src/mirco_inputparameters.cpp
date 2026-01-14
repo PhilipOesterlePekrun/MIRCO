@@ -8,14 +8,16 @@ namespace MIRCO
   InputParameters::InputParameters(double E1, double E2, double nu1, double nu2, double Tolerance,
       double Delta, double LateralLength, int Resolution, double InitialTopologyStdDeviation,
       double Hurst, int MaxIteration, bool WarmStartingFlag, bool PressureGreenFunFlag,
-      bool RandomSeedFlag, std::optional<int> RandomGeneratorSeed)
+      bool RandomSeedFlag, std::optional<int> RandomGeneratorSeed,
+      std::optional<std::string> ExportVisualizationPath)
       : tolerance(Tolerance),
         delta(Delta),
         lateral_length(LateralLength),
         max_iteration(MaxIteration),
         warm_starting_flag(WarmStartingFlag),
         pressure_green_funct_flag(PressureGreenFunFlag),
-        N((1 << Resolution) + 1)
+        N((1 << Resolution) + 1),
+        export_visualization_path(ExportVisualizationPath)
   {
     auto topology_h = CreateRmgSurface(
         Resolution, InitialTopologyStdDeviation, Hurst, RandomSeedFlag, RandomGeneratorSeed);
@@ -29,13 +31,15 @@ namespace MIRCO
 
   InputParameters::InputParameters(double E1, double E2, double nu1, double nu2, double Tolerance,
       double Delta, double LateralLength, const std::string& TopologyFilePath, int MaxIteration,
-      bool WarmStartingFlag, bool PressureGreenFunFlag)
+      bool WarmStartingFlag, bool PressureGreenFunFlag,
+      std::optional<std::string> ExportVisualizationPath)
       : tolerance(Tolerance),
         delta(Delta),
         lateral_length(LateralLength),
         max_iteration(MaxIteration),
         warm_starting_flag(WarmStartingFlag),
-        pressure_green_funct_flag(PressureGreenFunFlag)
+        pressure_green_funct_flag(PressureGreenFunFlag),
+        export_visualization_path(ExportVisualizationPath)
   {
     auto topology_h = CreateSurfaceFromFile(TopologyFilePath);
     N = topology_h.extent(0);

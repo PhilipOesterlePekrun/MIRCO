@@ -22,6 +22,8 @@ namespace MIRCO
   using ViewVector_h = Kokkos::View<double*, Kokkos::LayoutLeft, Device_Host_t>;
   using ViewMatrix_h = Kokkos::View<double**, Kokkos::LayoutLeft, Device_Host_t>;
 
+  using ViewVectorInt_h = Kokkos::View<int*, Kokkos::LayoutLeft, Device_Host_t>;
+
   using ViewVector_d = Kokkos::View<double*, Kokkos::LayoutLeft, Device_Default_t>;
   using ViewMatrix_d = Kokkos::View<double**, Kokkos::LayoutLeft, Device_Default_t>;
 

@@ -44,11 +44,13 @@ namespace MIRCO
      * point force.
      * @param RandomGeneratorSeed Set the value of seed for the pseudo-random mid-point generator.
      * If not set or set to `std::nullopt`, then a random seed will be used.
+     * @param ExportVisualizationPath Path to export visualization files to
      */
     InputParameters(double E1, double E2, double nu1, double nu2, double Tolerance, double Delta,
         double LateralLength, int Resolution, double InitialTopologyStdDeviation, double Hurst,
         int MaxIteration, bool WarmStartingFlag, bool PressureGreenFunFlag, bool RandomSeedFlag,
-        std::optional<int> RandomGeneratorSeed = std::nullopt);
+        std::optional<int> RandomGeneratorSeed = std::nullopt,
+        std::optional<std::string> ExportVisualizationPath = std::nullopt);
 
     /**
      * @brief Constructor which sets the necessary member variable parameters without an input
@@ -67,10 +69,12 @@ namespace MIRCO
      * into contact in the next iteration and hence speeds up the computation.
      * @param PressureGreenFunFlag Flag to use Green function based on uniform pressure instead of
      * point force
+     * @param ExportVisualizationPath Path to export visualization files to.
      */
     InputParameters(double E1, double E2, double nu1, double nu2, double Tolerance, double Delta,
         double LateralLength, const std::string& TopologyFilePath, int MaxIteration,
-        bool WarmStartingFlag, bool PressureGreenFunFlag);
+        bool WarmStartingFlag, bool PressureGreenFunFlag,
+        std::optional<std::string> ExportVisualizationPath = std::nullopt);
 
     int N = 0;
     double composite_youngs = 0.0, elastic_compliance_correction = 0.0, shape_factor = 0.0,
@@ -81,6 +85,7 @@ namespace MIRCO
     // Note: topology is a lightweight handle, similar to std::shared_ptr. This struct does not
     // own topology.
     ViewMatrix_d topology;
+    std::optional<std::string> export_visualization_path;
   };
 }  // namespace MIRCO
 
