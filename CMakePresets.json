@@ -67,8 +67,8 @@
       "cacheVariables": {
         "CMAKE_CXX_COMPILER_LAUNCHER": "ccache",
         "CMAKE_CXX_FLAGS": "-msse3",
-        "KOKKOS_PATH": "/imcs/public/compsim/packages/trilinos/2025.4/install",
-        "KOKKOS_KERNELS_PATH": "/imcs/public/compsim/packages/trilinos/2025.4/install"
+        "KOKKOS_PATH": "/imcs/public/compsim/packages/trilinos/2025.6/install",
+        "KOKKOS_KERNELS_PATH": "/imcs/public/compsim/packages/trilinos/2025.6/install"
       }
     },
     {
