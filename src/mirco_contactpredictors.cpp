@@ -8,7 +8,11 @@ namespace MIRCO
   {
     const int N = topology.extent(0);
 
+#if (REGULARMIRCO_ELSEDODELTARELATIVETOOTHER)
     const double deltaContact = Delta + w_el - zmax;
+#else
+    const double deltaContact = Delta + w_el;  // - zmax;
+#endif
     int n0 = 0;
     Kokkos::parallel_reduce(
         N * N,

@@ -1,0 +1,19 @@
+mirco_input:
+  WarmStartingFlag: true
+  RandomTopologyFlag: true
+  RandomSeedFlag: false # false to use certain seeds 1 to ...
+  MaxIteration: 100
+  PressureGreenFunFlag: false
+  parameters:
+    material_parameters:
+      E1: 1
+      nu1: 0.3
+      E2: 1
+      nu2: 0.3
+    geometrical_parameters:
+      LateralLength: 1000.0
+      Resolution: 5
+      HurstExponent: 0.7
+      InitialTopologyStdDeviation: 20.0
+      Delta: 17.0
+      Tolerance: 0.01

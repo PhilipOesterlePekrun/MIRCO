@@ -1,6 +1,8 @@
 #ifndef SRC_KOKKOSTYPES_H_
 #define SRC_KOKKOSTYPES_H_
 
+#define REGULARMIRCO_ELSEDODELTARELATIVETOOTHER true
+
 #include <Kokkos_Core.hpp>
 
 // This file defines some commonly used Kokkos type aliases. More aliases, as well as Kokkos-related

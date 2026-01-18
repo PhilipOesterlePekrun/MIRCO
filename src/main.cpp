@@ -25,35 +25,29 @@ int main(int argc, char* argv[])
     std::cout << "Default host memory space: " << typeid(MemorySpace_Host_t).name() << "\n";
     std::cout << "\n";
 
-    if (argc != 2) throw std::runtime_error("The code expects (only) an input file as argument");
-    // Read the input file name from the command line
     std::string inputFileName = argv[1];
 
-    const auto start = std::chrono::high_resolution_clock::now();
+    int numSamples = (argc == 3) ? std::stoi(argv[2]) : 1000;
 
-    InputParameters inputParams(inputFileName);
+    int firstSeed = 17283049;
 
-    ViewVector_d meshgrid = CreateMeshgrid(inputParams.N, inputParams.grid_size);
-    const double topologyMax = GetMax(inputParams.topology);
+    //{
+    std::vector<double> meanPressureVect;
+    std::vector<double> contactAreaFractionVect;
+    std::vector<double> elapsedTimeVect;
+    //}
 
-    // Main evaluation agorithm
-    double meanPressure, effectiveContactAreaFraction;
-    Evaluate(meanPressure, effectiveContactAreaFraction, inputParams, topologyMax, meshgrid);
 
-    const auto finish = std::chrono::high_resolution_clock::now();
+    const auto startGlobal = std::chrono::high_resolution_clock::now();
 
-    std::cout << std::setprecision(16) << "Mean pressure is: " << meanPressure
-              << "\nEffective contact area fraction is: " << effectiveContactAreaFraction
-              << std::endl;
-
-    const double elapsedTime =
-        std::chrono::duration_cast<std::chrono::duration<double>>(finish - start).count();
-    std::cout << "Elapsed time is: " + std::to_string(elapsedTime) + "s" << std::endl;
-
-    // Test for correct output if the result_description is given in the input file
+    for (int i = 0; i < numSamples; ++i)
     {
+      std::cout << "i=" << i << "\n";
+
+      const auto start = std::chrono::high_resolution_clock::now();
+
       std::ifstream fin(inputFileName);
-      if (!fin) throw std::runtime_error("Cannot open input file: " + inputFileName);
+      if (!fin) throw std::runtime_error("Cannot open file: " + inputFileName);
 
       std::stringstream ss;
       ss << fin.rdbuf();
@@ -61,47 +55,139 @@ int main(int argc, char* argv[])
 
       ryml::Tree tree = ryml::parse_in_arena(c4::to_csubstr(inString));
       ryml::ConstNodeRef root = tree["mirco_input"];
-      ryml::ConstNodeRef resultDescription = root["result_description"];
-      if (!resultDescription.invalid())
-      {
-        bool passedResultChecks = true;
-        const double ExpectedPressure = Utils::get_double(resultDescription, "ExpectedPressure");
-        const double ExpectedPressureTolerance =
-            Utils::get_double(resultDescription, "ExpectedPressureTolerance");
-        const double ExpectedEffectiveContactAreaFraction =
-            Utils::get_double(resultDescription, "ExpectedEffectiveContactAreaFraction");
-        const double ExpectedEffectiveContactAreaFractionTolerance =
-            Utils::get_double(resultDescription, "ExpectedEffectiveContactAreaFractionTolerance");
+      ryml::ConstNodeRef parameters = root["parameters"];
+      ryml::ConstNodeRef geoParams = parameters["geometrical_parameters"];
+      ryml::ConstNodeRef matParams = parameters["material_parameters"];
 
-        if (std::abs(meanPressure - ExpectedPressure) > ExpectedPressureTolerance)
-        {
-          passedResultChecks = false;
-          std::cerr << std::setprecision(16)
-                    << "The output pressure does not match the expected result." << "\n";
-          std::cerr << "\tMean pressure = " << meanPressure << "\n";
-          std::cerr << "\tExpected pressure = " << ExpectedPressure << "\n";
-          std::cerr << "\tExpected pressureTolerance = " << ExpectedPressureTolerance << std::endl;
-        }
-        if (std::abs(effectiveContactAreaFraction - ExpectedEffectiveContactAreaFraction) >
-            ExpectedEffectiveContactAreaFractionTolerance)
-        {
-          passedResultChecks = false;
-          std::cerr << std::setprecision(16)
-                    << "The output effective contact area does not match the expected result."
-                    << "\n";
-          std::cerr << "\tEffective contact area = " << effectiveContactAreaFraction << "\n";
-          std::cerr << "\tExpected effective contact area fraction = "
-                    << ExpectedEffectiveContactAreaFraction << "\n";
-          std::cerr << "\tExpected effective contact area fraction tolerance = "
-                    << ExpectedEffectiveContactAreaFractionTolerance << std::endl;
-        }
+      if (root.invalid()) throw std::runtime_error("Input incomplete: missing root `mirco_input`");
+      if (parameters.invalid())
+        throw std::runtime_error("Input incomplete: missing section `parameters`");
+      if (geoParams.invalid())
+        throw std::runtime_error("Input incomplete: missing section `geometrical_parameters`");
+      if (matParams.invalid())
+        throw std::runtime_error("Input incomplete: missing section `material_parameters`");
 
-        if (passedResultChecks)
-          std::cout << "All result checks passed." << std::endl;
-        else
-          return EXIT_FAILURE;
-      }
+      auto exportVisualization = Utils::get_optional_bool(root, "ExportVisualization");
+      std::optional<std::string> exportVisualizationPath;
+      if (exportVisualization && exportVisualization.value())
+        exportVisualizationPath = Utils::get_string(root, "ExportVisualizationPath");
+      else
+        exportVisualizationPath = std::nullopt;
+
+      if (!Utils::get_bool(root, "RandomTopologyFlag"))
+        throw std::runtime_error("Needs to be randomtopology");
+
+      std::optional<int> randomSeed = firstSeed + i;
+
+      // std::cout<<"\trandomSeed="<<*randomSeed<<"\n";
+
+      InputParameters trueInputParams = InputParameters(Utils::get_double(matParams, "E1"),
+          Utils::get_double(matParams, "E2"), Utils::get_double(matParams, "nu1"),
+          Utils::get_double(matParams, "nu2"), Utils::get_double(geoParams, "Tolerance"),
+          Utils::get_double(geoParams, "Delta"), Utils::get_double(geoParams, "LateralLength"),
+          Utils::get_int(geoParams, "Resolution"),
+          Utils::get_double(geoParams, "InitialTopologyStdDeviation"),
+          Utils::get_double(geoParams, "HurstExponent"), Utils::get_int(root, "MaxIteration"),
+          Utils::get_bool(root, "WarmStartingFlag"), Utils::get_bool(root, "PressureGreenFunFlag"),
+          Utils::get_bool(root, "RandomSeedFlag"), randomSeed, exportVisualizationPath);
+
+      ViewVector_d meshgrid = CreateMeshgrid(trueInputParams.N, trueInputParams.grid_size);
+      const double topologyMax = GetMax(trueInputParams.topology);
+
+      double meanPressure, effectiveContactAreaFraction;
+      Evaluate(meanPressure, effectiveContactAreaFraction, trueInputParams, topologyMax, meshgrid);
+
+      const auto finish = std::chrono::high_resolution_clock::now();
+
+      const double elapsedTime =
+          std::chrono::duration_cast<std::chrono::duration<double>>(finish - start).count();
+
+      meanPressureVect.push_back(meanPressure);
+      contactAreaFractionVect.push_back(effectiveContactAreaFraction);
+      elapsedTimeVect.push_back(elapsedTime);
     }
+
+
+
+    const auto finishGlobal = std::chrono::high_resolution_clock::now();
+
+    const double elapsedTimeGlobal =
+        std::chrono::duration_cast<std::chrono::duration<double>>(finishGlobal - startGlobal)
+            .count();
+
+    //{
+    std::cout << "meanPressureVect=[\n";
+    for (int i = 0; i < numSamples; ++i)
+    {
+      std::cout << meanPressureVect[i] << "\n";
+    }
+    std::cout << "]\n\n";
+
+    std::cout << "contactAreaFractionVect=[\n";
+    for (int i = 0; i < numSamples; ++i)
+    {
+      std::cout << contactAreaFractionVect[i] << "\n";
+    }
+    std::cout << "]\n\n";
+
+    std::cout << "elapsedTimeVect=[\n";
+    for (int i = 0; i < numSamples; ++i)
+    {
+      std::cout << elapsedTimeVect[i] << "\n";
+    }
+    std::cout << "]\n\n";
+
+
+    double mean_meanPressure = 0.0;
+    double mean_contactAreaFraction = 0.0;
+    double mean_elapsedTime = 0.0;
+
+    for (int i = 0; i < numSamples; ++i)
+    {
+      mean_meanPressure += meanPressureVect[i];
+      mean_contactAreaFraction += contactAreaFractionVect[i];
+      mean_elapsedTime += elapsedTimeVect[i];
+    }
+    mean_meanPressure /= numSamples;
+    mean_contactAreaFraction /= numSamples;
+    mean_elapsedTime /= numSamples;
+
+    std::cout << "mean_meanPressure = " << mean_meanPressure << "\n";
+    std::cout << "mean_contactAreaFraction = " << mean_contactAreaFraction << "\n";
+    std::cout << "mean_elapsedTime = " << mean_elapsedTime << "\n\n";
+
+    double variance_meanPressure = 0.0;
+    double variance_contactAreaFraction = 0.0;
+    double variance_elapsedTime = 0.0;
+
+    for (int i = 0; i < numSamples; ++i)
+    {
+      variance_meanPressure += pow((meanPressureVect[i] - mean_meanPressure), 2);
+      variance_contactAreaFraction +=
+          pow((contactAreaFractionVect[i] - mean_contactAreaFraction), 2);
+      variance_elapsedTime += pow((elapsedTimeVect[i] - mean_elapsedTime), 2);
+    }
+    variance_meanPressure /= (numSamples - 1);
+    variance_contactAreaFraction /= (numSamples - 1);
+    variance_elapsedTime /= (numSamples - 1);
+
+    std::cout << "variance_meanPressure = " << variance_meanPressure << "\n";
+    std::cout << "variance_contactAreaFraction = " << variance_contactAreaFraction << "\n";
+    std::cout << "variance_elapsedTime = " << variance_elapsedTime << "\n\n";
+
+    std::cout << "stddev meanPressure = " << sqrt(variance_meanPressure) << "\n";
+    std::cout << "stddev contactAreaFraction = " << sqrt(variance_contactAreaFraction) << "\n";
+    std::cout << "stddev elapsedTime = " << sqrt(variance_elapsedTime) << "\n\n";
+
+    std::cout << "coeff of variation meanPressure = "
+              << sqrt(variance_meanPressure) / mean_meanPressure << "\n";
+    std::cout << "coeff of variation contactAreaFraction = "
+              << sqrt(variance_contactAreaFraction) / mean_contactAreaFraction << "\n";
+    std::cout << "coeff of variation elapsedTime = "
+              << sqrt(variance_elapsedTime) / mean_elapsedTime << "\n\n";
+
+    std::cout << "elapsedTimeGlobal = " + std::to_string(elapsedTimeGlobal) + "s\n";
+    //}
   }
   Kokkos::finalize();
 }

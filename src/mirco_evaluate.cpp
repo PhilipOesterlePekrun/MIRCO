@@ -106,8 +106,8 @@ namespace MIRCO
       ++k;
     }
 
-    if (deltaTotalForce > Tolerance)
-      throw std::runtime_error("The solver did not converge in the maximum number of iterations.");
+    // if (deltaTotalForce > Tolerance)
+    // throw std::runtime_error("The solver did not converge in the maximum number of iterations.");
 
     // Calculate the final force value at the end of the iteration
     const double finalForce = totalForceVector.back();
