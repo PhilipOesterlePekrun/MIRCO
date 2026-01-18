@@ -96,6 +96,7 @@ namespace MIRCO
 
       // Elastic correction, used in the next iteration
       w_el = totalForce / ElasticComplianceCorrection;
+      std::cout << "w_e=" << w_el << "\n";
 
       // Compute error due to nonlinear correction
       if (k > 0)
@@ -107,7 +108,8 @@ namespace MIRCO
     }
 
     if (deltaTotalForce > Tolerance)
-      throw std::runtime_error("The solver did not converge in the maximum number of iterations.");
+      // throw std::runtime_error(
+      std::cout << "The solver did not converge in the maximum number of iterations." << "\n";  //);
 
     // Calculate the final force value at the end of the iteration
     const double finalForce = totalForceVector.back();

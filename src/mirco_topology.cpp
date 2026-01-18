@@ -131,7 +131,7 @@ namespace MIRCO
     {
       for (int j = 0; j < D_0 + 1; j++)
       {
-        z(i, j) = z(i, j) - zmin;
+        // z(i, j) = z(i, j) - zmin;
       }
     }
 

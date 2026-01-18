@@ -1,5 +1,7 @@
 #include "mirco_contactpredictors.h"
 
+#include <iostream>
+
 namespace MIRCO
 {
   void ContactSetPredictor(ViewVectorInt_d& activeSet0, ViewVector_d& xv0, ViewVector_d& yv0,
@@ -8,7 +10,7 @@ namespace MIRCO
   {
     const int N = topology.extent(0);
 
-    const double deltaContact = Delta + w_el - zmax;
+    const double deltaContact = Delta + w_el;  // - zmax;
     int n0 = 0;
     Kokkos::parallel_reduce(
         N * N,

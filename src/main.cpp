@@ -36,9 +36,25 @@ int main(int argc, char* argv[])
     ViewVector_d meshgrid = CreateMeshgrid(inputParams.N, inputParams.grid_size);
     const double topologyMax = GetMax(inputParams.topology);
 
+    std::cout << "TOPOLOGY:\n";
+    int N = inputParams.topology.extent(0);
+    double avgZ = 0.0;
+    for (int i = 0; i < N; ++i)
+    {
+      for (int j = 0; j < N; ++j)
+      {
+        std::cout << inputParams.topology(i, j) << " ";
+        avgZ += inputParams.topology(i, j);
+      }
+      std::cout << "\n";
+    }
+    std::cout << "\n";
+    avgZ = avgZ / (N * N);
+    std::cout << "avgZ = " << avgZ << "\n\n";
+
     // Main evaluation agorithm
     double meanPressure, effectiveContactAreaFraction;
-    Evaluate(meanPressure, effectiveContactAreaFraction, inputParams, topologyMax, meshgrid);
+    Evaluate(meanPressure, effectiveContactAreaFraction, inputParams, /*topologyMax*/ 0, meshgrid);
 
     const auto finish = std::chrono::high_resolution_clock::now();
 
