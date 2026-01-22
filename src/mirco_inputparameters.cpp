@@ -19,9 +19,17 @@ namespace MIRCO
         N((1 << Resolution) + 1),
         export_visualization_path(ExportVisualizationPath)
   {
-    auto topology_h = CreateRmgSurface(
+    /*auto topology_h = CreateRmgSurface(
         Resolution, InitialTopologyStdDeviation, Hurst, RandomSeedFlag, RandomGeneratorSeed);
-    topology = Kokkos::create_mirror_view_and_copy(ExecSpace_Default_t(), topology_h);
+    topology = Kokkos::create_mirror_view_and_copy(ExecSpace_Default_t(), topology_h);*/
+
+    auto topology_h = CreatePatchBasedRmgSurface(Resolution, InitialTopologyStdDeviation, Hurst,
+        RandomSeedFlag, RandomGeneratorSeed,
+        16,    // NumPatches = 1,4,16,64,... (perfect square)
+        1.0,   // L_patch like in Python
+        true,  // RemoveSlopePerPatch
+        true,  // RemoveMeanPerPatch
+        0.8);  // SeamBlend
 
     shape_factor = getShapeFactor(N, PressureGreenFunFlag);
     composite_youngs = 1.0 / ((1 - nu1 * nu1) / E1 + (1 - nu2 * nu2) / E2);

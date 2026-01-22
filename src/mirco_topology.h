@@ -32,6 +32,11 @@ namespace MIRCO
   ViewMatrix_h CreateRmgSurface(int Resolution, double InitialTopologyStdDeviation, double Hurst,
       bool RandomSeedFlag, std::optional<int> RandomGeneratorSeed);
 
+  ViewMatrix_h CreatePatchBasedRmgSurface(int Resolution, double InitialTopologyStdDeviation,
+      double Hurst, bool RandomSeedFlag, std::optional<int> RandomGeneratorSeed, int NumPatches,
+      double L_patch = 1.0, bool RemoveSlopePerPatch = true, bool RemoveMeanPerPatch = true,
+      double SeamBlend = 0.8);
+
 }  // namespace MIRCO
 
 #endif  // SRC_TOPOLOGY_H_
