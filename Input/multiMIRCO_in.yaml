@@ -2,8 +2,11 @@ mirco_input:
   WarmStartingFlag: true
   RandomTopologyFlag: true
   RandomSeedFlag: false # false to use certain seeds 1 to ...
+  RandomGeneratorSeed: 95
   MaxIteration: 100
   PressureGreenFunFlag: false
+  ExportVisualization: false
+  ExportVisualizationPath: vis_res7
   parameters:
     material_parameters:
       E1: 1
@@ -12,8 +15,8 @@ mirco_input:
       nu2: 0.3
     geometrical_parameters:
       LateralLength: 1000.0
-      Resolution: 5
+      Resolution: 6
       HurstExponent: 0.7
       InitialTopologyStdDeviation: 20.0
-      Delta: 17.0
+      Delta: 23.0
       Tolerance: 0.01

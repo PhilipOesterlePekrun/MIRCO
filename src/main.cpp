@@ -91,6 +91,21 @@ int main(int argc, char* argv[])
           Utils::get_bool(root, "WarmStartingFlag"), Utils::get_bool(root, "PressureGreenFunFlag"),
           Utils::get_bool(root, "RandomSeedFlag"), randomSeed, exportVisualizationPath);
 
+      int thisN = trueInputParams.topology.extent(0);
+      if (i == 0)
+      {
+        std::cout << "thisN=" << thisN << "\n";
+        std::cout << "//#\ntopology=\n";
+        for (int ii = 0; ii < thisN; ++ii)
+        {
+          for (int jj = 0; jj < thisN; ++jj)
+          {
+            std::cout << trueInputParams.topology(ii, jj) << " ";
+          }
+          std::cout << "\n";
+        }
+      }
+
       ViewVector_d meshgrid = CreateMeshgrid(trueInputParams.N, trueInputParams.grid_size);
       const double topologyMax = GetMax(trueInputParams.topology);
 

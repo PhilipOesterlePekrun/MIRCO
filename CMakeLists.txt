@@ -215,9 +215,9 @@ if(RYML_IN_MIRCO)
     # Everything is compiled on host; fetch rapidyaml directly
     message(STATUS "Fetching rapidyaml...")
     include(FetchContent)
-    
+
     set(CMAKE_SUPPRESS_DEVELOPER_WARNINGS ON CACHE BOOL "" FORCE) # Suppress developer warnings from ryml
-    
+
     FetchContent_Declare(rapidyaml
       GIT_REPOSITORY https://github.com/biojppm/rapidyaml.git
       GIT_TAG 47ec2fa184209687c20fd5bc05621e1cb1200311
@@ -263,7 +263,10 @@ target_compile_definitions(mirco_core PUBLIC
 )
 
 # Compile mirco itself
-add_executable(mirco src/main.cpp)
+add_executable(multiMirco src/main.cpp)
+target_link_libraries(multiMirco PUBLIC mirco::mirco_lib mirco_inputparameters_yaml mirco_utils Kokkos::kokkos)
+
+add_executable(mirco src/main_original.cpp)
 target_link_libraries(mirco PUBLIC mirco::mirco_lib mirco_inputparameters_yaml mirco_utils Kokkos::kokkos)
 
 # Compile the flatMirco utility
