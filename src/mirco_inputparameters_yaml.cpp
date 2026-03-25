@@ -41,7 +41,6 @@ MIRCO::InputParameters::InputParameters(const std::string& inputFileName)
     *this = InputParameters(rget<double>(materialParameters, "E1"),
         rget<double>(materialParameters, "E2"), rget<double>(materialParameters, "nu1"),
         rget<double>(materialParameters, "nu2"), rget<double>(geometricalParameters, "Tolerance"),
-        rget<double>(geometricalParameters, "Delta"),
         rget<double>(geometricalParameters, "LateralLength"),
         rget<int>(geometricalParameters, "Resolution"),
         rget<double>(geometricalParameters, "InitialTopologyStdDeviation"),
@@ -62,7 +61,6 @@ MIRCO::InputParameters::InputParameters(const std::string& inputFileName)
     *this = InputParameters(rget<double>(materialParameters, "E1"),
         rget<double>(materialParameters, "E2"), rget<double>(materialParameters, "nu1"),
         rget<double>(materialParameters, "nu2"), rget<double>(geometricalParameters, "Tolerance"),
-        rget<double>(geometricalParameters, "Delta"),
         rget<double>(geometricalParameters, "LateralLength"), topology_file_path,
         rget<int>(root, "MaxIteration"), rget<bool>(root, "WarmStartingFlag"),
         rget<bool>(root, "PressureGreenFunFlag"), exportVisualizationPath);

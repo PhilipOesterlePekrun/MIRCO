@@ -43,10 +43,10 @@ namespace MIRCO
    * @param[in] zmax Maximum height
    * @param[in] meshgrid_d Meshgrid vector
    */
-  inline void Evaluate(double& pressure, double& effectiveContactAreaFraction,
+  inline void Evaluate(double& pressure, double& effectiveContactAreaFraction, double Delta,
       const InputParameters& inputParams, const double zmax, const ViewVector_d meshgrid)
   {
-    Evaluate(pressure, effectiveContactAreaFraction, inputParams.delta, inputParams.lateral_length,
+    Evaluate(pressure, effectiveContactAreaFraction, Delta, inputParams.lateral_length,
         inputParams.grid_size, inputParams.tolerance, inputParams.max_iteration,
         inputParams.composite_youngs, inputParams.warm_starting_flag,
         inputParams.elastic_compliance_correction, inputParams.topology, zmax, meshgrid,

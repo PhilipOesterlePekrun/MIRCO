@@ -9,7 +9,8 @@
 namespace MIRCO
 {
   /**
-   * @brief This struct stores the input parameters and topology
+   * @brief This struct stores those input parameters which are used in general. It also constructs
+   * the topology
    *
    */
   struct InputParameters
@@ -31,7 +32,6 @@ namespace MIRCO
      * @param nu1 Poisson's ratio of body 1
      * @param nu2 Poisson's ratio of body 2
      * @param Tolerance Tolerance for the convergence of force.
-     * @param Delta Far-field displacement (Gap).
      * @param LateralLength Lateral side of the surface [micrometers]
      * @param Resolution Resolution parameter
      * @param InitialTopologyStdDeviation Initial Standard deviation for the random-midpoint
@@ -46,7 +46,7 @@ namespace MIRCO
      * If not set or set to `std::nullopt`, then a random seed will be used.
      * @param ExportVisualizationPath Path to export visualization files to
      */
-    InputParameters(double E1, double E2, double nu1, double nu2, double Tolerance, double Delta,
+    InputParameters(double E1, double E2, double nu1, double nu2, double Tolerance,
         double LateralLength, int Resolution, double InitialTopologyStdDeviation, double Hurst,
         int MaxIteration, bool WarmStartingFlag, bool PressureGreenFunFlag, bool RandomSeedFlag,
         std::optional<int> RandomGeneratorSeed = std::nullopt,
@@ -61,7 +61,6 @@ namespace MIRCO
      * @param nu1 Poisson's ratio of body 1
      * @param nu2 Poisson's ratio of body 2
      * @param Tolerance Tolerance for the convergence of force.
-     * @param Delta Far-field displacement (Gap).
      * @param LateralLength Lateral side of the surface [micrometers]
      * @param TopologyFilePath Path of the input file containing the topology.
      * @param MaxIteration Maximum number of iterations for the force to converge.
@@ -71,14 +70,14 @@ namespace MIRCO
      * point force
      * @param ExportVisualizationPath Path to export visualization files to.
      */
-    InputParameters(double E1, double E2, double nu1, double nu2, double Tolerance, double Delta,
+    InputParameters(double E1, double E2, double nu1, double nu2, double Tolerance,
         double LateralLength, const std::string& TopologyFilePath, int MaxIteration,
         bool WarmStartingFlag, bool PressureGreenFunFlag,
         std::optional<std::string> ExportVisualizationPath = std::nullopt);
 
     int N = 0;
     double composite_youngs = 0.0, elastic_compliance_correction = 0.0, shape_factor = 0.0,
-           tolerance = 0.0, delta = 0.0, lateral_length = 0.0, grid_size = 0.0;
+           tolerance = 0.0, lateral_length = 0.0, grid_size = 0.0;
     int max_iteration = 0;
     bool warm_starting_flag = false;
     bool pressure_green_funct_flag = false;

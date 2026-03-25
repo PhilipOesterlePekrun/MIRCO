@@ -6,12 +6,10 @@
 namespace MIRCO
 {
   InputParameters::InputParameters(double E1, double E2, double nu1, double nu2, double Tolerance,
-      double Delta, double LateralLength, int Resolution, double InitialTopologyStdDeviation,
-      double Hurst, int MaxIteration, bool WarmStartingFlag, bool PressureGreenFunFlag,
-      bool RandomSeedFlag, std::optional<int> RandomGeneratorSeed,
-      std::optional<std::string> ExportVisualizationPath)
+      double LateralLength, int Resolution, double InitialTopologyStdDeviation, double Hurst,
+      int MaxIteration, bool WarmStartingFlag, bool PressureGreenFunFlag, bool RandomSeedFlag,
+      std::optional<int> RandomGeneratorSeed, std::optional<std::string> ExportVisualizationPath)
       : tolerance(Tolerance),
-        delta(Delta),
         lateral_length(LateralLength),
         max_iteration(MaxIteration),
         warm_starting_flag(WarmStartingFlag),
@@ -30,11 +28,10 @@ namespace MIRCO
   }
 
   InputParameters::InputParameters(double E1, double E2, double nu1, double nu2, double Tolerance,
-      double Delta, double LateralLength, const std::string& TopologyFilePath, int MaxIteration,
+      double LateralLength, const std::string& TopologyFilePath, int MaxIteration,
       bool WarmStartingFlag, bool PressureGreenFunFlag,
       std::optional<std::string> ExportVisualizationPath)
       : tolerance(Tolerance),
-        delta(Delta),
         lateral_length(LateralLength),
         max_iteration(MaxIteration),
         warm_starting_flag(WarmStartingFlag),

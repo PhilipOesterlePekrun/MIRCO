@@ -248,7 +248,7 @@ TEST(inputParameters, yaml_dat)
 TEST(inputParameters, directInput_rmg)
 {
   MIRCO::InputParameters inputParams(
-      1.0, 1.0, 0.2, 0.2, 0.005, 10.0, 1000, 2, 15.0, 0.15, 100, false, true, 46);
+      1.0, 1.0, 0.2, 0.2, 0.005, 1000, 2, 15.0, 0.15, 100, false, true, 46);
 
   MIRCO::ViewMatrix_d topology_d = inputParams.topology;
 
@@ -265,7 +265,7 @@ TEST(inputParameters, directInput_dat)
 {
   std::string topologyFilePath = "test/data/topologyN5.dat";
   MIRCO::InputParameters inputParams(
-      1.0, 1.0, 0.2, 0.2, 0.005, 10.0, 1000, topologyFilePath, 100, false, false);
+      1.0, 1.0, 0.2, 0.2, 0.005, 1000, topologyFilePath, 100, false, false);
 
   MIRCO::ViewMatrix_d topology_d = inputParams.topology;
 

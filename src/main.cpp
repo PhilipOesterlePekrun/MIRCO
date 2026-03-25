@@ -31,14 +31,29 @@ int main(int argc, char* argv[])
 
     const auto start = std::chrono::high_resolution_clock::now();
 
+    ryml::ConstNodeRef inputRoot;
+    {
+      std::ifstream fin(inputFileName);
+      if (!fin) throw std::runtime_error("Cannot open input file: " + inputFileName);
+      std::stringstream ss;
+      ss << fin.rdbuf();
+      std::string inString = ss.str();
+      ryml::Tree tree = ryml::parse_in_arena(c4::to_csubstr(inString));
+      inputRoot = tree["mirco_input"];
+    }
+
     InputParameters inputParams(inputFileName);
+
+    // Input specific to standalone MIRCO: Get the far-field displacement (Gap) "Delta" from the
+    // input file
+    double Delta = rget<double>(inputRoot["geoParams"], "Delta");
 
     ViewVector_d meshgrid = CreateMeshgrid(inputParams.N, inputParams.grid_size);
     const double topologyMax = GetMax(inputParams.topology);
 
     // Main evaluation agorithm
     double meanPressure, effectiveContactAreaFraction;
-    Evaluate(meanPressure, effectiveContactAreaFraction, inputParams, topologyMax, meshgrid);
+    Evaluate(meanPressure, effectiveContactAreaFraction, Delta, inputParams, topologyMax, meshgrid);
 
     const auto finish = std::chrono::high_resolution_clock::now();
 
@@ -52,16 +67,7 @@ int main(int argc, char* argv[])
 
     // Test for correct output if the result_description is given in the input file
     {
-      std::ifstream fin(inputFileName);
-      if (!fin) throw std::runtime_error("Cannot open input file: " + inputFileName);
-
-      std::stringstream ss;
-      ss << fin.rdbuf();
-      std::string inString = ss.str();
-
-      ryml::Tree tree = ryml::parse_in_arena(c4::to_csubstr(inString));
-      ryml::ConstNodeRef root = tree["mirco_input"];
-      ryml::ConstNodeRef resultDescription = root["result_description"];
+      ryml::ConstNodeRef resultDescription = inputRoot["result_description"];
       if (!resultDescription.invalid())
       {
         bool passedResultChecks = true;
