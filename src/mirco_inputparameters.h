@@ -20,7 +20,7 @@ namespace MIRCO
      *
      * @param inputFileName Input file w.r.t. the calling directory
      */
-    InputParameters(const std::string& inputFileName);
+    explicit InputParameters(const std::string& inputFileName);
 
     /**
      * @brief Constructor which sets the necessary member variable parameters without an input

@@ -21,6 +21,9 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+# Needed for certain Kokkos functionality
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
 # We do not use C++ modules (yet). Turn off scanning to avoid issues with clang-tidy.
 # If you want to add module support, this problem needs to be revisited. Our hope
 # is that CMake and/or clang-tidy will be updated to handle modules better.
@@ -215,12 +218,14 @@ if(RYML_IN_MIRCO)
     # Everything is compiled on host; fetch rapidyaml directly
     message(STATUS "Fetching rapidyaml...")
     include(FetchContent)
-    
+
     set(CMAKE_SUPPRESS_DEVELOPER_WARNINGS ON CACHE BOOL "" FORCE) # Suppress developer warnings from ryml
-    
+    set(RYML_INSTALL OFF CACHE BOOL "" FORCE) # Do not install RYML
+
     FetchContent_Declare(rapidyaml
       GIT_REPOSITORY https://github.com/biojppm/rapidyaml.git
       GIT_TAG 47ec2fa184209687c20fd5bc05621e1cb1200311
+      EXCLUDE_FROM_ALL # Do not install RYML
     )
     FetchContent_MakeAvailable(rapidyaml)
 
@@ -236,19 +241,18 @@ else()
 
 endif()
 
-add_library(mirco_utils
-  src/mirco_utils.cpp
-  )
-
-target_link_libraries(mirco_utils PUBLIC ryml)
-
 add_library(mirco_inputparameters_yaml
   src/mirco_inputparameters_yaml.cpp
   )
-target_link_libraries(mirco_inputparameters_yaml PRIVATE mirco_inputparameters mirco_utils Kokkos::kokkos)
+target_link_libraries(mirco_inputparameters_yaml PRIVATE mirco_inputparameters Kokkos::kokkos PUBLIC ryml)
 
 add_library(mirco_lib INTERFACE)
 target_link_libraries(mirco_lib INTERFACE mirco_needKK mirco_core mirco_topology mirco_inputparameters)
+
+target_compile_definitions(mirco_core PUBLIC
+  $<$<BOOL:${MIRCO_ENABLE_VISUALIZATIONEXPORT}>:MIRCO_ENABLE_VISUALIZATIONEXPORT=1>
+  $<$<NOT:$<BOOL:${MIRCO_ENABLE_VISUALIZATIONEXPORT}>>:MIRCO_ENABLE_VISUALIZATIONEXPORT=0>
+)
 
 target_include_directories(mirco_lib INTERFACE
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/>
@@ -257,14 +261,9 @@ target_include_directories(mirco_lib INTERFACE
 
 add_library(mirco::mirco_lib ALIAS mirco_lib)
 
-target_compile_definitions(mirco_core PUBLIC
-  $<$<BOOL:${MIRCO_ENABLE_VISUALIZATIONEXPORT}>:MIRCO_ENABLE_VISUALIZATIONEXPORT=1>
-  $<$<NOT:$<BOOL:${MIRCO_ENABLE_VISUALIZATIONEXPORT}>>:MIRCO_ENABLE_VISUALIZATIONEXPORT=0>
-)
-
 # Compile mirco itself
 add_executable(mirco src/main.cpp)
-target_link_libraries(mirco PUBLIC mirco::mirco_lib mirco_inputparameters_yaml mirco_utils Kokkos::kokkos)
+target_link_libraries(mirco PUBLIC mirco::mirco_lib mirco_inputparameters_yaml Kokkos::kokkos)
 
 # Compile the flatMirco utility
 if(MIRCO_ENABLE_FLAT)
@@ -272,29 +271,71 @@ if(MIRCO_ENABLE_FLAT)
   target_link_libraries(flatMirco PUBLIC mirco_core mirco_topology mirco_shapefactors Kokkos::kokkos KokkosKernels::kokkoskernels)
 endif()
 
+
+
+
+
+
+
+
+
+# Manually list only the private header file names here
+set(PRIVATE_HEADERS
+  src/mirco_inpututilities.h
+)
+
+file(GLOB PUBLIC_HEADERS
+  CONFIGURE_DEPENDS
+  RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}"
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/*.h"
+)
+list(REMOVE_ITEM PUBLIC_HEADERS ${PRIVATE_HEADERS})
+
+target_include_directories(mirco_lib INTERFACE
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
+  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+)
+
+install(FILES ${PUBLIC_HEADERS}
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+)
+
 # Install mirco (to be used as a library by other codes)
-install(TARGETS mirco_lib mirco_needKK mirco_core mirco_topology mirco_inputparameters mirco_shapefactors
+install(TARGETS
+  mirco_lib
+  mirco_needKK
+  mirco_core
+  mirco_topology
+  mirco_inputparameters
+  mirco_shapefactors
   EXPORT mirco_libTargets
-  ARCHIVE LIBRARY PUBLIC_HEADER
-  )
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
 
 install(EXPORT mirco_libTargets
   NAMESPACE mirco::
-  DESTINATION lib/cmake/mirco
-  )
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/mirco
+)
 
 include(CMakePackageConfigHelpers)
-configure_package_config_file(cmake/mirco_libConfig.cmake.in
+
+configure_package_config_file(
+  cmake/mirco_libConfig.cmake.in
   ${CMAKE_CURRENT_BINARY_DIR}/mirco_libConfig.cmake
-  INSTALL_DESTINATION lib/cmake/mirco
-  )
+  INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/mirco
+)
 
 install(FILES
   ${CMAKE_CURRENT_BINARY_DIR}/mirco_libConfig.cmake
-  DESTINATION lib/cmake/mirco
-  )
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/mirco
+)
 
-install(DIRECTORY ${PROJECT_SOURCE_DIR}/src/ DESTINATION include/mirco FILES_MATCHING PATTERN "*.h")
+
+
+
+
 
 option(GTEST_IN_MIRCO "Enable GoogleTest in MIRCO" ON)
 # Compile unittest executable
@@ -305,7 +346,7 @@ if(GTEST_IN_MIRCO)
   add_executable(tests
     tests/unittests/test.cpp
     )
-  target_link_libraries(tests PUBLIC mirco::mirco_lib mirco_inputparameters_yaml mirco_utils mirco_shapefactors gtest Kokkos::kokkos)
+  target_link_libraries(tests PUBLIC mirco::mirco_lib mirco_inputparameters_yaml mirco_shapefactors gtest Kokkos::kokkos)
 
   # Copy tests/unittests/data folder to the build dir
   add_custom_command(

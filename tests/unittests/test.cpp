@@ -2,11 +2,11 @@
 #include <stdlib.h>
 
 #include "../../src/mirco_inputparameters.h"
+#include "../../src/mirco_inpututilities.h"
 #include "../../src/mirco_kokkostypes.h"
 #include "../../src/mirco_nonlinearsolver.h"
 #include "../../src/mirco_shapefactors.h"
 #include "../../src/mirco_topology.h"
-#include "../../src/mirco_utils.h"
 #include "../../src/mirco_warmstart.h"
 
 // Functors are sometimes necessary for device-side/offloaded compilation
@@ -158,22 +158,6 @@ TEST(NonlinearSolverTest, primalvariable)
   EXPECT_NEAR(p0_h(6), 148773.412150208, 1e-06);
   EXPECT_NEAR(p0_h(7), 83711.5732276221, 1e-06);
   EXPECT_NEAR(p0_h(8), 149262.960807186, 1e-06);
-}
-
-TEST(FilesystemUtils, createrelativepath)
-{
-  std::string targetfilename = "input.dat";
-  std::string sourcefilename = "../inputfiles/sourceinput.json";
-  MIRCO::Utils::changeRelativePath(targetfilename, sourcefilename);
-  EXPECT_EQ(targetfilename, "../inputfiles/input.dat");
-}
-
-TEST(FilesystemUtils, keepabsolutepath)
-{
-  std::string targetfilename = "/root_dir/home/user/Input/input.dat";
-  std::string sourcefilename = "../inputfiles/sourceinput.json";
-  MIRCO::Utils::changeRelativePath(targetfilename, sourcefilename);
-  EXPECT_EQ(targetfilename, "/root_dir/home/user/Input/input.dat");
 }
 
 TEST(topology, RMG)

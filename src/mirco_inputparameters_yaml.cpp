@@ -1,8 +1,9 @@
+#include <filesystem>
 #include <fstream>
 #include <sstream>
 
 #include "mirco_inputparameters.h"
-#include "mirco_utils.h"
+#include "mirco_inpututilities.h"
 
 MIRCO::InputParameters::InputParameters(const std::string& inputFileName)
 {
@@ -16,48 +17,54 @@ MIRCO::InputParameters::InputParameters(const std::string& inputFileName)
   ryml::Tree tree = ryml::parse_in_arena(c4::to_csubstr(inString));
   ryml::ConstNodeRef root = tree["mirco_input"];
   ryml::ConstNodeRef parameters = root["parameters"];
-  ryml::ConstNodeRef geoParams = parameters["geometrical_parameters"];
-  ryml::ConstNodeRef matParams = parameters["material_parameters"];
+  ryml::ConstNodeRef geometricalParameters = parameters["geometrical_parameters"];
+  ryml::ConstNodeRef materialParameters = parameters["material_parameters"];
 
   if (root.invalid()) throw std::runtime_error("Input incomplete: missing root `mirco_input`");
   if (parameters.invalid())
     throw std::runtime_error("Input incomplete: missing section `parameters`");
-  if (geoParams.invalid())
+  if (geometricalParameters.invalid())
     throw std::runtime_error("Input incomplete: missing section `geometrical_parameters`");
-  if (matParams.invalid())
+  if (materialParameters.invalid())
     throw std::runtime_error("Input incomplete: missing section `material_parameters`");
 
-  auto exportVisualization = Utils::get_optional_bool(root, "ExportVisualization");
+  auto exportVisualization = rget_optional<bool>(root, "ExportVisualization");
   std::optional<std::string> exportVisualizationPath;
   if (exportVisualization && exportVisualization.value())
-    exportVisualizationPath = Utils::get_string(root, "ExportVisualizationPath");
+    exportVisualizationPath = rget<std::string>(root, "ExportVisualizationPath");
   else
     exportVisualizationPath = std::nullopt;
 
   // Set the surface generator based on RandomTopologyFlag
-  if (Utils::get_bool(root, "RandomTopologyFlag"))
+  if (rget<bool>(root, "RandomTopologyFlag"))
   {
-    *this = InputParameters(Utils::get_double(matParams, "E1"), Utils::get_double(matParams, "E2"),
-        Utils::get_double(matParams, "nu1"), Utils::get_double(matParams, "nu2"),
-        Utils::get_double(geoParams, "Tolerance"), Utils::get_double(geoParams, "Delta"),
-        Utils::get_double(geoParams, "LateralLength"), Utils::get_int(geoParams, "Resolution"),
-        Utils::get_double(geoParams, "InitialTopologyStdDeviation"),
-        Utils::get_double(geoParams, "HurstExponent"), Utils::get_int(root, "MaxIteration"),
-        Utils::get_bool(root, "WarmStartingFlag"), Utils::get_bool(root, "PressureGreenFunFlag"),
-        Utils::get_bool(root, "RandomSeedFlag"),
-        Utils::get_optional_int(root, "RandomGeneratorSeed"), exportVisualizationPath);
+    *this = InputParameters(rget<double>(materialParameters, "E1"),
+        rget<double>(materialParameters, "E2"), rget<double>(materialParameters, "nu1"),
+        rget<double>(materialParameters, "nu2"), rget<double>(geometricalParameters, "Tolerance"),
+        rget<double>(geometricalParameters, "Delta"),
+        rget<double>(geometricalParameters, "LateralLength"),
+        rget<int>(geometricalParameters, "Resolution"),
+        rget<double>(geometricalParameters, "InitialTopologyStdDeviation"),
+        rget<double>(geometricalParameters, "HurstExponent"), rget<int>(root, "MaxIteration"),
+        rget<bool>(root, "WarmStartingFlag"), rget<bool>(root, "PressureGreenFunFlag"),
+        rget<bool>(root, "RandomSeedFlag"), rget_optional<int>(root, "RandomGeneratorSeed"),
+        exportVisualizationPath);
   }
   else
   {
-    std::string topology_file_path = Utils::get_string(root, "TopologyFilePath");
-    // The following function generates the actual path of the topology file
-    MIRCO::Utils::changeRelativePath(topology_file_path, inputFileName);
+    std::string topology_file_path = rget<std::string>(root, "TopologyFilePath");
+    // If the path is relative, it is relative to the input (.yaml) file
+    std::filesystem::path new_path = topology_file_path;
+    if (new_path.is_relative())
+      new_path = std::filesystem::path(inputFileName).parent_path() / new_path;
+    topology_file_path = new_path.string();
 
-    *this = InputParameters(Utils::get_double(matParams, "E1"), Utils::get_double(matParams, "E2"),
-        Utils::get_double(matParams, "nu1"), Utils::get_double(matParams, "nu2"),
-        Utils::get_double(geoParams, "Tolerance"), Utils::get_double(geoParams, "Delta"),
-        Utils::get_double(geoParams, "LateralLength"), topology_file_path,
-        Utils::get_int(root, "MaxIteration"), Utils::get_bool(root, "WarmStartingFlag"),
-        Utils::get_bool(root, "PressureGreenFunFlag"), exportVisualizationPath);
+    *this = InputParameters(rget<double>(materialParameters, "E1"),
+        rget<double>(materialParameters, "E2"), rget<double>(materialParameters, "nu1"),
+        rget<double>(materialParameters, "nu2"), rget<double>(geometricalParameters, "Tolerance"),
+        rget<double>(geometricalParameters, "Delta"),
+        rget<double>(geometricalParameters, "LateralLength"), topology_file_path,
+        rget<int>(root, "MaxIteration"), rget<bool>(root, "WarmStartingFlag"),
+        rget<bool>(root, "PressureGreenFunFlag"), exportVisualizationPath);
   }
 }
