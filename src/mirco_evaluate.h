@@ -29,7 +29,7 @@ namespace MIRCO
       const double LateralLength, const double GridSize, const double Tolerance,
       const int MaxIteration, const double CompositeYoungs, const bool WarmStartingFlag,
       const double ElasticComplianceCorrection, const ViewMatrix_d topology, const double zmax,
-      const ViewVector_d meshgrid, const bool PressureGreenFunFlag);
+      const ViewVector_d meshgrid, const bool PressureGreenFunFlag, int& evalIters, long long &totalNonlinIters, int& finalActiveSetSize);
 
   void EvaluateRet(double& pressure, double& effectiveContactAreaFraction, const double Delta,
       const double LateralLength, const double GridSize, const double Tolerance,
@@ -60,13 +60,13 @@ inline void EvaluateRet(double& pressure, double& effectiveContactAreaFraction,
    * @param[in] meshgrid_d Meshgrid vector
    */
   inline void Evaluate(double& pressure, double& effectiveContactAreaFraction,
-      const InputParameters& inputParams, const double zmax, const ViewVector_d meshgrid)
+      const InputParameters& inputParams, const double zmax, const ViewVector_d meshgrid, int& evalIters, long long &totalNonlinIters, int& finalActiveSetSize)
   {
     Evaluate(pressure, effectiveContactAreaFraction, inputParams.delta, inputParams.lateral_length,
         inputParams.grid_size, inputParams.tolerance, inputParams.max_iteration,
         inputParams.composite_youngs, inputParams.warm_starting_flag,
         inputParams.elastic_compliance_correction, inputParams.topology, zmax, meshgrid,
-        inputParams.pressure_green_funct_flag);
+        inputParams.pressure_green_funct_flag, evalIters, totalNonlinIters, finalActiveSetSize);
   }
 }  // namespace MIRCO
 

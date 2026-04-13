@@ -150,7 +150,9 @@ int main(int argc, char* argv[])
 
     // Main evaluation agorithm
     double meanPressure, effectiveContactAreaFraction;
-    Evaluate(meanPressure, effectiveContactAreaFraction, inputParams, maxAndMean.max, meshgrid);
+    int evalIters=0, finalActiveSetSize=0;
+    long long totalNonlinIters=0;
+    Evaluate(meanPressure, effectiveContactAreaFraction, inputParams, maxAndMean.max, meshgrid, evalIters, totalNonlinIters, finalActiveSetSize);
     
     ///int iterCount=-1;
     ///EvaluateRet(meanPressure, effectiveContactAreaFraction, inputParams, maxAndMean.max, meshgrid, iterCount);
@@ -170,7 +172,7 @@ int main(int argc, char* argv[])
     ossTot << "\n__[[/]]\n";
     ossTot << "Default execution space = " << std::string(typeid(ExecSpace_Default_t).name()) << "\n";
     ossTot << "__[[inputs]]\n";
-    ossTot << "numThreads = " << (int)ExecSpace_Default_t().concurrency() << "\n";
+    ossTot << "numThreads = " << std::to_string((int)ExecSpace_Default_t().concurrency()) << "\n";
     ossTot << "compositeYoungs = " << std::setprecision(16 - 1) << compositeYoungs << "\n";
     ossTot << "tol = " << std::setprecision(16 - 1) << tol << "\n";
     ossTot << "delta = " << std::setprecision(16 - 1) << delta << "\n";
@@ -188,6 +190,9 @@ int main(int argc, char* argv[])
     ossTot << "__[[outputs]]\n";
     ossTot << "meanPressure = " << std::setprecision(16 - 1) << meanPressure << "\n";
     ossTot << "effectiveContactAreaFraction = " << std::setprecision(16 - 1) << effectiveContactAreaFraction << "\n";
+    ossTot << "evalIters = "<<evalIters<<"\n";
+    ossTot << "totalNonlinIters = "<<totalNonlinIters<<"\n";
+    ossTot << "finalActiveSetSize = "<<finalActiveSetSize<<"\n";
     ///ossTot << "evalIterCount = " << iterCount << "\n";
     
     std::ofstream fOut(outFile, std::ios::app);  // we append

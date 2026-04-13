@@ -20,7 +20,7 @@ namespace MIRCO
       const double LateralLength, const double GridSize, const double Tolerance,
       const int MaxIteration, const double CompositeYoungs, const bool WarmStartingFlag,
       const double ElasticComplianceCorrection, const ViewMatrix_d topology, const double zmax,
-      const ViewVector_d meshgrid, const bool PressureGreenFunFlag)
+      const ViewVector_d meshgrid, const bool PressureGreenFunFlag, int& evalIters, long long &totalNonlinIters, int& finalActiveSetSize)
   {
     MyUtils::Timers::ScopedTimer sTimer0("Evaluate()");
     
@@ -82,7 +82,9 @@ namespace MIRCO
 
       // use Nonlinear solver --> Non-Negative Least Squares (NNLS) as in
       // (Bemporad & Paggi, 2015)
-      nonlinearSolve(pf, activeSetf, p0, activeSet0, H, b0);
+      nonlinearSolve(pf, activeSetf, p0, activeSet0, H, b0, totalNonlinIters);
+      
+      finalActiveSetSize = activeSetf.extent(0);
 
       // Compute total contact force and contact area
       double totalForce;
@@ -103,6 +105,8 @@ namespace MIRCO
 
       ++k;
     }
+    evalIters = k;
+    
 //std::cout<<"////////////////////////////////////// k="<<k<<"\n";
     if (deltaTotalForce > Tolerance)
       throw std::runtime_error("The solver did not converge in the maximum number of iterations.");
@@ -191,7 +195,7 @@ namespace MIRCO
 
       // use Nonlinear solver --> Non-Negative Least Squares (NNLS) as in
       // (Bemporad & Paggi, 2015)
-      nonlinearSolve(pf, activeSetf, p0, activeSet0, H, b0);
+      //nonlinearSolve(pf, activeSetf, p0, activeSet0, H, b0);
 
       // Compute total contact force and contact area
       double totalForce;

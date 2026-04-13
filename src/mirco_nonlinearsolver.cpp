@@ -30,8 +30,7 @@ namespace
 namespace MIRCO
 {
   void nonlinearSolve(ViewVector_d& pf, ViewVectorInt_d& activeSetf, ViewVector_d& p,
-      const ViewVectorInt_d activeSet0, const ViewMatrix_d matrix, const ViewVector_d b0,
-      double nnlstol, int maxiter)
+      const ViewVectorInt_d activeSet0, const ViewMatrix_d matrix, const ViewVector_d b0, long long &totalNonlinIters, double nnlstol, int maxiter)
   {
     MyUtils::Timers::ScopedTimer sTimer0("nonlinearSolve()");
     
@@ -235,7 +234,7 @@ MyUtils::Timers::ScopedTimer sTimer1("gesv()");
           pf(i) = p(activeInactiveSet(i));
         });
   //std::cout<<"////////////////////////////////////// iter="<<iter<<"\n";
-        
+        totalNonlinIters+=iter;
   }
 
   void nonlinearSolveRet(ViewVector_d& pf, ViewVectorInt_d& activeSetf, ViewVector_d& p,
