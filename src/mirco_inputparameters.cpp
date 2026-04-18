@@ -2,6 +2,7 @@
 
 #include "mirco_shapefactors.h"
 #include "mirco_topology.h"
+#include "mirco_topologyutilities.h"
 
 namespace MIRCO
 {
@@ -20,11 +21,14 @@ namespace MIRCO
     auto topology_h = CreateRmgSurface(
         Resolution, InitialTopologyStdDeviation, Hurst, RandomSeedFlag, RandomGeneratorSeed);
     topology = Kokkos::create_mirror_view_and_copy(ExecSpace_Default_t(), topology_h);
+    topology_max = GetMax(topology);
 
     shape_factor = getShapeFactor(N, PressureGreenFunFlag);
     composite_youngs = 1.0 / ((1 - nu1 * nu1) / E1 + (1 - nu2 * nu2) / E2);
     elastic_compliance_correction = LateralLength * composite_youngs / shape_factor;
     grid_size = LateralLength / N;
+
+    mesh_grid = CreateMeshgrid(N, grid_size);
   }
 
   InputParameters::InputParameters(double E1, double E2, double nu1, double nu2, double Tolerance,
@@ -41,11 +45,14 @@ namespace MIRCO
     auto topology_h = CreateSurfaceFromFile(TopologyFilePath);
     N = topology_h.extent(0);
     topology = Kokkos::create_mirror_view_and_copy(ExecSpace_Default_t(), topology_h);
+    topology_max = GetMax(topology);
 
     shape_factor = getShapeFactor(N, PressureGreenFunFlag);
     composite_youngs = 1.0 / ((1 - nu1 * nu1) / E1 + (1 - nu2 * nu2) / E2);
     elastic_compliance_correction = LateralLength * composite_youngs / shape_factor;
     grid_size = LateralLength / N;
+
+    mesh_grid = CreateMeshgrid(N, grid_size);
   }
 
 }  // namespace MIRCO

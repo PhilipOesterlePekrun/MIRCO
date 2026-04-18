@@ -10,7 +10,7 @@ namespace MIRCO
 {
   /**
    * @brief This struct stores those input parameters which are used in general. It also constructs
-   * the topology
+   * the mesh grid and topology
    *
    */
   struct InputParameters
@@ -38,7 +38,7 @@ namespace MIRCO
      * generator [micrometers]
      * @param Hurst Hurst Exponent (Used in random mid-point generator)
      * @param MaxIteration Maximum number of iterations for the force to converge.
-     * @param WarmStartingFlag Set `true` for using the warm starter. It predicts the nodes coming
+     * @param WarmStartingFlag Set `true` to use the warm starter. It predicts the nodes coming
      * into contact in the next iteration and hence speeds up the computation.
      * @param PressureGreenFunFlag Flag to use Green function based on uniform pressure instead of
      * point force.
@@ -64,7 +64,7 @@ namespace MIRCO
      * @param LateralLength Lateral side of the surface [micrometers]
      * @param TopologyFilePath Path of the input file containing the topology.
      * @param MaxIteration Maximum number of iterations for the force to converge.
-     * @param WarmStartingFlag Set `true` for using the warm starter. It predicts the nodes coming
+     * @param WarmStartingFlag Set `true` to use the warm starter. It predicts the nodes coming
      * into contact in the next iteration and hence speeds up the computation.
      * @param PressureGreenFunFlag Flag to use Green function based on uniform pressure instead of
      * point force
@@ -81,9 +81,11 @@ namespace MIRCO
     int max_iteration = 0;
     bool warm_starting_flag = false;
     bool pressure_green_funct_flag = false;
-    // Note: topology is a lightweight handle, similar to std::shared_ptr. This struct does not
-    // own topology.
+    // Note: a view a lightweight handle, similar to std::shared_ptrs, so views are not technically
+    // owned by this struct
+    ViewVector_d mesh_grid;
     ViewMatrix_d topology;
+    double topology_max;
     std::optional<std::string> export_visualization_path;
   };
 }  // namespace MIRCO

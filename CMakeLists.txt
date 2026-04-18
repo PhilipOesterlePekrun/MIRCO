@@ -271,14 +271,6 @@ if(MIRCO_ENABLE_FLAT)
   target_link_libraries(flatMirco PUBLIC mirco_core mirco_topology mirco_shapefactors Kokkos::kokkos KokkosKernels::kokkoskernels)
 endif()
 
-
-
-
-
-
-
-
-
 # Manually list only the private header file names here
 set(PRIVATE_HEADERS
   src/mirco_inpututilities.h
@@ -331,11 +323,6 @@ install(FILES
   ${CMAKE_CURRENT_BINARY_DIR}/mirco_libConfig.cmake
   DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/mirco
 )
-
-
-
-
-
 
 option(GTEST_IN_MIRCO "Enable GoogleTest in MIRCO" ON)
 # Compile unittest executable

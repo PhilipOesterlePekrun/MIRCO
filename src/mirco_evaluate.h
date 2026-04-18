@@ -39,18 +39,18 @@ namespace MIRCO
    *
    * @param[out] pressure Mean pressure
    * @param[out] effectiveContactAreaFraction Effective contact area as percentage of the total area
+   * @param[in] Delta Far-field displacement (Gap)
    * @param[in] inputParams Object which holds the input parameters
-   * @param[in] zmax Maximum height
-   * @param[in] meshgrid_d Meshgrid vector
    */
-  inline void Evaluate(double& pressure, double& effectiveContactAreaFraction, double Delta,
-      const InputParameters& inputParams, const double zmax, const ViewVector_d meshgrid)
+  inline void Evaluate(double& pressure, double& effectiveContactAreaFraction, const double Delta,
+      const InputParameters& inputParams)
   {
     Evaluate(pressure, effectiveContactAreaFraction, Delta, inputParams.lateral_length,
         inputParams.grid_size, inputParams.tolerance, inputParams.max_iteration,
         inputParams.composite_youngs, inputParams.warm_starting_flag,
-        inputParams.elastic_compliance_correction, inputParams.topology, zmax, meshgrid,
-        inputParams.pressure_green_funct_flag, inputParams.export_visualization_path);
+        inputParams.elastic_compliance_correction, inputParams.topology, inputParams.topology_max,
+        inputParams.mesh_grid, inputParams.pressure_green_funct_flag,
+        inputParams.export_visualization_path);
   }
 }  // namespace MIRCO
 

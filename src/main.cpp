@@ -9,7 +9,6 @@
 #include "mirco_inputparameters.h"
 #include "mirco_inpututilities.h"
 #include "mirco_kokkostypes.h"
-#include "mirco_topologyutilities.h"
 
 using namespace MIRCO;
 
@@ -31,29 +30,26 @@ int main(int argc, char* argv[])
 
     const auto start = std::chrono::high_resolution_clock::now();
 
-    ryml::ConstNodeRef inputRoot;
+    InputParameters inputParams(inputFileName);
+
+    ryml::Tree inputTree;
     {
       std::ifstream fin(inputFileName);
       if (!fin) throw std::runtime_error("Cannot open input file: " + inputFileName);
       std::stringstream ss;
       ss << fin.rdbuf();
       std::string inString = ss.str();
-      ryml::Tree tree = ryml::parse_in_arena(c4::to_csubstr(inString));
-      inputRoot = tree["mirco_input"];
+      inputTree = ryml::parse_in_arena(c4::to_csubstr(inString));
     }
-
-    InputParameters inputParams(inputFileName);
+    ryml::ConstNodeRef inputRoot = inputTree["mirco_input"];
 
     // Input specific to standalone MIRCO: Get the far-field displacement (Gap) "Delta" from the
     // input file
-    double Delta = rget<double>(inputRoot["geoParams"], "Delta");
-
-    ViewVector_d meshgrid = CreateMeshgrid(inputParams.N, inputParams.grid_size);
-    const double topologyMax = GetMax(inputParams.topology);
+    double Delta = rget<double>(inputRoot["parameters"]["geometrical_parameters"], "Delta");
 
     // Main evaluation agorithm
     double meanPressure, effectiveContactAreaFraction;
-    Evaluate(meanPressure, effectiveContactAreaFraction, Delta, inputParams, topologyMax, meshgrid);
+    Evaluate(meanPressure, effectiveContactAreaFraction, Delta, inputParams);
 
     const auto finish = std::chrono::high_resolution_clock::now();
 
