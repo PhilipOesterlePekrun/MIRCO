@@ -34,6 +34,27 @@ set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
+if(MSVC)
+  add_compile_options(
+    $<$<COMPILE_LANGUAGE:C>:/w>
+    $<$<COMPILE_LANGUAGE:CXX>:/w>
+  )
+else()
+  add_compile_options(
+    $<$<COMPILE_LANGUAGE:C>:-w>
+    $<$<COMPILE_LANGUAGE:CXX>:-w>
+  )
+endif()
+
+if(CMAKE_CUDA_COMPILER)
+  add_compile_options(
+    $<$<COMPILE_LANGUAGE:CUDA>:-w>
+    $<$<COMPILE_LANGUAGE:CUDA>:-Xcompiler=-w>
+  )
+endif()
+
+
+
 option(MIRCO_ENABLE_FLAT "Build the flatMirco utility, which can be used to compute shape factors" OFF)
 
 # Add libraries
@@ -101,6 +122,10 @@ if(KOKKOS_KERNELS_IN_MIRCO)
   endif()
 endif()
 
+set(CMAKE_CXX_COMPILER_LAUNCHER "" CACHE STRING "" FORCE)
+set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "")
+set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK "")
+
 option(MIRCO_ENABLE_VISUALIZATIONEXPORT "Enable exporting the results for visualization. This requires VTK, either explicitly provided through VTK_PATH, or from an upstream project." OFF)
 if(MIRCO_ENABLE_VISUALIZATIONEXPORT)
   # If user provided a prefix, help CMake find VTK there
@@ -161,7 +186,7 @@ option(RYML_IN_MIRCO "Find ryml in MIRCO project. If set to OFF, use the ryml in
 
 if(RYML_IN_MIRCO)
   message(STATUS "Building ryml within MIRCO project.")
-  if(Kokkos_ENABLE_CUDA OR Kokkos_ENABLE_HIP OR Kokkos_ENABLE_SYCL OR Kokkos_ENABLE_OPENMPTARGET)
+  if(false)#Kokkos_ENABLE_CUDA OR Kokkos_ENABLE_HIP OR Kokkos_ENABLE_SYCL OR Kokkos_ENABLE_OPENMPTARGET)
     # Compile rapidyaml (ryml) separately to avoid conflicts with device-side/offloaded compilers (e.g. nvcc_wrapper)
     message(STATUS "Building rapidyaml using MIRCO_HOST_CXX_COMPILER")
     include(ExternalProject)

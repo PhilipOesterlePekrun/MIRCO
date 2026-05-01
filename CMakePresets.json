@@ -1,125 +1,55 @@
 {
-  "version": 8,
+  "version": 5,
   "configurePresets": [
     {
-      "name": ".base",
+      "name": ".charon1",
       "hidden": true,
       "generator": "Ninja",
       "cacheVariables": {
+        "CMAKE_INSTALL_PREFIX": "../install",
         "CMAKE_BUILD_TYPE": "RELEASE",
-        "CMAKE_CXX_COMPILER": "mpicxx",
+        "CMAKE_CXX_COMPILER_LAUNCHER": "ccache",
         "CMAKE_C_COMPILER_LAUNCHER": "ccache",
-        "CMAKE_CXX_FLAGS": "",
+        "CMAKE_CXX_FLAGS": "-msse3",
         "KOKKOS_IN_MIRCO": "ON",
         "KOKKOS_KERNELS_IN_MIRCO": "ON",
+        "KOKKOS_PATH": "$env{MY_TRILINOS_INSTALL}",
+        "KOKKOS_KERNELS_PATH": "$env{MY_TRILINOS_INSTALL}",
         "RYML_IN_MIRCO": "ON",
-        "GTEST_IN_MIRCO": "ON",
-        "MIRCO_ENABLE_FLAT": "OFF",
-        "MIRCO_ENABLE_VISUALIZATIONEXPORT": "OFF"
+        "GTEST_IN_MIRCO": "OFF",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
+    },
+    
+    {
+      "name": "charon_tkCuda",
+      "hidden": false,
+      "inherits": [
+        ".charon1"
+      ],
+      "cacheVariables": {
+        "_COMMENT_CMAKE_CXX_COMPILER": "/home/oesterle/rd/Trilinos_Base/Trilinos/packages/kokkos/bin/nvcc_wrapper",
+        "CMAKE_CXX_COMPILER": "/home/oesterle/rd/testTrilinosKokkos_Base/testTrilinosKokkos/clangcuda++",
+        "CMAKE_C_COMPILER": "/bin/clang",
+        "_COMMENT_KOKKOS_PATH": "/home/oesterle/rd/Trilinos_Base/release_Upstream_E_int_full_kserial+cuda/install",
+        "_COMMENT_KOKKOS_KERNELS_PATH": "/home/oesterle/rd/Trilinos_Base/release_Upstream_E_int_full_kserial+cuda/install",
+        
+        "CMAKE_POSITION_INDEPENDENT_CODE": "ON"
       }
     },
     {
-      "name": "docker_container_kokkosserial",
-      "displayName": "Release build using Kokkos with Serial backend for CI/CD testing in a docker container",
+      "name": "charon_tkOpenMP_openblasOpenMP",
+      "hidden": false,
       "inherits": [
-        ".base"
+        ".charon1"
       ],
       "cacheVariables": {
-        "KOKKOS_PATH": "/opt/mirco-dependencies/kokkos_install_serial",
-        "KOKKOS_KERNELS_PATH": "/opt/mirco-dependencies/kokkos-kernels_install_serial",
-        "MIRCO_ENABLE_VISUALIZATIONEXPORT": "ON"
-      }
-    },
-    {
-      "name": "docker_container_kokkosopenmp",
-      "displayName": "Release build using Kokkos with OpenMP backend for CI/CD testing in a docker container",
-      "inherits": [
-        ".base"
-      ],
-      "cacheVariables": {
-        "KOKKOS_PATH": "/opt/mirco-dependencies/kokkos_install_openmp",
-        "KOKKOS_KERNELS_PATH": "/opt/mirco-dependencies/kokkos-kernels_install_openmp",
-        "MIRCO_ENABLE_FLAT": "ON",
-        "MIRCO_ENABLE_VISUALIZATIONEXPORT": "ON"
-      }
-    },
-    {
-      "name": "docker_container_kokkoscuda",
-      "displayName": "Release build using Kokkos with CUDA backend for CI/CD testing in a docker container",
-      "inherits": [
-        ".base"
-      ],
-      "cacheVariables": {
-        "CMAKE_CXX_COMPILER": "/opt/mirco-dependencies/kokkos/bin/nvcc_wrapper",
-        "MIRCO_HOST_CXX_COMPILER": "g++-12",
-        "KOKKOS_PATH": "/opt/mirco-dependencies/kokkos_install_cuda",
-        "KOKKOS_KERNELS_PATH": "/opt/mirco-dependencies/kokkos-kernels_install_cuda",
-        "MIRCO_ENABLE_FLAT": "ON",
-        "MIRCO_ENABLE_VISUALIZATIONEXPORT": "ON"
-      }
-    },
-    {
-      "name": ".imcs_workstation_base",
-      "hidden": true,
-      "inherits": [
-        ".base"
-      ],
-      "cacheVariables": {
-        "CMAKE_CXX_COMPILER_LAUNCHER": "ccache",
-        "CMAKE_CXX_FLAGS": "-msse3",
-        "KOKKOS_PATH": "/imcs/public/compsim/packages/trilinos/2025.6/install",
-        "KOKKOS_KERNELS_PATH": "/imcs/public/compsim/packages/trilinos/2025.6/install"
-      }
-    },
-    {
-      "name": "imcs_workstation",
-      "displayName": "Release build for an IMCS workstation [TODO: Add Kokkos and Kokkos-Kernels directories]",
-      "inherits": [
-        ".imcs_workstation_base"
-      ]
-    },
-    {
-      "name": "imcs_workstation_RELWITHDEBINFO",
-      "displayName": "Release build with debug information for an IMCS workstation [TODO: Add Kokkos and Kokkos-Kernels directories]",
-      "inherits": [
-        ".imcs_workstation_base"
-      ],
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "RELWITHDEBINFO"
-      }
-    },
-    {
-      "name": ".imcs_cluster_base",
-      "hidden": true,
-      "inherits": [
-        ".base"
-      ],
-      "cacheVariables": {
-        "CMAKE_CXX_COMPILER_LAUNCHER": "ccache",
-        "CMAKE_CXX_FLAGS": "-msse3",
-        "KOKKOS_PATH": "$env{TRILINOS_ROOT}",
-        "KOKKOS_KERNELS_PATH": "$env{TRILINOS_ROOT}"
-      }
-    },
-    {
-      "name": "imcs_cluster",
-      "inherits": [
-        ".imcs_cluster_base"
-      ],
-      "displayName": "Release build on the IMCS cluster [TODO: Add Kokkos and Kokkos-Kernels directories]",
-      "cacheVariables": {
-        "GTEST_IN_MIRCO": "OFF"
-      }
-    },
-    {
-      "name": "imcs_cluster_with_tests",
-      "displayName": "Release build on the IMCS cluster with tests enabled [TODO: Add Kokkos and Kokkos-Kernels directories]",
-      "inherits": [
-        ".imcs_cluster_base"
-      ],
-      "cacheVariables": {
-        "GTEST_IN_MIRCO": "ON"
+        "CMAKE_CXX_COMPILER": "g++",
+        "CMAKE_C_COMPILER": "gcc",
+        "_COMMENT_KOKKOS_PATH": "/home/oesterle/rd/Trilinos_Base/release_Upstream_E_int_full_kOpenMP_openblasOpenMP/install",
+        "_COMMENT_KOKKOS_KERNELS_PATH": "/home/oesterle/rd/Trilinos_Base/release_Upstream_E_int_full_kOpenMP_openblasOpenMP/install"
       }
     }
+
   ]
 }
