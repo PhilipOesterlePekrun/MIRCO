@@ -34,6 +34,27 @@ set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
+if(MSVC)
+  add_compile_options(
+    $<$<COMPILE_LANGUAGE:C>:/w>
+    $<$<COMPILE_LANGUAGE:CXX>:/w>
+  )
+else()
+  add_compile_options(
+    $<$<COMPILE_LANGUAGE:C>:-w>
+    $<$<COMPILE_LANGUAGE:CXX>:-w>
+  )
+endif()
+
+if(CMAKE_CUDA_COMPILER)
+  add_compile_options(
+    $<$<COMPILE_LANGUAGE:CUDA>:-w>
+    $<$<COMPILE_LANGUAGE:CUDA>:-Xcompiler=-w>
+  )
+endif()
+
+
+
 option(MIRCO_ENABLE_FLAT "Build the flatMirco utility, which can be used to compute shape factors" OFF)
 
 # Add libraries
@@ -101,6 +122,10 @@ if(KOKKOS_KERNELS_IN_MIRCO)
   endif()
 endif()
 
+set(CMAKE_CXX_COMPILER_LAUNCHER "" CACHE STRING "" FORCE)
+set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "")
+set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK "")
+
 option(MIRCO_ENABLE_VISUALIZATIONEXPORT "Enable exporting the results for visualization. This requires VTK, either explicitly provided through VTK_PATH, or from an upstream project." OFF)
 if(MIRCO_ENABLE_VISUALIZATIONEXPORT)
   # If user provided a prefix, help CMake find VTK there
@@ -122,6 +147,15 @@ add_library(mirco_needKK
   )
 target_link_libraries(mirco_needKK PRIVATE Kokkos::kokkos KokkosKernels::kokkoskernels)
 
+set_target_properties(mirco_needKK PROPERTIES
+        CXX_COMPILER_LAUNCHER ""
+        C_COMPILER_LAUNCHER ""
+        CUDA_COMPILER_LAUNCHER ""
+        RULE_LAUNCH_COMPILE ""
+        RULE_LAUNCH_LINK ""
+      )
+      target_compile_definitions(mirco_needKK PRIVATE FOUR_C_CLANGCUDA_DEVICE_COMPILE)
+
 # Compile mirco library
 add_library(mirco_core
   src/mirco_evaluate.cpp
@@ -131,6 +165,14 @@ add_library(mirco_core
   src/mirco_warmstart.cpp
   )
 target_link_libraries(mirco_core PRIVATE mirco_needKK Kokkos::kokkos)
+set_target_properties(mirco_core PROPERTIES
+        CXX_COMPILER_LAUNCHER ""
+        C_COMPILER_LAUNCHER ""
+        CUDA_COMPILER_LAUNCHER ""
+        RULE_LAUNCH_COMPILE ""
+        RULE_LAUNCH_LINK ""
+      )
+      target_compile_definitions(mirco_core PRIVATE FOUR_C_CLANGCUDA_DEVICE_COMPILE)
 
 if(MIRCO_ENABLE_VISUALIZATIONEXPORT)
   target_sources(mirco_core PRIVATE src/mirco_exportvisualization.cpp)
@@ -147,21 +189,47 @@ add_library(mirco_topology
   src/mirco_topologyutilities.cpp
   )
 target_link_libraries(mirco_topology PRIVATE Kokkos::kokkos)
+set_target_properties(mirco_topology PROPERTIES
+        CXX_COMPILER_LAUNCHER ""
+        C_COMPILER_LAUNCHER ""
+        CUDA_COMPILER_LAUNCHER ""
+        RULE_LAUNCH_COMPILE ""
+        RULE_LAUNCH_LINK ""
+      )
+      target_compile_definitions(mirco_topology PRIVATE FOUR_C_CLANGCUDA_DEVICE_COMPILE)
 
 add_library(mirco_shapefactors
   src/mirco_shapefactors.cpp
   )
+  set_target_properties(mirco_shapefactors PROPERTIES
+        CXX_COMPILER_LAUNCHER ""
+        C_COMPILER_LAUNCHER ""
+        CUDA_COMPILER_LAUNCHER ""
+        RULE_LAUNCH_COMPILE ""
+        RULE_LAUNCH_LINK ""
+      )
+      target_compile_definitions(mirco_shapefactors PRIVATE FOUR_C_CLANGCUDA_HOST_ONLY)
+
 
 add_library(mirco_inputparameters
   src/mirco_inputparameters.cpp
   )
 target_link_libraries(mirco_inputparameters PRIVATE mirco_topology mirco_shapefactors Kokkos::kokkos)
+  set_target_properties(mirco_inputparameters PROPERTIES
+        CXX_COMPILER_LAUNCHER ""
+        C_COMPILER_LAUNCHER ""
+        CUDA_COMPILER_LAUNCHER ""
+        RULE_LAUNCH_COMPILE ""
+        RULE_LAUNCH_LINK ""
+      )
+      target_compile_definitions(mirco_inputparameters PRIVATE FOUR_C_CLANGCUDA_HOST_ONLY)
+
 
 option(RYML_IN_MIRCO "Find ryml in MIRCO project. If set to OFF, use the ryml installation from an upstream project" OFF)
 
 if(RYML_IN_MIRCO)
   message(STATUS "Building ryml within MIRCO project.")
-  if(Kokkos_ENABLE_CUDA OR Kokkos_ENABLE_HIP OR Kokkos_ENABLE_SYCL OR Kokkos_ENABLE_OPENMPTARGET)
+  if(false)#Kokkos_ENABLE_CUDA OR Kokkos_ENABLE_HIP OR Kokkos_ENABLE_SYCL OR Kokkos_ENABLE_OPENMPTARGET)
     # Compile rapidyaml (ryml) separately to avoid conflicts with device-side/offloaded compilers (e.g. nvcc_wrapper)
     message(STATUS "Building rapidyaml using MIRCO_HOST_CXX_COMPILER")
     include(ExternalProject)
@@ -241,14 +309,35 @@ add_library(mirco_utils
   )
 
 target_link_libraries(mirco_utils PUBLIC ryml)
+  set_target_properties(mirco_utils PROPERTIES
+        CXX_COMPILER_LAUNCHER ""
+        C_COMPILER_LAUNCHER ""
+        CUDA_COMPILER_LAUNCHER ""
+        RULE_LAUNCH_COMPILE ""
+        RULE_LAUNCH_LINK ""
+      )
+      target_compile_definitions(mirco_utils PRIVATE FOUR_C_CLANGCUDA_HOST_ONLY)
+
+
 
 add_library(mirco_inputparameters_yaml
   src/mirco_inputparameters_yaml.cpp
   )
 target_link_libraries(mirco_inputparameters_yaml PRIVATE mirco_inputparameters mirco_utils Kokkos::kokkos)
+  set_target_properties(mirco_inputparameters_yaml PROPERTIES
+        CXX_COMPILER_LAUNCHER ""
+        C_COMPILER_LAUNCHER ""
+        CUDA_COMPILER_LAUNCHER ""
+        RULE_LAUNCH_COMPILE ""
+        RULE_LAUNCH_LINK ""
+      )
+      target_compile_definitions(mirco_inputparameters_yaml PRIVATE FOUR_C_CLANGCUDA_HOST_ONLY)
+
 
 add_library(mirco_lib INTERFACE)
 target_link_libraries(mirco_lib INTERFACE mirco_needKK mirco_core mirco_topology mirco_inputparameters)
+
+
 
 target_include_directories(mirco_lib INTERFACE
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/>
@@ -265,6 +354,16 @@ target_compile_definitions(mirco_core PUBLIC
 # Compile mirco itself
 add_executable(mirco src/main.cpp)
 target_link_libraries(mirco PUBLIC mirco::mirco_lib mirco_inputparameters_yaml mirco_utils Kokkos::kokkos)
+
+  set_target_properties(mirco PROPERTIES
+        CXX_COMPILER_LAUNCHER ""
+        C_COMPILER_LAUNCHER ""
+        CUDA_COMPILER_LAUNCHER ""
+        RULE_LAUNCH_COMPILE ""
+        RULE_LAUNCH_LINK ""
+      )
+      target_compile_definitions(mirco PRIVATE FOUR_C_CLANGCUDA_DEVICE_COMPILE)
+
 
 # Compile the flatMirco utility
 if(MIRCO_ENABLE_FLAT)
