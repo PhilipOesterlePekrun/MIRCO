@@ -53,7 +53,10 @@ if(CMAKE_CUDA_COMPILER)
   )
 endif()
 
-
+message(STATUS "MIRCO: Start CMakeLists.txt")
+if(CMAKE_CXX_COMPILER MATCHES "clangcuda\\+\\+$")
+  message(STATUS "MIRCO: Using clangcuda++ wrapper")
+endif()
 
 option(MIRCO_ENABLE_FLAT "Build the flatMirco utility, which can be used to compute shape factors" OFF)
 
@@ -229,7 +232,7 @@ option(RYML_IN_MIRCO "Find ryml in MIRCO project. If set to OFF, use the ryml in
 
 if(RYML_IN_MIRCO)
   message(STATUS "Building ryml within MIRCO project.")
-  if(false)#Kokkos_ENABLE_CUDA OR Kokkos_ENABLE_HIP OR Kokkos_ENABLE_SYCL OR Kokkos_ENABLE_OPENMPTARGET)
+  if(Kokkos_ENABLE_CUDA OR Kokkos_ENABLE_HIP OR Kokkos_ENABLE_SYCL OR Kokkos_ENABLE_OPENMPTARGET)
     # Compile rapidyaml (ryml) separately to avoid conflicts with device-side/offloaded compilers (e.g. nvcc_wrapper)
     message(STATUS "Building rapidyaml using MIRCO_HOST_CXX_COMPILER")
     include(ExternalProject)
@@ -283,9 +286,9 @@ if(RYML_IN_MIRCO)
     # Everything is compiled on host; fetch rapidyaml directly
     message(STATUS "Fetching rapidyaml...")
     include(FetchContent)
-    
+
     set(CMAKE_SUPPRESS_DEVELOPER_WARNINGS ON CACHE BOOL "" FORCE) # Suppress developer warnings from ryml
-    
+
     FetchContent_Declare(rapidyaml
       GIT_REPOSITORY https://github.com/biojppm/rapidyaml.git
       GIT_TAG 47ec2fa184209687c20fd5bc05621e1cb1200311
@@ -405,6 +408,14 @@ if(GTEST_IN_MIRCO)
     tests/unittests/test.cpp
     )
   target_link_libraries(tests PUBLIC mirco::mirco_lib mirco_inputparameters_yaml mirco_utils mirco_shapefactors gtest Kokkos::kokkos)
+  set_target_properties(tests PROPERTIES
+        CXX_COMPILER_LAUNCHER ""
+        C_COMPILER_LAUNCHER ""
+        CUDA_COMPILER_LAUNCHER ""
+        RULE_LAUNCH_COMPILE ""
+        RULE_LAUNCH_LINK ""
+      )
+      target_compile_definitions(tests PRIVATE FOUR_C_CLANGCUDA_DEVICE_COMPILE)
 
   # Copy tests/unittests/data folder to the build dir
   add_custom_command(
