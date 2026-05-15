@@ -34,29 +34,6 @@ set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
-if(MSVC)
-  add_compile_options(
-    $<$<COMPILE_LANGUAGE:C>:/w>
-    $<$<COMPILE_LANGUAGE:CXX>:/w>
-  )
-else()
-  add_compile_options(
-    $<$<COMPILE_LANGUAGE:C>:-w>
-    $<$<COMPILE_LANGUAGE:CXX>:-w>
-  )
-endif()
-
-if(CMAKE_CUDA_COMPILER)
-  add_compile_options(
-    $<$<COMPILE_LANGUAGE:CUDA>:-w>
-    $<$<COMPILE_LANGUAGE:CUDA>:-Xcompiler=-w>
-  )
-endif()
-
-message(STATUS "MIRCO: Start CMakeLists.txt")
-if(CMAKE_CXX_COMPILER MATCHES "clangcuda\\+\\+$")
-  message(STATUS "MIRCO: Using clangcuda++ wrapper")
-endif()
 
 option(MIRCO_ENABLE_FLAT "Build the flatMirco utility, which can be used to compute shape factors" OFF)
 
@@ -157,7 +134,7 @@ set_target_properties(mirco_needKK PROPERTIES
         RULE_LAUNCH_COMPILE ""
         RULE_LAUNCH_LINK ""
       )
-      target_compile_definitions(mirco_needKK PRIVATE FOUR_C_CLANGCUDA_DEVICE_COMPILE)
+      target_compile_definitions(mirco_needKK PRIVATE CLANGCUDA_MODE_DEVICE)
 
 # Compile mirco library
 add_library(mirco_core
@@ -175,7 +152,7 @@ set_target_properties(mirco_core PROPERTIES
         RULE_LAUNCH_COMPILE ""
         RULE_LAUNCH_LINK ""
       )
-      target_compile_definitions(mirco_core PRIVATE FOUR_C_CLANGCUDA_DEVICE_COMPILE)
+      target_compile_definitions(mirco_core PRIVATE CLANGCUDA_MODE_DEVICE)
 
 if(MIRCO_ENABLE_VISUALIZATIONEXPORT)
   target_sources(mirco_core PRIVATE src/mirco_exportvisualization.cpp)
@@ -199,19 +176,11 @@ set_target_properties(mirco_topology PROPERTIES
         RULE_LAUNCH_COMPILE ""
         RULE_LAUNCH_LINK ""
       )
-      target_compile_definitions(mirco_topology PRIVATE FOUR_C_CLANGCUDA_DEVICE_COMPILE)
+      target_compile_definitions(mirco_topology PRIVATE CLANGCUDA_MODE_DEVICE)
 
 add_library(mirco_shapefactors
   src/mirco_shapefactors.cpp
   )
-  set_target_properties(mirco_shapefactors PROPERTIES
-        CXX_COMPILER_LAUNCHER ""
-        C_COMPILER_LAUNCHER ""
-        CUDA_COMPILER_LAUNCHER ""
-        RULE_LAUNCH_COMPILE ""
-        RULE_LAUNCH_LINK ""
-      )
-      target_compile_definitions(mirco_shapefactors PRIVATE FOUR_C_CLANGCUDA_HOST_ONLY)
 
 
 add_library(mirco_inputparameters
@@ -225,7 +194,7 @@ target_link_libraries(mirco_inputparameters PRIVATE mirco_topology mirco_shapefa
         RULE_LAUNCH_COMPILE ""
         RULE_LAUNCH_LINK ""
       )
-      target_compile_definitions(mirco_inputparameters PRIVATE FOUR_C_CLANGCUDA_HOST_ONLY)
+      target_compile_definitions(mirco_inputparameters PRIVATE CLANGCUDA_MODE_HOST)
 
 
 option(RYML_IN_MIRCO "Find ryml in MIRCO project. If set to OFF, use the ryml installation from an upstream project" OFF)
@@ -239,7 +208,7 @@ if(RYML_IN_MIRCO)
     set(RYML_INSTALL_DIR ${CMAKE_BINARY_DIR}/extern/ryml)
 
     if(NOT DEFINED MIRCO_HOST_CXX_COMPILER)
-      set(MIRCO_HOST_CXX_COMPILER "g++-12")
+      set(MIRCO_HOST_CXX_COMPILER "g++")
     endif()
 
     ExternalProject_Add(ryml_build
@@ -312,14 +281,6 @@ add_library(mirco_utils
   )
 
 target_link_libraries(mirco_utils PUBLIC ryml)
-  set_target_properties(mirco_utils PROPERTIES
-        CXX_COMPILER_LAUNCHER ""
-        C_COMPILER_LAUNCHER ""
-        CUDA_COMPILER_LAUNCHER ""
-        RULE_LAUNCH_COMPILE ""
-        RULE_LAUNCH_LINK ""
-      )
-      target_compile_definitions(mirco_utils PRIVATE FOUR_C_CLANGCUDA_HOST_ONLY)
 
 
 
@@ -334,7 +295,7 @@ target_link_libraries(mirco_inputparameters_yaml PRIVATE mirco_inputparameters m
         RULE_LAUNCH_COMPILE ""
         RULE_LAUNCH_LINK ""
       )
-      target_compile_definitions(mirco_inputparameters_yaml PRIVATE FOUR_C_CLANGCUDA_HOST_ONLY)
+      target_compile_definitions(mirco_inputparameters_yaml PRIVATE CLANGCUDA_MODE_HOST)
 
 
 add_library(mirco_lib INTERFACE)
@@ -365,7 +326,7 @@ target_link_libraries(mirco PUBLIC mirco::mirco_lib mirco_inputparameters_yaml m
         RULE_LAUNCH_COMPILE ""
         RULE_LAUNCH_LINK ""
       )
-      target_compile_definitions(mirco PRIVATE FOUR_C_CLANGCUDA_DEVICE_COMPILE)
+      target_compile_definitions(mirco PRIVATE CLANGCUDA_MODE_DEVICE)
 
 
 # Compile the flatMirco utility
@@ -415,7 +376,7 @@ if(GTEST_IN_MIRCO)
         RULE_LAUNCH_COMPILE ""
         RULE_LAUNCH_LINK ""
       )
-      target_compile_definitions(tests PRIVATE FOUR_C_CLANGCUDA_DEVICE_COMPILE)
+      target_compile_definitions(tests PRIVATE CLANGCUDA_MODE_DEVICE)
 
   # Copy tests/unittests/data folder to the build dir
   add_custom_command(
