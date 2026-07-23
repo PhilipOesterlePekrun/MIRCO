@@ -34,18 +34,31 @@ MIRCO::InputParameters::InputParameters(const std::string& inputFileName)
   else
     exportVisualizationPath = std::nullopt;
 
+  const bool elasticComplianceCorrectionFlag =
+      Utils::get_optional_bool(root, "ElasticComplianceCorrectionFlag").value_or(true);
+  const double tolerance = elasticComplianceCorrectionFlag
+                               ? Utils::get_double(geoParams, "Tolerance")
+                               : Utils::get_optional_double(geoParams, "Tolerance").value_or(0.0);
+  const int maxIteration = elasticComplianceCorrectionFlag
+                               ? Utils::get_int(root, "MaxIteration")
+                               : Utils::get_optional_int(root, "MaxIteration").value_or(0);
+  const bool warmStartingFlag =
+      elasticComplianceCorrectionFlag
+          ? Utils::get_bool(root, "WarmStartingFlag")
+          : Utils::get_optional_bool(root, "WarmStartingFlag").value_or(false);
+
   // Set the surface generator based on RandomTopologyFlag
   if (Utils::get_bool(root, "RandomTopologyFlag"))
   {
     *this = InputParameters(Utils::get_double(matParams, "E1"), Utils::get_double(matParams, "E2"),
-        Utils::get_double(matParams, "nu1"), Utils::get_double(matParams, "nu2"),
-        Utils::get_double(geoParams, "Tolerance"), Utils::get_double(geoParams, "Delta"),
-        Utils::get_double(geoParams, "LateralLength"), Utils::get_int(geoParams, "Resolution"),
+        Utils::get_double(matParams, "nu1"), Utils::get_double(matParams, "nu2"), tolerance,
+        Utils::get_double(geoParams, "Delta"), Utils::get_double(geoParams, "LateralLength"),
+        Utils::get_int(geoParams, "Resolution"),
         Utils::get_double(geoParams, "InitialTopologyStdDeviation"),
-        Utils::get_double(geoParams, "HurstExponent"), Utils::get_int(root, "MaxIteration"),
-        Utils::get_bool(root, "WarmStartingFlag"), Utils::get_bool(root, "PressureGreenFunFlag"),
-        Utils::get_bool(root, "RandomSeedFlag"),
-        Utils::get_optional_int(root, "RandomGeneratorSeed"), exportVisualizationPath);
+        Utils::get_double(geoParams, "HurstExponent"), maxIteration, warmStartingFlag,
+        Utils::get_bool(root, "PressureGreenFunFlag"), Utils::get_bool(root, "RandomSeedFlag"),
+        Utils::get_optional_int(root, "RandomGeneratorSeed"), exportVisualizationPath,
+        elasticComplianceCorrectionFlag);
   }
   else
   {
@@ -54,10 +67,10 @@ MIRCO::InputParameters::InputParameters(const std::string& inputFileName)
     MIRCO::Utils::changeRelativePath(topology_file_path, inputFileName);
 
     *this = InputParameters(Utils::get_double(matParams, "E1"), Utils::get_double(matParams, "E2"),
-        Utils::get_double(matParams, "nu1"), Utils::get_double(matParams, "nu2"),
-        Utils::get_double(geoParams, "Tolerance"), Utils::get_double(geoParams, "Delta"),
-        Utils::get_double(geoParams, "LateralLength"), topology_file_path,
-        Utils::get_int(root, "MaxIteration"), Utils::get_bool(root, "WarmStartingFlag"),
-        Utils::get_bool(root, "PressureGreenFunFlag"), exportVisualizationPath);
+        Utils::get_double(matParams, "nu1"), Utils::get_double(matParams, "nu2"), tolerance,
+        Utils::get_double(geoParams, "Delta"), Utils::get_double(geoParams, "LateralLength"),
+        topology_file_path, maxIteration, warmStartingFlag,
+        Utils::get_bool(root, "PressureGreenFunFlag"), exportVisualizationPath,
+        elasticComplianceCorrectionFlag);
   }
 }

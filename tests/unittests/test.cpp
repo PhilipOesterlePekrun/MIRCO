@@ -1,11 +1,13 @@
 #include <gtest/gtest.h>
 #include <stdlib.h>
 
+#include "../../src/mirco_evaluate.h"
 #include "../../src/mirco_inputparameters.h"
 #include "../../src/mirco_kokkostypes.h"
 #include "../../src/mirco_nonlinearsolver.h"
 #include "../../src/mirco_shapefactors.h"
 #include "../../src/mirco_topology.h"
+#include "../../src/mirco_topologyutilities.h"
 #include "../../src/mirco_utils.h"
 #include "../../src/mirco_warmstart.h"
 
@@ -260,6 +262,36 @@ TEST(inputParameters, yaml_dat)
 
   EXPECT_NEAR(inputParams.grid_size, 200, 1e-04);
   EXPECT_NEAR(inputParams.composite_youngs, 0.549451, 1e-04);
+  EXPECT_TRUE(inputParams.elastic_compliance_correction_flag);
+}
+TEST(inputParameters, yaml_dat_standalone)
+{
+  std::string inputFilePath = "test/data/input_withDat_standalone.yaml";
+  MIRCO::InputParameters inputParams(inputFilePath);
+
+  EXPECT_FALSE(inputParams.elastic_compliance_correction_flag);
+  EXPECT_EQ(inputParams.max_iteration, 0);
+  EXPECT_DOUBLE_EQ(inputParams.tolerance, 0.0);
+  EXPECT_FALSE(inputParams.warm_starting_flag);
+  EXPECT_DOUBLE_EQ(inputParams.shape_factor, 0.0);
+  EXPECT_DOUBLE_EQ(inputParams.elastic_compliance_correction, 0.0);
+  EXPECT_EQ(inputParams.N, 5);
+  EXPECT_NEAR(inputParams.grid_size, 200, 1e-04);
+  EXPECT_NEAR(inputParams.composite_youngs, 0.549451, 1e-04);
+}
+TEST(evaluate, standalone)
+{
+  MIRCO::InputParameters inputParams("test/data/input_withDat_standalone.yaml");
+  MIRCO::ViewVector_d meshgrid = MIRCO::CreateMeshgrid(inputParams.N, inputParams.grid_size);
+  const double topologyMax = MIRCO::GetMax(inputParams.topology);
+  double meanPressure = 0.0;
+  double contactAreaFraction = 0.0;
+
+  EXPECT_NO_THROW(
+      MIRCO::Evaluate(meanPressure, contactAreaFraction, inputParams, topologyMax, meshgrid));
+  EXPECT_GT(meanPressure, 0.0);
+  EXPECT_GT(contactAreaFraction, 0.0);
+  EXPECT_LE(contactAreaFraction, 1.0);
 }
 TEST(inputParameters, directInput_rmg)
 {

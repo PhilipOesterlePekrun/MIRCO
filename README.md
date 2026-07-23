@@ -99,6 +99,23 @@ To run the code with an input file, use the following command in your build dire
 
 where `<someInputFile.yaml>` is any input file in the prescribed format.
 
+#### Standalone contact solves
+
+MIRCO applies the elastic-compliance correction loop used by the multiscale constitutive law by
+default. To solve the BEM contact problem once at the specified rough-contact approach (`Delta`,
+measured from first contact), set:
+
+```yaml
+mirco_input:
+  ElasticComplianceCorrectionFlag: false
+```
+
+In this standalone mode, `WarmStartingFlag`, `MaxIteration`, and the geometrical parameter
+`Tolerance` may be omitted because they control only the compliance-correction loop. The inner
+active-set NNLS contact solver still runs to convergence. Omitting
+`ElasticComplianceCorrectionFlag`, or setting it to `true`, retains the existing behavior and
+requires those three parameters.
+
 ### Developing MIRCO
 
 To develop MIRCO,

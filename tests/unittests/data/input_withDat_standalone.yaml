@@ -1,0 +1,14 @@
+mirco_input:
+  ElasticComplianceCorrectionFlag: false
+  RandomTopologyFlag: false
+  TopologyFilePath: topologyN5.dat
+  PressureGreenFunFlag: true
+  parameters:
+    material_parameters:
+      E1: 1
+      nu1: 0.3
+      E2: 1
+      nu2: 0.3
+    geometrical_parameters:
+      LateralLength: 1000.0
+      Delta: 15.0

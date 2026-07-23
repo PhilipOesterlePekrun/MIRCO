@@ -52,6 +52,12 @@ namespace MIRCO
         std::optional<int> RandomGeneratorSeed = std::nullopt,
         std::optional<std::string> ExportVisualizationPath = std::nullopt);
 
+    InputParameters(double E1, double E2, double nu1, double nu2, double Tolerance, double Delta,
+        double LateralLength, int Resolution, double InitialTopologyStdDeviation, double Hurst,
+        int MaxIteration, bool WarmStartingFlag, bool PressureGreenFunFlag, bool RandomSeedFlag,
+        std::optional<int> RandomGeneratorSeed, std::optional<std::string> ExportVisualizationPath,
+        bool ElasticComplianceCorrectionFlag);
+
     /**
      * @brief Constructor which sets the necessary member variable parameters without an input
      * (.xml) file and creates the topology from a specified topology (.dat) file
@@ -76,11 +82,17 @@ namespace MIRCO
         bool WarmStartingFlag, bool PressureGreenFunFlag,
         std::optional<std::string> ExportVisualizationPath = std::nullopt);
 
+    InputParameters(double E1, double E2, double nu1, double nu2, double Tolerance, double Delta,
+        double LateralLength, const std::string& TopologyFilePath, int MaxIteration,
+        bool WarmStartingFlag, bool PressureGreenFunFlag,
+        std::optional<std::string> ExportVisualizationPath, bool ElasticComplianceCorrectionFlag);
+
     int N = 0;
     double composite_youngs = 0.0, elastic_compliance_correction = 0.0, shape_factor = 0.0,
            tolerance = 0.0, delta = 0.0, lateral_length = 0.0, grid_size = 0.0;
     int max_iteration = 0;
     bool warm_starting_flag = false;
+    bool elastic_compliance_correction_flag = true;
     bool pressure_green_funct_flag = false;
     // Note: topology is a lightweight handle, similar to std::shared_ptr. This struct does not
     // own topology.
