@@ -186,6 +186,9 @@ endif()
 add_library(mirco_shapefactors
   src/mirco_shapefactors.cpp
   )
+if(MIRCO_CLANGCUDA)
+  mirco_configure_clangcuda_target(mirco_needKK CLANGCUDA_MODE_DEVICE)
+endif()
 
 add_library(mirco_inputparameters
   src/mirco_inputparameters.cpp
