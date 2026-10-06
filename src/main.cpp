@@ -1,3 +1,5 @@
+#include <Teuchos_DefaultSerialComm.hpp>
+#include <Teuchos_TimeMonitor.hpp>
 #include <chrono>
 #include <fstream>
 #include <iomanip>
@@ -16,6 +18,7 @@ using namespace MIRCO;
 int main(int argc, char* argv[])
 {
   Kokkos::initialize(argc, argv);
+  int exitCode = EXIT_SUCCESS;
   {
     std::cout << "-- Kokkos information --\n";
     std::cout << "Threads in use: " << ExecSpace_Default_t().concurrency() << "\n";
@@ -99,9 +102,14 @@ int main(int argc, char* argv[])
         if (passedResultChecks)
           std::cout << "All result checks passed." << std::endl;
         else
-          return EXIT_FAILURE;
+          exitCode = EXIT_FAILURE;
       }
     }
+
+    // MIRCO does not initialize MPI, so report timers on a serial communicator.
+    const Teuchos::SerialComm<int> timerComm;
+    Teuchos::TimeMonitor::summarize(Teuchos::ptrFromRef(timerComm), std::cout);
   }
   Kokkos::finalize();
+  return exitCode;
 }

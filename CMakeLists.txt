@@ -49,17 +49,23 @@ if(GTEST_IN_MIRCO)
   add_subdirectory("extern/googletest")
 endif()
 
-# Kokkos
-option(KOKKOS_IN_MIRCO "Find Kokkos in the MIRCO project. If set to OFF, use the Kokkos installation from an upstream project" OFF)
+# Kokkos and Teuchos timers from the same Trilinos installation
+option(KOKKOS_IN_MIRCO "Find Kokkos and TeuchosComm in the MIRCO project. If set to OFF, use the targets from an upstream project" OFF)
 if(KOKKOS_IN_MIRCO)
   set(CMAKE_PREFIX_PATH ${KOKKOS_PATH} ${CMAKE_PREFIX_PATH})
   find_package(Kokkos REQUIRED)
+  find_package(TeuchosComm REQUIRED CONFIG)
 else()
   # Use a Kokkos from an upstream project
   if(TARGET Kokkos::kokkos)
     message(STATUS "Kokkos included from upstream project.")
   else()
     message(FATAL_ERROR "KOKKOS_IN_MIRCO=OFF but no Kokkos target was available in the upstream project.")
+  endif()
+  if(TARGET TeuchosComm::teuchoscomm)
+    message(STATUS "TeuchosComm included from upstream project.")
+  else()
+    message(FATAL_ERROR "KOKKOS_IN_MIRCO=OFF but no TeuchosComm target was available in the upstream project.")
   endif()
 endif()
 
@@ -156,7 +162,10 @@ endif()
 add_library(mirco_needKK
   src/mirco_nonlinearsolver.cpp
   )
-target_link_libraries(mirco_needKK PRIVATE Kokkos::kokkos KokkosKernels::kokkoskernels)
+target_link_libraries(mirco_needKK
+  PUBLIC TeuchosComm::teuchoscomm
+  PRIVATE Kokkos::kokkos KokkosKernels::kokkoskernels
+  )
 if(MIRCO_CLANGCUDA)
   mirco_set_clangcuda_mode(mirco_needKK CLANGCUDA_MODE_DEVICE)
 endif()
@@ -169,7 +178,10 @@ add_library(mirco_core
   src/mirco_contactstatus.cpp
   src/mirco_warmstart.cpp
   )
-target_link_libraries(mirco_core PRIVATE mirco_needKK Kokkos::kokkos)
+target_link_libraries(mirco_core
+  PUBLIC TeuchosComm::teuchoscomm
+  PRIVATE mirco_needKK Kokkos::kokkos
+  )
 if(MIRCO_CLANGCUDA)
   mirco_set_clangcuda_mode(mirco_core CLANGCUDA_MODE_DEVICE)
 endif()
@@ -178,7 +190,9 @@ if(MIRCO_ENABLE_VISUALIZATIONEXPORT)
   add_library(mirco_vis_vtk
     src/mirco_exportvisualization_vtk.cpp
     )
-  target_link_libraries(mirco_vis_vtk PRIVATE
+  target_link_libraries(mirco_vis_vtk
+    PUBLIC TeuchosComm::teuchoscomm
+    PRIVATE
     VTK::CommonCore
     VTK::CommonDataModel
     VTK::IOCore
@@ -195,7 +209,7 @@ add_library(mirco_topology
   src/mirco_topology.cpp
   src/mirco_topologyutilities.cpp
   )
-target_link_libraries(mirco_topology PRIVATE Kokkos::kokkos)
+target_link_libraries(mirco_topology PUBLIC TeuchosComm::teuchoscomm PRIVATE Kokkos::kokkos)
 if(MIRCO_CLANGCUDA)
   mirco_set_clangcuda_mode(mirco_topology CLANGCUDA_MODE_DEVICE)
 endif()
@@ -203,11 +217,15 @@ endif()
 add_library(mirco_shapefactors
   src/mirco_shapefactors.cpp
   )
+target_link_libraries(mirco_shapefactors PUBLIC TeuchosComm::teuchoscomm)
 
 add_library(mirco_inputparameters
   src/mirco_inputparameters.cpp
   )
-target_link_libraries(mirco_inputparameters PRIVATE mirco_topology mirco_shapefactors Kokkos::kokkos)
+target_link_libraries(mirco_inputparameters
+  PUBLIC TeuchosComm::teuchoscomm
+  PRIVATE mirco_topology mirco_shapefactors Kokkos::kokkos
+  )
 if(MIRCO_CLANGCUDA)
   mirco_set_clangcuda_mode(mirco_inputparameters CLANGCUDA_MODE_HOST)
 endif()
@@ -296,12 +314,15 @@ add_library(mirco_utils
   src/mirco_utils.cpp
   )
 
-target_link_libraries(mirco_utils PUBLIC ryml)
+target_link_libraries(mirco_utils PUBLIC ryml TeuchosComm::teuchoscomm)
 
 add_library(mirco_inputparameters_yaml
   src/mirco_inputparameters_yaml.cpp
   )
-target_link_libraries(mirco_inputparameters_yaml PRIVATE mirco_inputparameters mirco_utils Kokkos::kokkos)
+target_link_libraries(mirco_inputparameters_yaml
+  PUBLIC TeuchosComm::teuchoscomm
+  PRIVATE mirco_inputparameters mirco_utils Kokkos::kokkos
+  )
 if(MIRCO_CLANGCUDA)
   mirco_set_clangcuda_mode(mirco_inputparameters_yaml CLANGCUDA_MODE_HOST)
 endif()
