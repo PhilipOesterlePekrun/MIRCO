@@ -1,3 +1,4 @@
+#include <Teuchos_TimeMonitor.hpp>
 #include <fstream>
 #include <sstream>
 
@@ -6,6 +7,9 @@
 
 MIRCO::InputParameters::InputParameters(const std::string& inputFileName)
 {
+  static auto timer = Teuchos::TimeMonitor::getNewCounter("_InputParameters()");
+  Teuchos::TimeMonitor monitor(*timer);
+
   std::ifstream fin(inputFileName);
   if (!fin) throw std::runtime_error("Cannot open file: " + inputFileName);
 

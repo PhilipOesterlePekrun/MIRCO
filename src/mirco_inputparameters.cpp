@@ -1,5 +1,7 @@
 #include "mirco_inputparameters.h"
 
+#include <Teuchos_TimeMonitor.hpp>
+
 #include "mirco_shapefactors.h"
 #include "mirco_topology.h"
 
@@ -19,9 +21,23 @@ namespace MIRCO
         N((1 << Resolution) + 1),
         export_visualization_path(ExportVisualizationPath)
   {
+    static auto timer = Teuchos::TimeMonitor::getNewCounter("_InputParameters()");
+    std::optional<Teuchos::TimeMonitor> monitor;
+    if (!timer->isRunning()) monitor.emplace(*timer);
+
     auto topology_h = CreateRmgSurface(
         Resolution, InitialTopologyStdDeviation, Hurst, RandomSeedFlag, RandomGeneratorSeed);
-    topology = Kokkos::create_mirror_view_and_copy(ExecSpace_Default_t(), topology_h);
+    if constexpr (std::is_same_v<MemorySpace_Host_t, MemorySpace_ofDefaultExec_t>)
+      topology = Kokkos::create_mirror_view_and_copy(ExecSpace_Default_t(), topology_h);
+    else
+    {
+      static auto timer =
+          Teuchos::TimeMonitor::getNewCounter("_InputParameters()/CopyTopologyToDevice");
+      FenceForTiming();
+      Teuchos::TimeMonitor monitor(*timer);
+      topology = Kokkos::create_mirror_view_and_copy(ExecSpace_Default_t(), topology_h);
+      FenceForTiming();
+    }
 
     shape_factor = getShapeFactor(N, PressureGreenFunFlag);
     composite_youngs = 1.0 / ((1 - nu1 * nu1) / E1 + (1 - nu2 * nu2) / E2);
@@ -41,9 +57,23 @@ namespace MIRCO
         pressure_green_funct_flag(PressureGreenFunFlag),
         export_visualization_path(ExportVisualizationPath)
   {
+    static auto timer = Teuchos::TimeMonitor::getNewCounter("_InputParameters()");
+    std::optional<Teuchos::TimeMonitor> monitor;
+    if (!timer->isRunning()) monitor.emplace(*timer);
+
     auto topology_h = CreateSurfaceFromFile(TopologyFilePath);
     N = topology_h.extent(0);
-    topology = Kokkos::create_mirror_view_and_copy(ExecSpace_Default_t(), topology_h);
+    if constexpr (std::is_same_v<MemorySpace_Host_t, MemorySpace_ofDefaultExec_t>)
+      topology = Kokkos::create_mirror_view_and_copy(ExecSpace_Default_t(), topology_h);
+    else
+    {
+      static auto timer =
+          Teuchos::TimeMonitor::getNewCounter("_InputParameters()/CopyTopologyToDevice");
+      FenceForTiming();
+      Teuchos::TimeMonitor monitor(*timer);
+      topology = Kokkos::create_mirror_view_and_copy(ExecSpace_Default_t(), topology_h);
+      FenceForTiming();
+    }
 
     shape_factor = getShapeFactor(N, PressureGreenFunFlag);
     composite_youngs = 1.0 / ((1 - nu1 * nu1) / E1 + (1 - nu2 * nu2) / E2);

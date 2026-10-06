@@ -2,6 +2,7 @@
 #define SRC_KOKKOSTYPES_H_
 
 #include <Kokkos_Core.hpp>
+#include <type_traits>
 
 // This file defines some commonly used Kokkos type aliases. More aliases, as well as Kokkos-related
 // macros, utilities, etc., can be added as needed
@@ -15,6 +16,13 @@ namespace MIRCO
 
   using Device_Host_t = Kokkos::Device<ExecSpace_DefaultHost_t, MemorySpace_Host_t>;
   using Device_Default_t = Kokkos::Device<ExecSpace_Default_t, MemorySpace_ofDefaultExec_t>;
+
+  // Wait for asynchronous device work at timer boundaries; host backends need no extra fence.
+  inline void FenceForTiming()
+  {
+    if constexpr (!std::is_same_v<ExecSpace_Default_t, ExecSpace_DefaultHost_t>)
+      Kokkos::fence("MIRCO timer boundary");
+  }
 
   // Note: LayoutLeft is column major and is necessary for KokkosLapack::gesv() in
   // MIRCO::nonlinearSolve(). We have to specify it for views of any rank, even if it is

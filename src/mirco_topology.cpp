@@ -1,5 +1,6 @@
 #include "mirco_topology.h"
 
+#include <Teuchos_TimeMonitor.hpp>
 #include <cmath>
 #include <ctime>
 #include <fstream>
@@ -9,6 +10,10 @@ namespace MIRCO
 {
   ViewMatrix_h CreateSurfaceFromFile(const std::string& filepath)
   {
+    static auto timer =
+        Teuchos::TimeMonitor::getNewCounter("_InputParameters()/CreateSurfaceFromFile()");
+    Teuchos::TimeMonitor monitor(*timer);
+
     int N = 0;
 
     std::ifstream reader(filepath);
@@ -43,6 +48,10 @@ namespace MIRCO
   ViewMatrix_h CreateRmgSurface(int Resolution, double InitialTopologyStdDeviation, double Hurst,
       bool RandomSeedFlag, std::optional<int> RandomGeneratorSeed)
   {
+    static auto timer =
+        Teuchos::TimeMonitor::getNewCounter("_InputParameters()/CreateRmgSurface()");
+    Teuchos::TimeMonitor monitor(*timer);
+
     srand(time(NULL));
 
     int seed;

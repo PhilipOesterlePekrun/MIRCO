@@ -69,6 +69,13 @@ else()
   endif()
 endif()
 
+# Trilinos built with MPI wrappers may export no MPI include or link flags.
+# Supply them explicitly for consumers using ordinary C++ compilers.
+if(TeuchosCore_ENABLE_MPI)
+  find_package(MPI MODULE REQUIRED COMPONENTS CXX)
+  target_link_libraries(TeuchosComm::teuchoscomm INTERFACE MPI::MPI_CXX)
+endif()
+
 # Print details on the Kokkos configuration
 if(KOKKOS_IN_MIRCO)
   if(Kokkos_FOUND)

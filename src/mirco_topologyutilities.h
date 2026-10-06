@@ -19,8 +19,9 @@ namespace MIRCO
 
   /**
    * @brief Compute the maximum value of a ViewMatrix_d v.
+   * @param timerName Timer label, including the nesting prefix for this call.
    */
-  double GetMax(const ViewMatrix_d v);
+  double GetMax(const ViewMatrix_d v, const char* timerName = "_GetMax()");
 }  // namespace MIRCO
 
 #endif  // SRC_TOPOLOGYUTILITIES_H_

@@ -1,11 +1,18 @@
 #include "mirco_contactpredictors.h"
 
+#include <Teuchos_TimeMonitor.hpp>
+
 namespace MIRCO
 {
   void ContactSetPredictor(ViewVectorInt_d& activeSet0, ViewVector_d& xv0, ViewVector_d& yv0,
       ViewVector_d& b0, double zmax, double Delta, double w_el, const ViewMatrix_d topology,
       const ViewVector_d meshgrid)
   {
+    static auto timer =
+        Teuchos::TimeMonitor::getNewCounter("main()/Evaluate()/ContactSetPredictor()");
+    FenceForTiming();
+    Teuchos::TimeMonitor monitor(*timer);
+
     const int N = topology.extent(0);
 
     const double deltaContact = Delta + w_el - zmax;
@@ -39,6 +46,7 @@ namespace MIRCO
             b0(aa) = topology_a + deltaContact;
           }
         });
+    FenceForTiming();
   }
 
 }  // namespace MIRCO

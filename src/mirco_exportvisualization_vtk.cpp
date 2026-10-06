@@ -8,6 +8,7 @@
 #include <vtkXMLImageDataWriter.h>
 #include <vtkZLibDataCompressor.h>
 
+#include <Teuchos_TimeMonitor.hpp>
 #include <iostream>
 
 namespace MIRCO
@@ -17,6 +18,10 @@ namespace MIRCO
       const std::vector<std::vector<float>>& otherFields,
       const std::vector<std::string>& otherFieldNames)
   {
+    static auto timer = Teuchos::TimeMonitor::getNewCounter(
+        "main()/Evaluate()/Visualization/ExportVisualization()/ExportVisualizationVTK()");
+    Teuchos::TimeMonitor monitor(*timer);
+
     const int n2 = n * n;
 
     vtkNew<vtkImageData> img;

@@ -1,22 +1,32 @@
 #include "mirco_topologyutilities.h"
 
+#include <Teuchos_TimeMonitor.hpp>
 #include <cmath>
 
 namespace MIRCO
 {
   ViewVector_d CreateMeshgrid(const int ngrid, const double GridSize)
   {
+    static auto timer = Teuchos::TimeMonitor::getNewCounter("_CreateMeshgrid()");
+    FenceForTiming();
+    Teuchos::TimeMonitor monitor(*timer);
+
     ViewVector_d meshgrid("CreateMeshgrid(); meshgrid", ngrid);
 
     const double GridSize_2 = GridSize / 2;
     Kokkos::parallel_for(
         ngrid, KOKKOS_LAMBDA(const int i) { meshgrid(i) = GridSize_2 + i * GridSize; });
 
+    FenceForTiming();
     return meshgrid;
   }
 
-  double GetMax(const ViewMatrix_d topology)
+  double GetMax(const ViewMatrix_d topology, const char* timerName)
   {
+    auto timer = Teuchos::TimeMonitor::getNewCounter(timerName);
+    FenceForTiming();
+    Teuchos::TimeMonitor monitor(*timer);
+
     const int n0 = topology.extent(0);
     const int n1 = topology.extent(1);
 

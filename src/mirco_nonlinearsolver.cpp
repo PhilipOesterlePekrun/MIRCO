@@ -1,6 +1,7 @@
 #include "mirco_nonlinearsolver.h"
 
 #include <KokkosLapack_gesv.hpp>
+#include <Teuchos_TimeMonitor.hpp>
 
 namespace
 {
@@ -31,6 +32,10 @@ namespace MIRCO
       const ViewVectorInt_d activeSet0, const ViewMatrix_d matrix, const ViewVector_d b0,
       double nnlstol, int maxiter)
   {
+    static auto timer = Teuchos::TimeMonitor::getNewCounter("main()/Evaluate()/nonlinearSolve()");
+    FenceForTiming();
+    Teuchos::TimeMonitor monitor(*timer);
+
     using minloc_t = Kokkos::MinLoc<double, int, MemorySpace_ofDefaultExec_t>;
     using minloc_value_t = typename minloc_t::value_type;
     const std::string kokkosLabelPrefix = "nonlinearSolve(); ";
@@ -128,23 +133,38 @@ namespace MIRCO
         ViewVector_d b0s_compact(kokkosLabelPrefix + "b0_compact", activeSetSize);
         if (activeSetSize > 1)
         {
-          ViewMatrix_d H_compact(kokkosLabelPrefix + "H_compact", activeSetSize, activeSetSize);
+          ViewMatrix_d H_compact;
+          ViewVectorInt_d ipiv;
+          {
+            static auto timer = Teuchos::TimeMonitor::getNewCounter(
+                "main()/Evaluate()/nonlinearSolve()/PrepareLinearSystem");
+            FenceForTiming();
+            Teuchos::TimeMonitor monitor(*timer);
+            H_compact = ViewMatrix_d(kokkosLabelPrefix + "H_compact", activeSetSize, activeSetSize);
 
-          Kokkos::parallel_for(
-              activeSetSize, KOKKOS_LAMBDA(const int i) {
-                const int row = activeInactiveSet(i);
-                b0s_compact(i) = b0(row);
-                for (int j = 0; j < activeSetSize; ++j)
-                {
-                  const int col = activeInactiveSet(j);
-                  H_compact(i, j) = matrix(row, col);
-                }
-              });
+            Kokkos::parallel_for(
+                activeSetSize, KOKKOS_LAMBDA(const int i) {
+                  const int row = activeInactiveSet(i);
+                  b0s_compact(i) = b0(row);
+                  for (int j = 0; j < activeSetSize; ++j)
+                  {
+                    const int col = activeInactiveSet(j);
+                    H_compact(i, j) = matrix(row, col);
+                  }
+                });
 
-          ViewVectorInt_d ipiv(kokkosLabelPrefix + "ipiv", activeSetSize);
+            ipiv = ViewVectorInt_d(kokkosLabelPrefix + "ipiv", activeSetSize);
+            FenceForTiming();
+          }
 
           // Solve H_I s_I = b0_I; b0s_compact becomes s_I
-          KokkosLapack::gesv(H_compact, b0s_compact, ipiv);
+          {
+            static auto timer = Teuchos::TimeMonitor::getNewCounter(
+                "main()/Evaluate()/nonlinearSolve()/LinearSolve");
+            Teuchos::TimeMonitor monitor(*timer);
+            KokkosLapack::gesv(H_compact, b0s_compact, ipiv);
+            FenceForTiming();
+          }
         }
         else if (activeSetSize == 1)
         {
@@ -165,6 +185,10 @@ namespace MIRCO
             Kokkos::LAnd<bool>(allGreater));
         if (allGreater)
         {
+          static auto timer = Teuchos::TimeMonitor::getNewCounter(
+              "main()/Evaluate()/nonlinearSolve()/UpdateSolutionAndResidual");
+          Teuchos::TimeMonitor monitor(*timer);
+
           Kokkos::parallel_for(
               activeSetSize,
               KOKKOS_LAMBDA(const int i) { p(activeInactiveSet(i)) = b0s_compact(i); });
@@ -177,6 +201,7 @@ namespace MIRCO
                 w(i) = sum - b0(i);
               });
 
+          FenceForTiming();
           break;
         }
         else
@@ -229,6 +254,7 @@ namespace MIRCO
           activeSetf(i) = activeSet0(activeInactiveSet(i));
           pf(i) = p(activeInactiveSet(i));
         });
+    FenceForTiming();
   }
 
 }  // namespace MIRCO

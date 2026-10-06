@@ -1,10 +1,16 @@
 #include "mirco_warmstart.h"
 
+#include <Teuchos_TimeMonitor.hpp>
+
 namespace MIRCO
 {
   ViewVector_d Warmstart(
       const ViewVectorInt_d& activeSet0, const ViewVectorInt_d& activeSetf, const ViewVector_d& pf)
   {
+    static auto timer = Teuchos::TimeMonitor::getNewCounter("main()/Evaluate()/Warmstart()");
+    FenceForTiming();
+    Teuchos::TimeMonitor monitor(*timer);
+
     const int n0 = activeSet0.extent(0);
     const int nf = activeSetf.extent(0);
     ViewVector_d p0("p0", n0);
@@ -22,6 +28,7 @@ namespace MIRCO
           }
         });
 
+    FenceForTiming();
     return p0;
   }
 

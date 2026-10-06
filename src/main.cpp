@@ -1,4 +1,5 @@
 #include <Teuchos_DefaultSerialComm.hpp>
+#include <Teuchos_StackedTimer.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 #include <chrono>
 #include <fstream>
@@ -32,7 +33,11 @@ int main(int argc, char* argv[])
     // Read the input file name from the command line
     std::string inputFileName = argv[1];
 
-    const auto start = std::chrono::high_resolution_clock::now();
+    auto totalTimer = Teuchos::rcp(new Teuchos::StackedTimer("TOTAL", false));
+    Teuchos::TimeMonitor::setStackedTimer(totalTimer);
+    FenceForTiming();
+    totalTimer->startBaseTimer();
+    // const auto start = std::chrono::high_resolution_clock::now();
 
     InputParameters inputParams(inputFileName);
 
@@ -43,15 +48,16 @@ int main(int argc, char* argv[])
     double meanPressure, effectiveContactAreaFraction;
     Evaluate(meanPressure, effectiveContactAreaFraction, inputParams, topologyMax, meshgrid);
 
+    totalTimer->stopBaseTimer();
     const auto finish = std::chrono::high_resolution_clock::now();
 
     std::cout << std::setprecision(16) << "Mean pressure is: " << meanPressure
               << "\nEffective contact area fraction is: " << effectiveContactAreaFraction
               << std::endl;
 
-    const double elapsedTime =
-        std::chrono::duration_cast<std::chrono::duration<double>>(finish - start).count();
-    std::cout << "Elapsed time is: " + std::to_string(elapsedTime) + "s" << std::endl;
+    // const double elapsedTime =
+    //     std::chrono::duration_cast<std::chrono::duration<double>>(finish - start).count();
+    // std::cout << "Elapsed time is: " + std::to_string(elapsedTime) + "s" << std::endl;
 
     // Test for correct output if the result_description is given in the input file
     {
@@ -108,7 +114,10 @@ int main(int argc, char* argv[])
 
     // MIRCO does not initialize MPI, so report timers on a serial communicator.
     const Teuchos::SerialComm<int> timerComm;
-    Teuchos::TimeMonitor::summarize(Teuchos::ptrFromRef(timerComm), std::cout);
+    Teuchos::StackedTimer::OutputOptions timerOptions;
+    timerOptions.output_fraction = true;
+    timerOptions.align_columns = true;
+    totalTimer->report(std::cout, Teuchos::rcpFromRef(timerComm), timerOptions);
   }
   Kokkos::finalize();
   return exitCode;
