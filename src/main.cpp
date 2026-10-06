@@ -1,5 +1,3 @@
-#include <Teuchos_DefaultSerialComm.hpp>
-#include <Teuchos_StackedTimer.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 #include <chrono>
 #include <fstream>
@@ -11,6 +9,7 @@
 #include "mirco_evaluate.h"
 #include "mirco_inputparameters.h"
 #include "mirco_kokkostypes.h"
+#include "mirco_stackedtimer.h"
 #include "mirco_topologyutilities.h"
 #include "mirco_utils.h"
 
@@ -33,7 +32,7 @@ int main(int argc, char* argv[])
     // Read the input file name from the command line
     std::string inputFileName = argv[1];
 
-    auto totalTimer = Teuchos::rcp(new Teuchos::StackedTimer("TOTAL", false));
+    auto totalTimer = Teuchos::rcp(new StackedTimer("TOTAL", false));
     Teuchos::TimeMonitor::setStackedTimer(totalTimer);
     FenceForTiming();
     totalTimer->startBaseTimer();
@@ -112,12 +111,7 @@ int main(int argc, char* argv[])
       }
     }
 
-    // MIRCO does not initialize MPI, so report timers on a serial communicator.
-    const Teuchos::SerialComm<int> timerComm;
-    Teuchos::StackedTimer::OutputOptions timerOptions;
-    timerOptions.output_fraction = true;
-    timerOptions.align_columns = true;
-    totalTimer->report(std::cout, Teuchos::rcpFromRef(timerComm), timerOptions);
+    totalTimer->report(std::cout);
   }
   Kokkos::finalize();
   return exitCode;
