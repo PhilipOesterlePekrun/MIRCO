@@ -10,8 +10,7 @@ namespace MIRCO
 {
   ViewMatrix_h CreateSurfaceFromFile(const std::string& filepath)
   {
-    static auto timer =
-        Teuchos::TimeMonitor::getNewCounter("_InputParameters()/CreateSurfaceFromFile()");
+    static auto timer = Teuchos::TimeMonitor::getNewCounter("CreateSurfaceFromFile()");
     Teuchos::TimeMonitor monitor(*timer);
 
     int N = 0;
@@ -48,8 +47,7 @@ namespace MIRCO
   ViewMatrix_h CreateRmgSurface(int Resolution, double InitialTopologyStdDeviation, double Hurst,
       bool RandomSeedFlag, std::optional<int> RandomGeneratorSeed)
   {
-    static auto timer =
-        Teuchos::TimeMonitor::getNewCounter("_InputParameters()/CreateRmgSurface()");
+    static auto timer = Teuchos::TimeMonitor::getNewCounter("CreateRmgSurface()");
     Teuchos::TimeMonitor monitor(*timer);
 
     srand(time(NULL));

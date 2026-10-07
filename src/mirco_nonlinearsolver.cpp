@@ -28,11 +28,11 @@ namespace
 
 namespace MIRCO
 {
-  void nonlinearSolve(ViewVector_d& pf, ViewVectorInt_d& activeSetf, ViewVector_d& p,
+  int nonlinearSolve(ViewVector_d& pf, ViewVectorInt_d& activeSetf, ViewVector_d& p,
       const ViewVectorInt_d activeSet0, const ViewMatrix_d matrix, const ViewVector_d b0,
       double nnlstol, int maxiter)
   {
-    static auto timer = Teuchos::TimeMonitor::getNewCounter("main()/Evaluate()/nonlinearSolve()");
+    static auto timer = Teuchos::TimeMonitor::getNewCounter("nonlinearSolve()");
     FenceForTiming();
     Teuchos::TimeMonitor monitor(*timer);
 
@@ -136,8 +136,7 @@ namespace MIRCO
           ViewMatrix_d H_compact;
           ViewVectorInt_d ipiv;
           {
-            static auto timer = Teuchos::TimeMonitor::getNewCounter(
-                "main()/Evaluate()/nonlinearSolve()/PrepareLinearSystem");
+            static auto timer = Teuchos::TimeMonitor::getNewCounter("PrepareLinearSystem");
             FenceForTiming();
             Teuchos::TimeMonitor monitor(*timer);
             H_compact = ViewMatrix_d(kokkosLabelPrefix + "H_compact", activeSetSize, activeSetSize);
@@ -159,8 +158,7 @@ namespace MIRCO
 
           // Solve H_I s_I = b0_I; b0s_compact becomes s_I
           {
-            static auto timer = Teuchos::TimeMonitor::getNewCounter(
-                "main()/Evaluate()/nonlinearSolve()/LinearSolve");
+            static auto timer = Teuchos::TimeMonitor::getNewCounter("LinearSolve");
             Teuchos::TimeMonitor monitor(*timer);
             KokkosLapack::gesv(H_compact, b0s_compact, ipiv);
             FenceForTiming();
@@ -185,8 +183,7 @@ namespace MIRCO
             Kokkos::LAnd<bool>(allGreater));
         if (allGreater)
         {
-          static auto timer = Teuchos::TimeMonitor::getNewCounter(
-              "main()/Evaluate()/nonlinearSolve()/UpdateSolutionAndResidual");
+          static auto timer = Teuchos::TimeMonitor::getNewCounter("UpdateSolutionAndResidual");
           Teuchos::TimeMonitor monitor(*timer);
 
           Kokkos::parallel_for(
@@ -245,6 +242,7 @@ namespace MIRCO
         }
       }
     }
+
     // Construct the final active set (the lower half of activeInactiveSet), as well as the compact
     // final pressure vector
     activeSetf = ViewVectorInt_d("activeSetf", activeSetSize);
@@ -255,6 +253,7 @@ namespace MIRCO
           pf(i) = p(activeInactiveSet(i));
         });
     FenceForTiming();
+    return iter;
   }
 
 }  // namespace MIRCO

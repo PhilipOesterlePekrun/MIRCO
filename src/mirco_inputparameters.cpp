@@ -31,8 +31,7 @@ namespace MIRCO
       topology = Kokkos::create_mirror_view_and_copy(ExecSpace_Default_t(), topology_h);
     else
     {
-      static auto timer =
-          Teuchos::TimeMonitor::getNewCounter("_InputParameters()/CopyTopologyToDevice");
+      static auto timer = Teuchos::TimeMonitor::getNewCounter("CopyTopologyToDevice");
       FenceForTiming();
       Teuchos::TimeMonitor monitor(*timer);
       topology = Kokkos::create_mirror_view_and_copy(ExecSpace_Default_t(), topology_h);
@@ -67,8 +66,7 @@ namespace MIRCO
       topology = Kokkos::create_mirror_view_and_copy(ExecSpace_Default_t(), topology_h);
     else
     {
-      static auto timer =
-          Teuchos::TimeMonitor::getNewCounter("_InputParameters()/CopyTopologyToDevice");
+      static auto timer = Teuchos::TimeMonitor::getNewCounter("CopyTopologyToDevice");
       FenceForTiming();
       Teuchos::TimeMonitor monitor(*timer);
       topology = Kokkos::create_mirror_view_and_copy(ExecSpace_Default_t(), topology_h);

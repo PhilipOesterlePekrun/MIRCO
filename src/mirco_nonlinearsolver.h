@@ -21,8 +21,9 @@ namespace MIRCO
    * @param[in] nnlstol tolerance of the nonlinear solver; \epsilon in (Bemporad & Paggi, 2015)
    * @param[in] maxiter maximum number of total iterations of the innermost loop of the nonlinear
    * solver
+   * @return Number of iterations performed by the innermost NNLS loop
    */
-  void nonlinearSolve(ViewVector_d& pf, ViewVectorInt_d& activeSetf, ViewVector_d& p,
+  int nonlinearSolve(ViewVector_d& pf, ViewVectorInt_d& activeSetf, ViewVector_d& p,
       const ViewVectorInt_d activeSet0, const ViewMatrix_d matrix, const ViewVector_d b0,
       double nnlstol = 1.0e-08, int maxiter = 10000);
 }  // namespace MIRCO

@@ -9,8 +9,7 @@ namespace MIRCO
   void ExportVisualization(const std::string& path, float gridSize, const ViewVectorInt_d activeSet,
       const std::vector<ViewMatrix_d>& otherFields, const std::vector<std::string>& otherFieldNames)
   {
-    static auto timer = Teuchos::TimeMonitor::getNewCounter(
-        "main()/Evaluate()/Visualization/ExportVisualization()");
+    static auto timer = Teuchos::TimeMonitor::getNewCounter("ExportVisualization()");
     FenceForTiming();
     Teuchos::TimeMonitor monitor(*timer);
 

@@ -1,6 +1,8 @@
 #ifndef SRC_EVALUATE_H_
 #define SRC_EVALUATE_H_
 
+#include <vector>
+
 #include "mirco_inputparameters.h"
 #include "mirco_kokkostypes.h"
 
@@ -25,13 +27,16 @@ namespace MIRCO
    * @param[in] PressureGreenFunFlag Flag to use Green function based on uniform pressure instead of
    * point force
    * @param[in] ExportVisualizationPath Path to export visualization files to
+   * @param[out] nonlinearIterations Optional NNLS iteration counts, one per evaluation iteration;
+   * cleared at the start of each call
    */
   void Evaluate(double& pressure, double& effectiveContactAreaFraction, const double Delta,
       const double LateralLength, const double GridSize, const double Tolerance,
       const int MaxIteration, const double CompositeYoungs, const bool WarmStartingFlag,
       const double ElasticComplianceCorrection, const ViewMatrix_d topology, const double zmax,
       const ViewVector_d meshgrid, const bool PressureGreenFunFlag,
-      std::optional<std::string> VisualizationExportPath = std::nullopt);
+      std::optional<std::string> VisualizationExportPath = std::nullopt,
+      std::vector<int>* nonlinearIterations = nullptr);
 
   /**
    * @brief Relate the far-field displacement with pressure, taking the parameters from an
@@ -42,15 +47,19 @@ namespace MIRCO
    * @param[in] inputParams Object which holds the input parameters
    * @param[in] zmax Maximum height
    * @param[in] meshgrid_d Meshgrid vector
+   * @param[out] nonlinearIterations Optional NNLS iteration counts, one per evaluation iteration;
+   * cleared at the start of each call
    */
   inline void Evaluate(double& pressure, double& effectiveContactAreaFraction,
-      const InputParameters& inputParams, const double zmax, const ViewVector_d meshgrid)
+      const InputParameters& inputParams, const double zmax, const ViewVector_d meshgrid,
+      std::vector<int>* nonlinearIterations = nullptr)
   {
     Evaluate(pressure, effectiveContactAreaFraction, inputParams.delta, inputParams.lateral_length,
         inputParams.grid_size, inputParams.tolerance, inputParams.max_iteration,
         inputParams.composite_youngs, inputParams.warm_starting_flag,
         inputParams.elastic_compliance_correction, inputParams.topology, zmax, meshgrid,
-        inputParams.pressure_green_funct_flag, inputParams.export_visualization_path);
+        inputParams.pressure_green_funct_flag, inputParams.export_visualization_path,
+        nonlinearIterations);
   }
 }  // namespace MIRCO
 

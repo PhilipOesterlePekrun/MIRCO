@@ -3,8 +3,10 @@
 #include <fstream>
 #include <iomanip>
 #include <iostream>
+#include <numeric>
 #include <sstream>
 #include <string>
+#include <vector>
 
 #include "mirco_evaluate.h"
 #include "mirco_inputparameters.h"
@@ -45,7 +47,9 @@ int main(int argc, char* argv[])
 
     // Main evaluation agorithm
     double meanPressure, effectiveContactAreaFraction;
-    Evaluate(meanPressure, effectiveContactAreaFraction, inputParams, topologyMax, meshgrid);
+    std::vector<int> nonlinearIterations;
+    Evaluate(meanPressure, effectiveContactAreaFraction, inputParams, topologyMax, meshgrid,
+        &nonlinearIterations);
 
     totalTimer->stopBaseTimer();
     const auto finish = std::chrono::high_resolution_clock::now();
@@ -111,6 +115,16 @@ int main(int argc, char* argv[])
       }
     }
 
+    std::cout << "\nEvaluation iterations: " << nonlinearIterations.size()
+              << "\nNonlinear iterations per evaluation iteration: [";
+    for (std::size_t i = 0; i < nonlinearIterations.size(); ++i)
+    {
+      if (i > 0) std::cout << ", ";
+      std::cout << nonlinearIterations[i];
+    }
+    std::cout << "]\nTotal nonlinear iterations: "
+              << std::accumulate(nonlinearIterations.begin(), nonlinearIterations.end(), 0LL)
+              << "\n\n";
     totalTimer->report(std::cout);
   }
   Kokkos::finalize();

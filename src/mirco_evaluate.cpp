@@ -26,11 +26,17 @@ namespace MIRCO
       const int MaxIteration, const double CompositeYoungs, const bool WarmStartingFlag,
       const double ElasticComplianceCorrection, const ViewMatrix_d topology, const double zmax,
       const ViewVector_d meshgrid, const bool PressureGreenFunFlag,
-      std::optional<std::string> VisualizationExportPath)
+      std::optional<std::string> VisualizationExportPath, std::vector<int>* nonlinearIterations)
   {
-    static auto timer = Teuchos::TimeMonitor::getNewCounter("main()/Evaluate()");
+    static auto timer = Teuchos::TimeMonitor::getNewCounter("Evaluate()");
     FenceForTiming();
     Teuchos::TimeMonitor monitor(*timer);
+
+    if (nonlinearIterations)
+    {
+      nonlinearIterations->clear();
+      if (MaxIteration > 0) nonlinearIterations->reserve(MaxIteration);
+    }
 
     // Initialise the area vector and force vector. Each element contains the
     // area and force calculated at every iteration.
@@ -89,7 +95,8 @@ namespace MIRCO
 
       // use Nonlinear solver --> Non-Negative Least Squares (NNLS) as in
       // (Bemporad & Paggi, 2015)
-      nonlinearSolve(pf, activeSetf, p0, activeSet0, H, b0);
+      const int iterations = nonlinearSolve(pf, activeSetf, p0, activeSet0, H, b0);
+      if (nonlinearIterations) nonlinearIterations->push_back(iterations);
 
       // Compute total contact force and contact area
       double totalForce;
@@ -129,7 +136,7 @@ namespace MIRCO
     if (VisualizationExportPath)
     {
 #if (MIRCO_ENABLE_VISUALIZATIONEXPORT)
-      static auto timer = Teuchos::TimeMonitor::getNewCounter("main()/Evaluate()/Visualization");
+      static auto timer = Teuchos::TimeMonitor::getNewCounter("Visualization");
       Teuchos::TimeMonitor monitor(*timer);
       std::cout << "Computation finished. Exporting visualization...\n\n";
 
@@ -140,8 +147,7 @@ namespace MIRCO
 
       ViewMatrix_d p_m, u_m, deformedHalfSpace;
       {
-        static auto timer = Teuchos::TimeMonitor::getNewCounter(
-            "main()/Evaluate()/Visualization/PrepareVisualizationFields");
+        static auto timer = Teuchos::TimeMonitor::getNewCounter("PrepareVisualizationFields");
         Teuchos::TimeMonitor monitor(*timer);
         p_m = ViewMatrix_d("p_m", N, N);
         Kokkos::deep_copy(p_m, 0);

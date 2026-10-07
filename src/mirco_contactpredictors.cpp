@@ -8,8 +8,7 @@ namespace MIRCO
       ViewVector_d& b0, double zmax, double Delta, double w_el, const ViewMatrix_d topology,
       const ViewVector_d meshgrid)
   {
-    static auto timer =
-        Teuchos::TimeMonitor::getNewCounter("main()/Evaluate()/ContactSetPredictor()");
+    static auto timer = Teuchos::TimeMonitor::getNewCounter("ContactSetPredictor()");
     FenceForTiming();
     Teuchos::TimeMonitor monitor(*timer);
 

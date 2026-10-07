@@ -7,7 +7,7 @@ namespace MIRCO
   ViewVector_d Warmstart(
       const ViewVectorInt_d& activeSet0, const ViewVectorInt_d& activeSetf, const ViewVector_d& pf)
   {
-    static auto timer = Teuchos::TimeMonitor::getNewCounter("main()/Evaluate()/Warmstart()");
+    static auto timer = Teuchos::TimeMonitor::getNewCounter("Warmstart()");
     FenceForTiming();
     Teuchos::TimeMonitor monitor(*timer);
 
