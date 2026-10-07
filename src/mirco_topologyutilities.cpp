@@ -7,7 +7,7 @@ namespace MIRCO
 {
   ViewVector_d CreateMeshgrid(const int ngrid, const double GridSize)
   {
-    static auto timer = Teuchos::TimeMonitor::getNewCounter("_CreateMeshgrid()");
+    static auto timer = Teuchos::TimeMonitor::getNewCounter("CreateMeshgrid()");
     FenceForTiming();
     Teuchos::TimeMonitor monitor(*timer);
 

@@ -8,7 +8,7 @@ namespace MIRCO
   void ComputeContactForceAndArea(double& totalForce, double& contactArea, const ViewVector_d pf,
       const double GridSize, const double LateralLength, const bool PressureGreenFunFlag)
   {
-    static auto timer = Teuchos::TimeMonitor::getNewCounter("__ComputeContactForceAndArea()");
+    static auto timer = Teuchos::TimeMonitor::getNewCounter("ComputeContactForceAndArea()");
     FenceForTiming();
     Teuchos::TimeMonitor monitor(*timer);
 

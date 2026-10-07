@@ -9,7 +9,7 @@ namespace MIRCO
   ViewMatrix_d SetupMatrix(const ViewVector_d xv0, const ViewVector_d yv0, const double GridSize,
       const double CompositeYoungs, const int systemsize, const bool PressureGreenFunFlag)
   {
-    static auto timer = Teuchos::TimeMonitor::getNewCounter("__SetupMatrix()");
+    static auto timer = Teuchos::TimeMonitor::getNewCounter("SetupMatrix()");
     FenceForTiming();
     Teuchos::TimeMonitor monitor(*timer);
 
