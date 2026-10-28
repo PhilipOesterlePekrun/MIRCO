@@ -16,7 +16,8 @@ namespace MIRCO
     constexpr double pi = M_PI;
     const double frac_GridSize_2 = GridSize / 2;
 
-    ViewMatrix_d H("SetupMatrix(); H", systemsize, systemsize);
+    ViewMatrix_d H(Kokkos::view_alloc(Kokkos::WithoutInitializing, "SetupMatrix(); H"), systemsize,
+        systemsize);
     if (PressureGreenFunFlag)
     {
       // The pressure-based Green's function is based on the work of Pohrt and Li (2014)

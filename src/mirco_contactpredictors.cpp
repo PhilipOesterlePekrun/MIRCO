@@ -23,26 +23,28 @@ namespace MIRCO
         },
         n0);
 
-    activeSet0 = ViewVectorInt_d("activeSet0", n0);
-    xv0 = ViewVector_d("xv0", n0);
-    yv0 = ViewVector_d("yv0", n0);
-    b0 = ViewVector_d("b0", n0);
+    activeSet0 = ViewVectorInt_d(Kokkos::view_alloc(Kokkos::WithoutInitializing, "activeSet0"), n0);
+    xv0 = ViewVector_d(Kokkos::view_alloc(Kokkos::WithoutInitializing, "xv0"), n0);
+    yv0 = ViewVector_d(Kokkos::view_alloc(Kokkos::WithoutInitializing, "yv0"), n0);
+    b0 = ViewVector_d(Kokkos::view_alloc(Kokkos::WithoutInitializing, "b0"), n0);
 
-    ViewScalarInt_d counter("ContactSetPredictor(); counter");
-    Kokkos::deep_copy(counter, 0);
-    Kokkos::parallel_for(
-        N * N, KOKKOS_LAMBDA(const int a) {
+    // Compact candidates in global cell order without a shared counter.
+    Kokkos::parallel_scan(
+        N * N, KOKKOS_LAMBDA(const int a, int& offset, const bool final) {
           const int i = a / N;
           const int j = a % N;
           const double topology_a = topology(i, j);
           if (topology_a >= -deltaContact)
           {
-            const int aa = Kokkos::atomic_fetch_add(&counter(), 1);
-            activeSet0(aa) = a;
-            xv0(aa) = meshgrid(i);
-            yv0(aa) = meshgrid(j);
-            // Note: b0 = \overbar{u} + w_el = Delta + w_el - (zmax - topology_a);
-            b0(aa) = topology_a + deltaContact;
+            const int aa = offset++;
+            if (final)
+            {
+              activeSet0(aa) = a;
+              xv0(aa) = meshgrid(i);
+              yv0(aa) = meshgrid(j);
+              // Note: b0 = \overbar{u} + w_el = Delta + w_el - (zmax - topology_a);
+              b0(aa) = topology_a + deltaContact;
+            }
           }
         });
     FenceForTiming();

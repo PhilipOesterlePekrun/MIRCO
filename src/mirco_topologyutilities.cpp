@@ -11,7 +11,8 @@ namespace MIRCO
     FenceForTiming();
     Teuchos::TimeMonitor monitor(*timer);
 
-    ViewVector_d meshgrid("CreateMeshgrid(); meshgrid", ngrid);
+    ViewVector_d meshgrid(
+        Kokkos::view_alloc(Kokkos::WithoutInitializing, "CreateMeshgrid(); meshgrid"), ngrid);
 
     const double GridSize_2 = GridSize / 2;
     Kokkos::parallel_for(

@@ -83,8 +83,8 @@ namespace MIRCO
       }
       else
       {
+        // View allocation already initializes the cold-start pressure to zero.
         p0 = ViewVector_d("p0", n0);
-        Kokkos::deep_copy(p0, 0.0);
       }
 
       auto H = SetupMatrix(xv0, yv0, GridSize, CompositeYoungs, n0, PressureGreenFunFlag);

@@ -2,6 +2,10 @@
 
 #include <KokkosLapack_gesv.hpp>
 #include <Teuchos_TimeMonitor.hpp>
+#include <cstddef>
+#include <limits>
+#include <string>
+#include <utility>
 
 namespace
 {
@@ -14,14 +18,31 @@ namespace
     }
     else
     {
-      auto vi = Kokkos::subview(v, i);
-      auto vj = Kokkos::subview(v, j);
+      Kokkos::parallel_for(
+          1, KOKKOS_LAMBDA(const int) {
+            const int tmp = v(i);
+            v(i) = v(j);
+            v(j) = tmp;
+          });
+    }
+  }
 
-      ViewScalarInt_d tmp("swapEntries(); tmp");
-
-      Kokkos::deep_copy(tmp, vi);
-      Kokkos::deep_copy(vi, vj);
-      Kokkos::deep_copy(vj, tmp);
+  void removeEntry(ViewVector_d p, ViewVectorInt_d indices, const int i, const int last)
+  {
+    if constexpr (std::is_same<MemorySpace_Host_t, MemorySpace_ofDefaultExec_t>())
+    {
+      p(indices(i)) = 0.0;
+      std::swap(indices(i), indices(last));
+    }
+    else
+    {
+      Kokkos::parallel_for(
+          1, KOKKOS_LAMBDA(const int) {
+            const int removed = indices(i);
+            p(removed) = 0.0;
+            indices(i) = indices(last);
+            indices(last) = removed;
+          });
     }
   }
 }  // namespace
@@ -38,34 +59,49 @@ namespace MIRCO
 
     using minloc_t = Kokkos::MinLoc<double, int, MemorySpace_ofDefaultExec_t>;
     using minloc_value_t = typename minloc_t::value_type;
+    using minloc_view_t = Kokkos::View<minloc_value_t, MemorySpace_ofDefaultExec_t>;
+    using unmanaged_matrix_t = Kokkos::View<double**, Kokkos::LayoutLeft, Device_Default_t,
+        Kokkos::MemoryTraits<Kokkos::Unmanaged>>;
+    using matrix_policy_t = Kokkos::MDRangePolicy<ExecSpace_Default_t,
+        Kokkos::Rank<2, Kokkos::Iterate::Left, Kokkos::Iterate::Left>>;
     const std::string kokkosLabelPrefix = "nonlinearSolve(); ";
 
     constexpr double machine_eps = std::numeric_limits<double>::epsilon();
 
     const int n0 = b0.extent(0);
 
-    ViewVector_d w(kokkosLabelPrefix + "w", n0);
+    ViewVector_d w(Kokkos::view_alloc(Kokkos::WithoutInitializing, kokkosLabelPrefix + "w"), n0);
 
-    ViewVectorInt_d activeInactiveSet(kokkosLabelPrefix + "activeInactiveSet", n0);
+    ViewVectorInt_d activeInactiveSet(
+        Kokkos::view_alloc(Kokkos::WithoutInitializing, kokkosLabelPrefix + "activeInactiveSet"),
+        n0);
 
-    ViewScalarInt_d counterActive(kokkosLabelPrefix + "counterActive");
-    Kokkos::deep_copy(counterActive, 0);
-    ViewScalarInt_d counterInactive(kokkosLabelPrefix + "counterInactive");
-    Kokkos::deep_copy(counterInactive, 0);
-    Kokkos::parallel_for(
-        n0, KOKKOS_LAMBDA(const int i) {
-          if (p(i) >= nnlstol)
+    int activeSetSize = 0;
+    Kokkos::parallel_scan(
+        n0,
+        KOKKOS_LAMBDA(const int i, int& activeCount, const bool final) {
+          const bool active = p(i) >= nnlstol;
+          if (final)
           {
-            // Note: atomic_fetch_add() returns the old value
-            activeInactiveSet(Kokkos::atomic_fetch_add(&counterActive(), 1)) = i;
+            // Active indices retain their order; inactive indices fill the tail in reverse.
+            const int target = active ? activeCount : n0 - 1 - (i - activeCount);
+            activeInactiveSet(target) = i;
           }
-          else
-          {
-            activeInactiveSet(n0 - 1 - (Kokkos::atomic_fetch_add(&counterInactive(), 1))) = i;
-          }
-        });
-    int activeSetSize;
-    Kokkos::deep_copy(activeSetSize, counterActive);
+          if (active) ++activeCount;
+        },
+        activeSetSize);
+
+    minloc_view_t minloc_w_i_d(
+        Kokkos::view_alloc(Kokkos::WithoutInitializing, kokkosLabelPrefix + "minloc_w_i_d"));
+    minloc_view_t minloc_w_iInactive_d(Kokkos::view_alloc(
+        Kokkos::WithoutInitializing, kokkosLabelPrefix + "minloc_w_iInactive_d"));
+    minloc_view_t minloc_alpha_i_d(
+        Kokkos::view_alloc(Kokkos::WithoutInitializing, kokkosLabelPrefix + "minloc_alpha_i_d"));
+
+    ViewVector_d b0s_workspace(
+        Kokkos::view_alloc(Kokkos::WithoutInitializing, kokkosLabelPrefix + "b0_compact"), n0);
+    ViewVectorInt_d ipiv_workspace;
+    ViewVector_d H_workspace;
 
     bool init = false;
     if (activeSetSize == 0)
@@ -79,30 +115,27 @@ namespace MIRCO
     while (true)
     {
       if ((init && (activeSetSize == n0)) || iter >= maxiter) break;
-      Kokkos::View<minloc_value_t, MemorySpace_ofDefaultExec_t> minloc_w_i_d(
-          kokkosLabelPrefix + "minloc_w_i_d");
-
-      Kokkos::parallel_reduce(
-          n0,
-          KOKKOS_LAMBDA(const int i, minloc_value_t& ml) {
-            const double wi = w(i);
-            if (wi < ml.val)
-            {
-              ml.val = wi;
-              ml.loc = i;
-            }
-          },
-          minloc_t(minloc_w_i_d));
-
-      minloc_value_t minloc_w_i_h;
-      Kokkos::deep_copy(minloc_w_i_h, minloc_w_i_d);
-
-      if (init && (minloc_w_i_h.val >= -nnlstol)) break;
 
       if (init)
       {
-        Kokkos::View<minloc_value_t, MemorySpace_ofDefaultExec_t> minloc_w_iInactive_d(
-            kokkosLabelPrefix + "minloc_w_iInactive_d");
+        // A warm start first solves its initial contact set before a residual is available.
+        Kokkos::parallel_reduce(
+            n0,
+            KOKKOS_LAMBDA(const int i, minloc_value_t& ml) {
+              const double wi = w(i);
+              if (wi < ml.val)
+              {
+                ml.val = wi;
+                ml.loc = i;
+              }
+            },
+            minloc_t(minloc_w_i_d));
+
+        minloc_value_t minloc_w_i_h;
+        Kokkos::deep_copy(minloc_w_i_h, minloc_w_i_d);
+
+        if (minloc_w_i_h.val >= -nnlstol) break;
+
         Kokkos::parallel_reduce(
             Kokkos::RangePolicy<ExecSpace_Default_t>(activeSetSize, n0),
             KOKKOS_LAMBDA(const int i, minloc_value_t& ml) {
@@ -130,29 +163,43 @@ namespace MIRCO
 
         // Compact versions of H and b0, i.e. H_I and \overbar{u}_I in line 6 of Algorithm 3,
         // (Bemporad & Paggi, 2015)
-        ViewVector_d b0s_compact(kokkosLabelPrefix + "b0_compact", activeSetSize);
+        ViewVector_d b0s_compact = Kokkos::subview(b0s_workspace, std::make_pair(0, activeSetSize));
         if (activeSetSize > 1)
         {
-          ViewMatrix_d H_compact;
+          unmanaged_matrix_t H_compact;
           ViewVectorInt_d ipiv;
           {
             static auto timer = Teuchos::TimeMonitor::getNewCounter("PrepareLinearSystem");
             FenceForTiming();
             Teuchos::TimeMonitor monitor(*timer);
-            H_compact = ViewMatrix_d(kokkosLabelPrefix + "H_compact", activeSetSize, activeSetSize);
+            if (ipiv_workspace.extent(0) == 0)
+              ipiv_workspace = ViewVectorInt_d(
+                  Kokkos::view_alloc(Kokkos::WithoutInitializing, kokkosLabelPrefix + "ipiv"), n0);
+            ipiv = Kokkos::subview(ipiv_workspace, std::make_pair(0, activeSetSize));
+
+            const std::size_t matrixEntries =
+                static_cast<std::size_t>(activeSetSize) * static_cast<std::size_t>(activeSetSize);
+            if (H_workspace.extent(0) < matrixEntries)
+            {
+              // Retain only the largest reduced system seen so far, with no extra growth reserve.
+              // Release old storage first to avoid holding both dense allocations during growth.
+              H_workspace = ViewVector_d();
+              H_workspace = ViewVector_d(
+                  Kokkos::view_alloc(Kokkos::WithoutInitializing, kokkosLabelPrefix + "H_compact"),
+                  matrixEntries);
+            }
+            // Repack the active prefix with the current leading dimension for the LAPACK interface.
+            H_compact = unmanaged_matrix_t(H_workspace.data(), activeSetSize, activeSetSize);
 
             Kokkos::parallel_for(
-                activeSetSize, KOKKOS_LAMBDA(const int i) {
+                matrix_policy_t({0, 0}, {activeSetSize, activeSetSize}),
+                KOKKOS_LAMBDA(const int i, const int j) {
                   const int row = activeInactiveSet(i);
-                  b0s_compact(i) = b0(row);
-                  for (int j = 0; j < activeSetSize; ++j)
-                  {
-                    const int col = activeInactiveSet(j);
-                    H_compact(i, j) = matrix(row, col);
-                  }
+                  const int col = activeInactiveSet(j);
+                  H_compact(i, j) = matrix(row, col);
+                  if (j == 0) b0s_compact(i) = b0(row);
                 });
 
-            ipiv = ViewVectorInt_d(kokkosLabelPrefix + "ipiv", activeSetSize);
             FenceForTiming();
           }
 
@@ -204,8 +251,6 @@ namespace MIRCO
         else
         {
           // Find min_i and argmin_i of alpha_i := \frac{p_i}{p_i - s_i}
-          Kokkos::View<minloc_value_t, MemorySpace_ofDefaultExec_t> minloc_alpha_i_d(
-              kokkosLabelPrefix + "minloc_alpha_i_d");
           Kokkos::parallel_reduce(
               activeSetSize,
               KOKKOS_LAMBDA(const int i, minloc_value_t& ml) {
@@ -234,10 +279,7 @@ namespace MIRCO
 
           if (minloc_alpha_i_h.loc > -1)
           {
-            Kokkos::deep_copy(Kokkos::subview(p, activeInactiveSet(minloc_alpha_i_h.loc)), 0.0);
-            // Note: `swapEntries()` may not be very efficient on GPU because it does not use
-            // `Kokkos::kokkos_swap()`, as that can only be used in parallel lambda
-            swapEntries(activeInactiveSet, minloc_alpha_i_h.loc, --activeSetSize);
+            removeEntry(p, activeInactiveSet, minloc_alpha_i_h.loc, --activeSetSize);
           }
         }
       }
@@ -245,8 +287,9 @@ namespace MIRCO
 
     // Construct the final active set (the lower half of activeInactiveSet), as well as the compact
     // final pressure vector
-    activeSetf = ViewVectorInt_d("activeSetf", activeSetSize);
-    pf = ViewVector_d("pf", activeSetSize);
+    activeSetf = ViewVectorInt_d(
+        Kokkos::view_alloc(Kokkos::WithoutInitializing, "activeSetf"), activeSetSize);
+    pf = ViewVector_d(Kokkos::view_alloc(Kokkos::WithoutInitializing, "pf"), activeSetSize);
     Kokkos::parallel_for(
         activeSetSize, KOKKOS_LAMBDA(const int i) {
           activeSetf(i) = activeSet0(activeInactiveSet(i));
